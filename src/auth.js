@@ -6,6 +6,7 @@
  * @param {string} email - user's email
  * @param {string} nameFirst - user's first name
  * @param {string} nameLast - user's last name
+ * 
  * @returns {} empty object
  */
 function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
