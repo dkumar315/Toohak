@@ -1,9 +1,10 @@
-/**
+/*
  * Given an admin user's authUserId, return details about the user.
  * 
  * @param {number} authUserId - unique identifier for a user
  * 
- * @returns {user: {userId: number, name: string, email: string, numSuccessfulLogins: number, numFailedPasswordsSinceLastLogin: number, }} details about the user
+ * @returns {user: {userId: number, name: string, email: string, numSuccessfulLogins: number, numFailedPasswordsSinceLastLogin: number, }} 
+ * details about the user
  */
 function adminUserDetails(authUserId) {
 	const userDetails = {
@@ -31,5 +32,18 @@ function adminUserDetails(authUserId) {
  * @returns {} empty object
  */
 function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
+	return {};
+}
+
+/**
+ * Given details relating to a password change, update the password of a logged in user.
+ * 
+ * @param {number} authUserId - unique identifier for a user
+ * @param {number} oldPassword - the current password stored requires update by the user
+ * @param {number} newPassword - the replacement password submitted by user
+ * 
+ * @returns {} empty object
+ */
+function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
 	return {};
 }
