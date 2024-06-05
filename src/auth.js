@@ -1,4 +1,4 @@
-/*
+/**
  * Given an admin user's authUserId, return details about the user.
  * 
  * @param {number} authUserId - unique identifier for a user
