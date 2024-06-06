@@ -30,6 +30,18 @@ function adminQuizCreate(authUserId, name, description) {
 }
 
 /**
+ * This function permanently removes the quiz,
+ * when it is given the quiz as the input 
+ *
+ * @param {number} authUserId - ID of the authorized user
+ * @param {number} quizId - ID of the quiz
+ * @returns {object}
+ */
+function adminQuizRemove(authUserId, quizId) {
+  return {};
+}
+
+/**
  * This function gets all of the relevant information,
  * about the current quiz 
  *
@@ -38,13 +50,13 @@ function adminQuizCreate(authUserId, name, description) {
  * @returns {object}
  */
 function adminQuizInfo(authUserId, quizId) {
-    return {
-        quizId: 1,
-        name: 'My Quiz',
-        timeCreated: 1683125870,
-        timeLastEdited: 1683125871,
-        description: 'This is my quiz',
-      };
+  return {
+    quizId: 1,
+    name: 'My Quiz',
+    timeCreated: 1683125870,
+    timeLastEdited: 1683125871,
+    description: 'This is my quiz',
+  };
 }
 
 /**
@@ -56,7 +68,7 @@ function adminQuizInfo(authUserId, quizId) {
  * @returns {object} - Returns an empty object
  */
 function adminQuizNameUpdate(authUserId, quizId, name) {
-    return {};
+  return {};
 }
 
 /**
@@ -68,5 +80,5 @@ function adminQuizNameUpdate(authUserId, quizId, name) {
  * @returns {object} - Returns an empty object
  */
 function adminQuizDescriptionUpdate(authUserId, quizId, description) {
-    return {};
+  return {};
 }
