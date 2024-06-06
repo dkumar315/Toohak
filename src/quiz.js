@@ -8,7 +8,9 @@
  */
 function adminQuizNameUpdate(authUserId, quizId, name) {
     return {};
-}/**
+}
+
+/**
  * This function updates the description of the relevant quiz.
  * 
  * @param {number} authUserId - ID of the authorised user
