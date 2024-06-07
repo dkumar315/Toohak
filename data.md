@@ -4,13 +4,14 @@ let data = {
   // users + quizzes here
   users: [
     {
-      userId: 1, 														// number, or authuserId
+      // authuserId: number
+      userId: 1,
       nameFirst: 'string',
       nameLast: 'string',
       email: 'string@gmail.com',
       password: 'string',
-      numSuccessfulLogins: 0, 							// number, dafault 0
-      numFailedPasswordsSinceLastLogin: 0 	// number, default 0
+      numSuccessfulLogins: 0,
+      numFailedPasswordsSinceLastLogin: 0
     },
     {
       userId: 2,
@@ -26,6 +27,8 @@ let data = {
     {
       quizId: 1,
       quizName: 'Quiz 1',
+      timeCreated: 1683125870,
+      timeLastEdited: 1683125871,
       quizDescription: 'Quiz on Javascript',
       quizCreator: 1,
       questions: [
@@ -50,6 +53,8 @@ let data = {
     {
       quizId: 1,
       quizName: 'Quiz 2',
+      timeCreated: 1683125871,
+  		timeLastEdited: 1683125872,
       quizDescription: 'Quiz on Typescript',
       quizCreator: 2,
       questions: [
@@ -76,3 +81,7 @@ let data = {
 ```
 
 [Optional] short description: 
+
+- Details the format in which the data is stored. 
+
+- We assume that anything besides the admin entity and its related attributes are out of scope of this project.
