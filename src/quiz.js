@@ -1,7 +1,9 @@
 /**
- * This function provides a list of all quizzes that are owned by the currently logged in user.
+ * This function provides a list of all quizzes that 
+ * are owned by the currently logged in user.
  * 
  * @param {number} authUserId - ID of the authorised user
+ * 
  * @return {object} - Returns the details of the quiz
  */
 function adminQuizList(authUserId) {
@@ -16,11 +18,13 @@ function adminQuizList(authUserId) {
 }
 
 /**
- * This function if given basic details about a new quiz, creates one for the logged in user.
+ * This function if given basic details about a new quiz, 
+ * creates one for the logged in user.
  * 
  * @param {number} authUserId - ID of the authorised user
  * @param {string} name - The name of the quiz
  * @param {string} description - The description of the quiz
+ * 
  * @return {object} - Returns the details of the quiz
  */
 function adminQuizCreate(authUserId, name, description) {
@@ -33,9 +37,10 @@ function adminQuizCreate(authUserId, name, description) {
  * This function permanently removes the quiz,
  * when it is given the quiz as the input 
  *
- * @param {number} authUserId - ID of the authorized user
+ * @param {number} authUserId - ID of the authorised user
  * @param {number} quizId - ID of the quiz
- * @returns {object}
+ * 
+ * @return {object} - Returns an empty object
  */
 function adminQuizRemove(authUserId, quizId) {
   return {};
@@ -45,9 +50,10 @@ function adminQuizRemove(authUserId, quizId) {
  * This function gets all of the relevant information,
  * about the current quiz 
  *
- * @param {number} authUserId - ID of the authorized user
+ * @param {number} authUserId - ID of the authorised user
  * @param {number} quizId - ID of the quiz
- * @returns {object}
+ * 
+ * @return {object} - Returns an empty object
  */
 function adminQuizInfo(authUserId, quizId) {
   return {
@@ -65,7 +71,8 @@ function adminQuizInfo(authUserId, quizId) {
  * @param {number} authUserId - ID of the authorised user
  * @param {number} quizId - ID of the quiz
  * @param {string} name - Name of the quiz
- * @returns {object} - Returns an empty object
+ * 
+ * @return {object} - Returns an empty object
  */
 function adminQuizNameUpdate(authUserId, quizId, name) {
   return {};
@@ -77,7 +84,8 @@ function adminQuizNameUpdate(authUserId, quizId, name) {
  * @param {number} authUserId - ID of the authorised user
  * @param {number} quizId - ID of the quiz
  * @param {string} description - Description of the quiz
- * @returns {object} - Returns an empty object
+ * 
+ * @return {object} - Returns an empty object
  */
 function adminQuizDescriptionUpdate(authUserId, quizId, description) {
   return {};
