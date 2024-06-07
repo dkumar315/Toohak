@@ -1,13 +1,14 @@
 <<<<<<< src/auth.js
 
 /**
- * Validates a user's login, given their email and password.
+ * Register a user with an email, password, and names.
  * 
  * @param {string} email - user's email
- * @param {string} password - user's matching password
+ * @param {string} nameFirst - user's first name
+ * @param {string} nameLast - user's last name
  * @returns {authUserId}
  */
-function adminAuthLogin(email, password) {
+function adminAuthRegister(email, password, nameFirst, nameLast) {
 
 
     return {authUserId: 1};
