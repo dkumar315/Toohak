@@ -1,4 +1,18 @@
-/*
+<<<<<<< src/auth.js
+
+/**
+ * Validates a user's login, given their email and password.
+ * 
+ * @param {string} email - user's email
+ * @param {string} password - user's matching password
+ * @returns {authUserId}
+ */
+function adminAuthLogin(email, password) {
+
+
+    return {authUserId: 1};
+=======
+/**
  * Given an admin user's authUserId, return details about the user.
  * 
  * @param {number} authUserId - unique identifier for a user
@@ -46,4 +60,5 @@ function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
  */
 function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
 	return {};
+>>>>>>> src/auth.js
 }
