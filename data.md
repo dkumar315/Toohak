@@ -83,5 +83,5 @@ let data = {
 [Optional] short description: 
 
 - Details the format in which the data is stored. 
-
 - We assume that anything besides the admin entity and its related attributes are out of scope of this project.
+- We added quizCreator and questions fields to emulate real life online quizzing tools.
