@@ -31,6 +31,7 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
     numFailedPasswordsSinceLastLogin: 0,
   }
 
+  data.users.push(newUser);
   setData(data);
 
   return {
@@ -89,7 +90,6 @@ export function adminUserDetails(authUserId) {
  */
 export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
   let data = getData();
-  
   const userIndex = isValidUser(authUserId);
   if (userIndex === -1) return {error:'invalid authUserId'};
 
@@ -128,6 +128,7 @@ function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
  */
 function isValidUser(authUserId) {
   const data = getData();
+
   return data.users.findIndex((array) => array.userId === authUserId);
 }
 
@@ -148,8 +149,7 @@ function isValidEmail(email, authUserId) {
   
   // todo: make it more readable
   if (isRegistered.length === 0 || 
-    (isRegistered.length === 1 && 
-      data.users.includes((user) => user.userId === authUserId))) {
+    (isRegistered.length === 1 && isRegistered[0].userId === authUserId)) {
     isUsed = false;
   }
 
@@ -164,7 +164,7 @@ function isValidEmail(email, authUserId) {
  * @return {boolean} true iif contains lettes, spaces, hyphens, or apostrophes
  */
 function isValidname(name) {
-  const reg = new RegExp(/^[a-zA-Z\s-\']+$/);
+  const reg = new RegExp(/[^a-zA-Z\s-\']/);
 
   if (name.length <= 2 || name.length >= 20 || reg.test(name)) return false;
 

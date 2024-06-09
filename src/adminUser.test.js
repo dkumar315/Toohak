@@ -19,6 +19,7 @@ import { adminUserDetails, adminUserDetailsUpdate } from './auth.js';
   * invalid: {error: 'specific error message here'}
 **/
 // testing adminUserDetailsUpdate
+import {getData} from './dataStore.js'
 describe('testing adminUserDetailsUpdate', () => {
     const expectValid0 = {};
     const expectError1 = {error:'invalid authUserId'};
@@ -85,11 +86,17 @@ describe('testing adminUserDetailsUpdate', () => {
   // invalid results
   // invalid Ids
   test('test2.1: invalid authUserId',() => {
-    const invalidIds = [0, 1, 2, 3, 9999, -1];
+    const invalidIds = [0, 2, 3, 9999, -1];
     invalidIds.forEach((ele) => {
       result = adminUserDetailsUpdate(ele, email, nameFirst, nameLast);
       expect(result).toMatchObject(expectError1);
     });
+  });
+  
+  test('test2.1.2: no user (invalid authUserId)',() => {
+    clear();
+    const invalidIds = [0, 1, 2, 3];
+    expect(result).toMatchObject(expectError1);
   });
 
   // invalid Emails
@@ -97,18 +104,18 @@ describe('testing adminUserDetailsUpdate', () => {
     const invalidEmails = ['', 'strings', '12345', 'hi!@mails', '@gmail.com'];
     invalidEmails.forEach((ele) => {
       result = adminUserDetailsUpdate(authUserId, ele, nameFirst, nameLast);
-      expect(result).toMatchObject(expectError1);
+      expect(result).toMatchObject(expectError2);
     });
   });
 
-  test('test2.2.2: invalid Used Emails by other users ${ele}', () => {
+  test('test2.2.2: (invalid) Email Used by other users', () => {
     // user2
     const email2 = '078999@gmail.com';
     const psw2 = 'vict078999';
     const nameFirst2 = 'myName';
     const nameLast2 = 'vict';
     let userRegister2;
-    
+
     userRegister2 = adminAuthRegister(email2, psw2, nameFirst2, nameLast2);
     const authUserId2 = userRegister2.authUserId;
 

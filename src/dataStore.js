@@ -1,5 +1,7 @@
 // YOU SHOULD MODIFY THIS OBJECT BELOW ONLY
-let data = {};
+let data = {
+  users: [],
+};
 
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY
 
