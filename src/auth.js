@@ -11,9 +11,15 @@ import isEmail from 'validator/lib/isEmail';
  * 
  * @return {number} authUserId - unique identifier for a user
  */
-function adminAuthRegister(email, password, nameFirst, nameLast) {
+export function adminAuthRegister(email, password, nameFirst, nameLast) {
   const data = getData();
-  const authUserId = data.users[data.users.length].userId + 1;
+
+  let authUserId;
+  if (data.users.length === 0) {
+    authUserId = 1;
+  } else {
+    authUserId = data.users[data.users.length - 1].userId + 1;
+  }
   
   const newUser = {
     userId: authUserId,
@@ -87,7 +93,7 @@ export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
   const userIndex = isValidUser(authUserId);
   if (userIndex === -1) return {error:'invalid authUserId'};
 
-  if (!isValidEmail(email)) return {error:'invalid email'};
+  if (!isValidEmail(email, authUserId)) return {error:'invalid email'};
   if (!isValidname(nameFirst)) return {error:'invalid nameFirst'};
   if (!isValidname(nameLast)) return {error:'invalid nameLast'};
 
@@ -120,7 +126,8 @@ function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
  * 
  * @return {object} return corresonding index of data.users
  */
-export function isValidUser(authUserId) {
+function isValidUser(authUserId) {
+  const data = getData();
   return data.users.findIndex((array) => array.userId === authUserId);
 }
 
@@ -129,11 +136,13 @@ export function isValidUser(authUserId) {
  * 
  * @param {number} authUserId - unique identifier for a user, 
  * set to -1 if it is new user
- * @param {strung} email - user's email
+ * @param {strung} email - user's email, according to 
+ * https://www.npmjs.com/package/validator
  * 
  * @return {object} return corresonding index of data.users
  */
-export function isValidEmail(email, authUserId) {
+function isValidEmail(email, authUserId) {
+  const data = getData();
   let isUsed = true;
   const isRegistered = data.users.filter((user) => user.email === email);
   
@@ -154,10 +163,10 @@ export function isValidEmail(email, authUserId) {
  * 
  * @return {boolean} true iif contains lettes, spaces, hyphens, or apostrophes
  */
-export function isValidname(name) {
+function isValidname(name) {
   const reg = new RegExp(/^[a-zA-Z\s-\']+$/);
 
-  if (name.length <== 2 || name.length >== 20 || reg.test(name)) return false;
+  if (name.length <= 2 || name.length >= 20 || reg.test(name)) return false;
 
   return true;
 }
