@@ -1,4 +1,5 @@
 import { getData, setData } from './dataStore';
+import isEmail from 'validator/lib/isEmail';
 
 /**
  * Register a user with an email, password, and names.
@@ -80,7 +81,22 @@ export function adminUserDetails(authUserId) {
  * 
  * @return {object} empty object
  */
-function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
+export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
+  let data = getData();
+  
+  const userIndex = isValidUser(authUserId);
+  if (userIndex === -1) return {error:'invalid authUserId'};
+
+  if (!isValidEmail(email)) return {error:'invalid email'};
+  if (!isValidname(nameFirst)) return {error:'invalid nameFirst'};
+  if (!isValidname(nameLast)) return {error:'invalid nameLast'};
+
+  data.users[userIndex].email = email;
+  data.users[userIndex].nameFirst = nameFirst;
+  data.users[userIndex].nameLast = nameLast;
+
+  setData(data);
+
   return {};
 }
 
@@ -106,4 +122,42 @@ function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
  */
 export function isValidUser(authUserId) {
   return data.users.findIndex((array) => array.userId === authUserId);
+}
+
+/**
+ * Given an email, return true if it is not used by the other and it is email
+ * 
+ * @param {number} authUserId - unique identifier for a user, 
+ * set to -1 if it is new user
+ * @param {strung} email - user's email
+ * 
+ * @return {object} return corresonding index of data.users
+ */
+export function isValidEmail(email, authUserId) {
+  let isUsed = true;
+  const isRegistered = data.users.filter((user) => user.email === email);
+  
+  // todo: make it more readable
+  if (isRegistered.length === 0 || 
+    (isRegistered.length === 1 && 
+      data.users.includes((user) => user.userId === authUserId))) {
+    isUsed = false;
+  }
+
+  return !isUsed && isEmail(email);
+}
+
+/**
+ * Given a name string, return true iif contains [a-z], [A-Z], " ", "-", or "'"
+ * 
+ * @param {string} name - nameFirst or nameLast of a user 
+ * 
+ * @return {boolean} true iif contains lettes, spaces, hyphens, or apostrophes
+ */
+export function isValidname(name) {
+  const reg = new RegExp(/^[a-zA-Z\s-\']+$/);
+
+  if (name.length <== 2 || name.length >== 20 || reg.test(name)) return false;
+
+  return true;
 }
