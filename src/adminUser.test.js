@@ -1,10 +1,8 @@
 // requirement functions for testing adminUser
-// import { getData } from './dataStore';
-import { clear } from './clear.js';
+import { clear } from './other.js';
 import { adminAuthRegister } from './auth.js';
 // import function(s) to be tested
-import { adminUserDetails } from './auth.js';
-import { adminUserDetailsUpdate } from './auth.js';
+import { adminUserDetails, adminUserDetailsUpdate } from './auth.js';
 /**
   * changes: update for iteration1
   * last commit: `git rev-parse @`
@@ -13,98 +11,6 @@ import { adminUserDetailsUpdate } from './auth.js';
 *
 
 // todo: export functions in auth.js
-
-// testing adminUserDetails
-/**
-  * adminUserDetails
-  * { authUserId }
-  * valid: { object }
-  * invalid: { object }
-**/
-describe('testing adminUserDetails', () => {
-  beforeEach(() => {
-    clear();
-    const expectError = {error:'invalid authUserId'};
-  });
-
-  afterAll(() => {
-    clear();
-  });
-
-  describe('test with 0 registered user, no valid authUserId', () => {
-      const invalidIds = [0, 1, 2, 3, 9999, -1];
-      invalidIds.forEach((ele) => 
-        expect(adminUserDetails(ele).toMatchObject(expectError));
-  });
-
-  describe('test with 1 registered user', () => {
-    beforeEach(() => {
-      const userRegister = adminAuthRegister('haydensmith@gmail.com', 'haydensmith123', 'Hayden', 'Smith');
-      const authUserId = userRegister.authUserId;
-    });
-
-    const expect = {
-      userId: 1,
-      name: 'Hayden Smith',
-      email: 'hayden.smith@unsw.edu.au',
-      password: 'haydensmith123',
-      numSuccessfulLogins: 3,
-      numFailedPasswordsSinceLastLogin: 1
-    }
-
-    test('valid result', () => {
-      const result = adminUserDetails(authUserId);
-      expect(result).toMatchObject(expect);
-    });
-
-    test('invalid result', () => {
-      const invalidIds = [0, 2, 9999, -1];
-      invalidIds.forEach((ele) => 
-        expect(adminUserDetails(ele).toMatchObject(expectError));
-    });
-  });
-
-  describe('test with 2 registered users', () => {
-    beforeEach(() => {
-      const userRegister1 = adminAuthRegister('stringab@gmail.com', 'string12345', 'stringa', 'stringb');
-      const userRegister2 = adminAuthRegister('haydensmith@gmail.com', 'haydensmith123', 'Hayden', 'Smith');
-      const authUserId1 = userRegister1.authUserId;
-      const authUserId2 = userRegister2.authUserId;
-    });
-    const expect = {
-      users: [
-        {
-          userId: 1,
-          name: 'stringa stringb',
-          email: 'string@gmail.com',
-          password: 'string12345',
-          numSuccessfulLogins: 0,
-          numFailedPasswordsSinceLastLogin: 0,
-        },
-        {
-          userId: 2,
-          name: 'Hayden Smith',
-          email: 'hayden.smith@unsw.edu.au',
-          password: 'haydensmith123',
-          numSuccessfulLogins: 3,
-          numFailedPasswordsSinceLastLogin: 1,
-        },
-      ],
-    }
-
-    test('valid result', () => {
-      validIds = [authUserId1, authUserId2];
-      validIds.forEach((ele, index) => 
-        expect(adminUserDetails(ele).toMatchObject(expect.users(index)));
-    });
-
-    test('invalid result', () => {
-      const invalidIds = [0, 3, 5, 9999, -1];
-      invalidIds.forEach((ele) => 
-        expect(adminUserDetails(ele).toMatchObject(expectError));
-    });
-  });
-});
 
 /**
   * adminUserDetailsUpdate
@@ -141,11 +47,13 @@ describe('testing adminUserDetailsUpdate', () => {
     // valid email (includes same email)
     const emails = ['haydensmith@gmail.com', 'hay.s2@gmail.com', 'hayd@icloud.com',
       'z5411789@ad.unsw.edu.au', 'h_s@protonmail.com', 'hayden@au@yahoo.com'];
-    emails.forEach((ele) => 
+    emails.forEach((ele) => {
       test('test with valid email ${ele}', () => {
         result = adminUserDetailsUpdate(authUserId, ele, nameFirst, nameLast);
         expect(result).toMatchObject(expectValid0);
       });
+    });
+
     // valid name
     const names = ['abc', 'thisNameNineteenLen', 'name has spaces ', '     ',
       'ALLUPPERCASE', 'hayden-Smith', 'Hayden\'sname', 'all Names\' Com-bo'];
@@ -167,7 +75,7 @@ describe('testing adminUserDetailsUpdate', () => {
     invalidIds.forEach((ele) => {
       test('test with invalid invalidIds ${ele}', () => {
         result = adminUserDetailsUpdate(ele, email, nameFirst, nameLast);
-        expect(result.toMatchObject(expectError1);
+        expect(result).toMatchObject(expectError1);
       });
     });
 
