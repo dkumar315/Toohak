@@ -1,7 +1,7 @@
 // requirement functions for testing adminUser
 // import { getData } from './dataStore';
-// import { adminAuthRegister } from './auth.js';
 import { clear } from './clear.js';
+import { adminAuthRegister } from './auth.js';
 // import function(s) to be tested
 import { adminUserDetails } from './auth.js';
 /**
@@ -9,7 +9,7 @@ import { adminUserDetails } from './auth.js';
   * last commit: `git rev-parse @`
   * 7147f046f85bafd955ad46089c253297cc951d72 (master)
   * 34e4dd0cb3c22b62a3e97e105c0ed557de057a45
-*/
+*
 
 // todo: export functions in auth.js
 

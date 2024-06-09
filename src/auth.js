@@ -1,3 +1,5 @@
+import { getData, setData } from './dataStore';
+
 /**
  * Register a user with an email, password, and names.
  * 
@@ -9,8 +11,24 @@
  * @return {number} authUserId - unique identifier for a user
  */
 function adminAuthRegister(email, password, nameFirst, nameLast) {
+  const data = getData();
+  const authUserId = data.users[data.users.length].userId + 1;
+  
+  const newUser = {
+    userId: authUserId,
+    nameFirst: nameFirst,
+    nameLast: nameLast,
+    email: email,
+    password: password,
+    numSuccessfulLogins: 0,
+    numFailedPasswordsSinceLastLogin: 0,
+  }
 
-  return {authUserId: 1};
+  setData(data);
+
+  return {
+    authUserId: authUserId
+  };
 }
 
 /**
@@ -32,18 +50,22 @@ function adminAuthLogin(email, password) {
  * @param {number} authUserId - unique identifier for a user
  * 
  * @return {object} return userDetails
+ * @return {{error: string}} if authUserId invalid
  */
-function adminUserDetails(authUserId) {
-  const userDetails = {
-    userId: 1,
-    name: 'Hayden Smith',
-    email: 'hayden.smith@unsw.edu.au',
-    numSuccessfulLogins: 3,
-    numFailedPasswordsSinceLastLogin: 1,
-  }
-  
+export function adminUserDetails(authUserId) {
+  const data = getData();
+  const userIndex = isValidUser(authUserId);
+
+  if (userIndex === -1) return {error:'invalid authUserId'};
+  const userDetails = data.users[userIndex];
+  const {userId, nameFirst, nameLast, password, ...rest} = userDetails;
+
   return {
-    user: userDetails
+    user: {
+      userId: userDetails.userId,
+      name: userDetails.nameFirst + ' ' + userDetails.nameLast,
+      ...rest
+    }
   };
 }
 
@@ -59,7 +81,6 @@ function adminUserDetails(authUserId) {
  * @return {object} empty object
  */
 function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
-
   return {};
 }
 
@@ -73,6 +94,16 @@ function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
  * @return {object} empty object
  */
 function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
-
   return {};
+}
+
+/**
+ * Given an admin user's authUserId, return its corresponding userIndex
+ * 
+ * @param {number} authUserId - unique identifier for a user
+ * 
+ * @return {object} return corresonding index of data.users
+ */
+export function isValidUser(authUserId) {
+  return data.users.findIndex((array) => array.userId === authUserId);
 }
