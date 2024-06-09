@@ -140,7 +140,7 @@ function isValidUser(authUserId) {
  * @param {strung} email - user's email, according to 
  * https://www.npmjs.com/package/validator
  * 
- * @return {object} return corresonding index of data.users
+ * @return {object} return true if email is valid and not used by others
  */
 function isValidEmail(email, authUserId) {
   const data = getData();
