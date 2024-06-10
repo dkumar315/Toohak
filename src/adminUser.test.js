@@ -182,3 +182,131 @@ describe('testing adminUserPasswordUpdate', () => {
     });
   });
 });
+
+// testing All adminUser
+/**
+  * adminUser
+  * adminUserDetails, adminUserDetailsUpdate, adminUserPasswordUpdate
+  * valid: {object}, {}, {}
+  * invalid: {error: 'specific error message here'}
+**/
+describe('testing adminUser', () => {
+  let email1, psw1, nameF1, nameL1, userId1, authUserId1, res1;
+  let email2, psw2, nameF2, nameL2, userId2, authUserId2, res2;
+
+  const expectUpdateValid = {};
+  const expectAuthIdError = {error:'invalid authUserId'};
+  const expectEmaillError = {error:'invalid email'};
+  const expectNameF1Error = {error:'invalid nameFirst'};
+  const expectNameLaError = {error:'invalid nameLast'};
+  const expectOldPswError = {error:'invalid oldPassword'};
+  const expectNewPswError = {error:'invalid newPassword'};
+
+  let result;
+
+  beforeEach(() => {
+    clear();
+
+    // user1
+    email1 = 'haydensmith@gmail.com';
+    psw1 = 'haydensmith123';
+    nameF1 = 'Hayden';
+    nameL1 = 'Smith';
+    userId1 = adminAuthRegister(email1, psw1, nameF1, nameL1).authUserId;
+    authUserId1 = userId1;
+
+    // user2
+    psw2 = 'vict078999';
+    email2 = '0789@gmail.com';
+    nameF2 = 'name';
+    nameL2 = 'vict';
+    userId2 = adminAuthRegister(email2, psw2, nameF2, nameL2).authUserId;
+    authUserId2 = userId2;
+  });
+
+  afterAll(() => {
+    clear();
+  });
+
+  test('test1.0: check details, and then update details and password', () => {
+    // check detail and update detail
+    result = adminUserDetails(userId1);
+    expect(result.user.userId).toBe(authUserId1);
+    expect(result.user.email).toBe(email1);
+    expect(result.user.name).toBe(nameF1 + ' ' + nameL1);
+
+    let email1New = 'haydensmith2@ad.unsw.edu.au';
+    let nameF1New = 'Hayden-new';
+    let nameL1New = 'Smith-new';
+    result = adminUserDetailsUpdate(authUserId1, email1New, nameF1New, nameL1New);
+
+    // (update detail) and check detail
+    result = adminUserDetails(userId1);
+    expect(result.user.userId).toBe(authUserId1);
+    expect(result.user.email).toBe(email1New);
+    expect(result.user.name).toBe(nameF1New + ' ' + nameL1New);
+
+    // (update detail, check detail) and update password
+    const newPsw = 'haydensnewpassword0';
+    result = adminUserPasswordUpdate(authUserId1, psw1, newPsw);
+    expect(result).toMatchObject(expectUpdateValid);
+    psw1 = newPsw;
+
+    // (update password) and update detail
+    email1New = 'haydensmith3@ad.unsw.edu.au';
+    nameF1New = 'Hayden-new-new';
+    nameL1New = 'Smith-new-new';
+    result = adminUserDetailsUpdate(authUserId1, email1New, nameF1New, nameL1New);
+
+    // (update password, update detail) and check detail
+    result = adminUserDetails(userId1);
+    expect(result.user.userId).toBe(authUserId1);
+    expect(result.user.email).toBe(email1New);
+    expect(result.user.name).toBe(nameF1New + ' ' + nameL1New);
+  });
+
+  test('test1.1: failed on changing password and rechanging', () => {
+    // update password
+    const invalidNewPsw = 'abc';
+    result = adminUserPasswordUpdate(authUserId1, psw1, invalidNewPsw);
+    expect(result).toMatchObject(expectNewPswError);
+
+    // update password
+    const newPsw = 'haydensnewpassword0';
+    result = adminUserPasswordUpdate(authUserId1, psw1, newPsw);
+    expect(result).toMatchObject(expectUpdateValid);
+  });
+
+  test('test1.2: fail to change details', () => {
+    // check deatil
+    result = adminUserDetails(userId2);
+    expect(result.user.userId).toBe(authUserId2);
+    expect(result.user.email).toBe(email2);
+    expect(result.user.name).toBe(nameF2 + ' ' + nameL2);
+
+    // fail to update details
+    const invalidNameFirst = 'ab';
+    result = adminUserDetailsUpdate(userId2, email2, invalidNameFirst, nameL2);
+    expect(result).toMatchObject(expectNameF1Error);
+
+    // check deatil
+    result = adminUserDetails(userId2);
+    expect(result.user.userId).toBe(authUserId2);
+    expect(result.user.email).toBe(email2);
+    expect(result.user.name).toBe(nameF2 + ' ' + nameL2);
+  });
+
+
+  test('test1.3: changed password, fail to change details', () => {
+    // update password
+    const newPassword = 'ABc20240610!';
+    result = adminUserPasswordUpdate(authUserId2, psw2, newPassword);
+    expect(result).toMatchObject(expectUpdateValid);
+
+    // fail to update detail
+    const invalidNameL2 = 'ab';
+    result = adminUserDetailsUpdate(userId2, email2, nameF2, invalidNameL2);
+    expect(result).toMatchObject(expectNameLaError);
+
+  });
+});
