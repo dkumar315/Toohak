@@ -11,25 +11,10 @@ import { getData, setData } from './dataStore';
  * @return {number} authUserId - unique identifier for a user
  */
 function adminAuthRegister(email, password, nameFirst, nameLast) {
-  const data = getData();
-  const authUserId = data.users[data.users.length].userId + 1;
-  
-  const newUser = {
-    userId: authUserId,
-    nameFirst: nameFirst,
-    nameLast: nameLast,
-    email: email,
-    password: password,
-    numSuccessfulLogins: 0,
-    numFailedPasswordsSinceLastLogin: 0,
-  }
 
-  setData(data);
-
-  return {
-    authUserId: authUserId
-  };
+  return {authUserId: 1};
 }
+
 
 /**
  * Validates a user's login, given their email and password.
@@ -58,13 +43,17 @@ export function adminUserDetails(authUserId) {
 
   if (userIndex === -1) return {error:'invalid authUserId'};
   const userDetails = data.users[userIndex];
-  const {userId, nameFirst, nameLast, password, ...rest} = userDetails;
+  // assigning it to resolve over long line
+  const {userId, nameFirst, nameLast, email} = userDetails;
+  const {numSuccessfulLogins, numFailedPasswordsSinceLastLogin} = userDetails;
 
   return {
     user: {
-      userId: userDetails.userId,
-      name: userDetails.nameFirst + ' ' + userDetails.nameLast,
-      ...rest
+      userId: userId,
+      name: nameFirst + ' ' + nameLast,
+      email: email,
+      numSuccessfulLogins: numSuccessfulLogins,
+      numFailedPasswordsSinceLastLogin: numFailedPasswordsSinceLastLogin
     }
   };
 }
@@ -98,12 +87,16 @@ function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
 }
 
 /**
- * Given an admin user's authUserId, return its corresponding userIndex
+ * Given a name string, return true iif contains [a-z], [A-Z], " ", "-", or "'"
  * 
- * @param {number} authUserId - unique identifier for a user
+ * @param {string} name - nameFirst or nameLast of a user 
  * 
- * @return {object} return corresonding index of data.users
+ * @return {boolean} true iif contains lettes, spaces, hyphens, or apostrophes
  */
-export function isValidUser(authUserId) {
-  return data.users.findIndex((array) => array.userId === authUserId);
+function isValidname(name) {
+  const reg = new RegExp(/[^a-zA-Z\s-\']/);
+
+  if (name.length <= 2 || name.length >= 20 || reg.test(name)) return false;
+
+  return true;
 }
