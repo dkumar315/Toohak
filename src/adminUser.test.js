@@ -32,7 +32,9 @@ describe('testing adminUserPasswordUpdate', () => {
 
     // user1
     psw = 'haydensmith123';
-    const {email, nameF, nameL} = {'haydensmith@gmail.com', 'Hayden', 'Smith'};
+    const email = 'haydensmith@gmail.com';
+    const nameF = 'Hayden';
+    const nameL = 'Smith'
     authUserId = adminAuthRegister(email, psw, nameF, nameL).authUserId;
   });
 
@@ -75,11 +77,13 @@ describe('testing adminUserPasswordUpdate', () => {
   test('test1.1.5: valid authUserId with 2 users', () => {
     // user2
     const psw2 = 'vict078999';
-    const {email2, nameF2, nameL2} = {'0789@gmail.com', 'name', 'vict'};
-    const user2 = adminAuthRegister(email2, psw2, nameF2, nameL2).authUserId;
+    const email2 = '0789@gmail.com';
+    const nameF2 = 'name';
+    const nameL2 = 'vict';
+    const authUserId2 = adminAuthRegister(email2, psw2, nameF2, nameL2).authUserId;
 
     const res2 = adminUserPasswordUpdate(authUserId2, psw2, newPsw);
-    expect(result2).toMatchObject(expectValid0);
+    expect(res2).toMatchObject(expectValid0);
   });
 
   // invalid results
@@ -109,7 +113,9 @@ describe('testing adminUserPasswordUpdate', () => {
   test('test2.2.1: (invalid oldPassword) password match other user\'s',() => {
     // user2
     const psw2 = 'vict078999';
-    const {email2, nameF2, nameL2} = {'0789@gmail.com', 'name', 'vict'};
+    const email2 = '0789@gmail.com';
+    const nameF2 = 'name';
+    const nameL2 = 'vict';
     const user2 = adminAuthRegister(email2, psw2, nameF2, nameL2).authUserId;
 
     result = adminUserPasswordUpdate(authUserId, psw2, newPsw);
