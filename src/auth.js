@@ -11,33 +11,11 @@ import isEmail from 'validator/lib/isEmail';
  * 
  * @return {number} authUserId - unique identifier for a user
  */
-export function adminAuthRegister(email, password, nameFirst, nameLast) {
-  const data = getData();
+function adminAuthRegister(email, password, nameFirst, nameLast) {
 
-  let authUserId;
-  if (data.users.length === 0) {
-    authUserId = 1;
-  } else {
-    authUserId = data.users[data.users.length - 1].userId + 1;
-  }
-  
-  const newUser = {
-    userId: authUserId,
-    nameFirst: nameFirst,
-    nameLast: nameLast,
-    email: email,
-    password: password,
-    numSuccessfulLogins: 0,
-    numFailedPasswordsSinceLastLogin: 0,
-  }
-
-  data.users.push(newUser);
-  setData(data);
-
-  return {
-    authUserId: authUserId
-  };
+  return {authUserId: 1};
 }
+
 
 /**
  * Validates a user's login, given their email and password.
