@@ -12,31 +12,8 @@ import isEmail from 'validator/lib/isEmail';
  * @return {number} authUserId - unique identifier for a user
  */
 export function adminAuthRegister(email, password, nameFirst, nameLast) {
-  const data = getData();
 
-  let authUserId;
-  if (data.users.length === 0) {
-    authUserId = 1;
-  } else {
-    authUserId = data.users[data.users.length - 1].userId + 1;
-  }
-  
-  const newUser = {
-    userId: authUserId,
-    nameFirst: nameFirst,
-    nameLast: nameLast,
-    email: email,
-    password: password,
-    numSuccessfulLogins: 0,
-    numFailedPasswordsSinceLastLogin: 0,
-  }
-
-  data.users.push(newUser);
-  setData(data);
-
-  return {
-    authUserId: authUserId
-  };
+  return {authUserId: 1};
 }
 
 /**
@@ -60,20 +37,17 @@ function adminAuthLogin(email, password) {
  * @return {object} return userDetails
  * @return {{error: string}} if authUserId invalid
  */
-export function adminUserDetails(authUserId) {
-  const data = getData();
-  const userIndex = isValidUser(authUserId);
-
-  if (userIndex === -1) return {error:'invalid authUserId'};
-  const userDetails = data.users[userIndex];
-  const {userId, nameFirst, nameLast, password, ...rest} = userDetails;
-
+function adminUserDetails(authUserId) {
+  const userDetails = {
+    userId: 1,
+    name: 'Hayden Smith',
+    email: 'hayden.smith@unsw.edu.au',
+    numSuccessfulLogins: 3,
+    numFailedPasswordsSinceLastLogin: 1,
+  }
+  
   return {
-    user: {
-      userId: userDetails.userId,
-      name: userDetails.nameFirst + ' ' + userDetails.nameLast,
-      ...rest
-    }
+    user: userDetails
   };
 }
 
@@ -146,8 +120,7 @@ function isValidEmail(email, authUserId) {
   const data = getData();
   let isUsed = true;
   const isRegistered = data.users.filter((user) => user.email === email);
-  
-  // todo: make it more readable
+
   if (isRegistered.length === 0 || 
     (isRegistered.length === 1 && isRegistered[0].userId === authUserId)) {
     isUsed = false;

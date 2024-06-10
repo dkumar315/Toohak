@@ -1,6 +1,7 @@
 // YOU SHOULD MODIFY THIS OBJECT BELOW ONLY
 let data = {
   users: [],
+  quizs: []
 };
 
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY
