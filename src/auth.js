@@ -12,8 +12,31 @@ import isEmail from 'validator/lib/isEmail';
  * @return {number} authUserId - unique identifier for a user
  */
 export function adminAuthRegister(email, password, nameFirst, nameLast) {
+  const data = getData();
 
-  return {authUserId: 1};
+  let authUserId;
+  if (data.users.length === 0) {
+    authUserId = 1;
+  } else {
+    authUserId = data.users[data.users.length - 1].userId + 1;
+  }
+  
+  const newUser = {
+    userId: authUserId,
+    nameFirst: nameFirst,
+    nameLast: nameLast,
+    email: email,
+    password: password,
+    numSuccessfulLogins: 0,
+    numFailedPasswordsSinceLastLogin: 0,
+  }
+
+  data.users.push(newUser);
+  setData(data);
+
+  return {
+    authUserId: authUserId
+  };
 }
 
 /**
@@ -61,6 +84,7 @@ function adminUserDetails(authUserId) {
  * @param {string} nameLast - user's last name
  * 
  * @return {object} empty object
+ * @return {{error: string}} if authUserId, email, or names invalid
  */
 export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
   let data = getData();
@@ -88,8 +112,9 @@ export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
  * @param {number} newPassword - the replacement password submitted by user
  * 
  * @return {object} empty object
+ * @return {{error: string}} if authUserId or passwords invalid
  */
-function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
+export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
   return {};
 }
 
