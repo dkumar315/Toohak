@@ -16,7 +16,6 @@ import { adminUserPasswordUpdate } from './auth.js';
   * invalid: {error: 'specific error message here'}
 **/
 describe('testing adminUserPasswordUpdate', () => {
-  // 
   const expectValid0 = {};
   const expectError1 = {error:'invalid authUserId'};
   const expectError2 = {error:'invalid oldPassword'};
@@ -24,6 +23,7 @@ describe('testing adminUserPasswordUpdate', () => {
 
   let psw;
   let newPsw;
+  let newPsws;
   let result;
   let authUserId;
 
@@ -32,10 +32,13 @@ describe('testing adminUserPasswordUpdate', () => {
 
     // user1
     psw = 'haydensmith123';
+    newPsw = '321haydensmith'
     const email = 'haydensmith@gmail.com';
     const nameF = 'Hayden';
     const nameL = 'Smith'
     authUserId = adminAuthRegister(email, psw, nameF, nameL).authUserId;
+
+    newPsws = [];
   });
 
   afterAll(() => {
@@ -44,32 +47,34 @@ describe('testing adminUserPasswordUpdate', () => {
 
   // valid results
   test('test1.1: valid authUserId', () => {
-    newPsw = 'haydensnewpassword0';
-    result = adminUserPasswordUpdate(authUserId, psw, newPsw);
-    expect(result).toMatchObject(expectValid0);
+    newPsws = ['haydensnewpassword0', 'haydenSmith123', 'h1ydensmithabc'];
+    newPsws.forEach((ele) => {
+      result = adminUserPasswordUpdate(authUserId, psw, ele);
+      expect(result).toMatchObject(expectValid0);
+    });
   });
 
   test('test1.1.2: valid authUserId, keep changing psws 8 times', () => {
-    const newPsws = Array.from({ length: 8 }, (_, i) => 'haydensNewPsw' + i);
-    newPsws.forEach((newPsw) => {
-      result = adminUserPasswordUpdate(authUserId, psw, newPsw);
+    newPsws = Array.from({ length: 8 }, (_, i) => 'haydensNewPsw' + i);
+    newPsws.forEach((ele) => {
+      result = adminUserPasswordUpdate(authUserId, psw, ele);
       expect(result).toMatchObject(expectValid0);
     });
   });
 
   test('test1.1.3: valid authUserId, exactly meet the requirement', () => {
-    const newPsws = ['this8Len', 'only1number', '11111l', 'C8PTICAL'];
-    newPsws.forEach((newPsw) => {
-      result = adminUserPasswordUpdate(authUserId, psw, newPsw);
+    newPsws = ['this8Len', 'only1number', '11111l', 'C8PTICAL'];
+    newPsws.forEach((ele) => {
+      result = adminUserPasswordUpdate(authUserId, psw, ele);
       expect(result).toMatchObject(expectValid0);
     });
   });
 
-  test('test1.1.4: valid authUserId, special characters', () => {
-    const newPsws = ['this psw has space', 'psw!!!!', 'a0!@#$%^&*()_+=[]',
+  test('test1.1.4: valid authUserId, special characters', () => { // fixme
+    newPsws = ['this psw has space', 'psw!!!!', 'a0!@#$%^&*()_+=[]',
      'cats on keyboard 55Len !@#$%^&*()_+=[]{}\\|;:\'",.<>?/-', '#d4af37ToDo'];
-    newPsws.forEach((newPsw) => {
-      result = adminUserPasswordUpdate(authUserId, psw, newPsw);
+    newPsws.forEach((ele) => {
+      result = adminUserPasswordUpdate(authUserId, psw, ele);
       expect(result).toMatchObject(expectValid0);
     });
   });
@@ -82,7 +87,7 @@ describe('testing adminUserPasswordUpdate', () => {
     const nameL2 = 'vict';
     const authUserId2 = adminAuthRegister(email2, psw2, nameF2, nameL2).authUserId;
 
-    const res2 = adminUserPasswordUpdate(authUserId2, psw2, newPsw);
+    const res2 = adminUserPasswordUpdate(authUserId2, psw2, psw);
     expect(res2).toMatchObject(expectValid0);
   });
 
@@ -105,7 +110,13 @@ describe('testing adminUserPasswordUpdate', () => {
     });
   });
 
-  test('test2.2: (invalid oldPassword) old password not match input',() => {
+  test('test2.2: (invalid oldPassword) old password not match user password',() => {
+    result = adminUserPasswordUpdate(authUserId, undefined, newPsw);
+    expect(result).toMatchObject(expectError2);
+
+    result = adminUserPasswordUpdate(authUserId, '', newPsw);
+    expect(result).toMatchObject(expectError2);
+
     result = adminUserPasswordUpdate(authUserId, newPsw, newPsw);
     expect(result).toMatchObject(expectError2);
   });
@@ -133,44 +144,41 @@ describe('testing adminUserPasswordUpdate', () => {
     expect(result).toMatchObject(expectError3);
   });
 
-  test('test2.3.1.2: (invalid newPassword) muti new passwords used before',() => {
-    const newPsws = ['this8Len', 'only1number', '11111l', 'C8PTICAL', '000000C',
-      'this psw has space', 'psw!!!!', 'a0!@#$%^&*()_+=[]',
+  test('test2.3.1.2: (invalid newPassword) new passwords used before',() => {
+    newPsws = ['this8Len', 'only1number', '1111111l', 'C8PTICAL', 'AAAA1AAAA',
+      'this psw has space0', 'psw111!!!!!', 'a0!@#$%^&*()_+=[]', '     0V0    ',
      'cats on keyboard 55Len !@#$%^&*()_+=[]{}\\|;:\'",.<>?/-', '#d4af37ToDo'];
+
     // new password is same as last changed password
-    newPsws.forEach((newPsw) => {
-      adminUserPasswordUpdate(authUserId, psw, newPsw);
-      result = adminUserPasswordUpdate(authUserId, newPsw, psw);
+    newPsws.forEach((ele) => {
+      result = adminUserPasswordUpdate(authUserId, psw, ele);
+      expect(result).toMatchObject(expectValid0);
+      result = adminUserPasswordUpdate(authUserId, ele, psw);
       expect(result).toMatchObject(expectError3);
-      psw = newPsw;
+      psw = ele;
     });
+
     // new password is same as pervious passwords
-    newPsws.forEach((newPsw) => {
-      result = adminUserPasswordUpdate(authUserId, newPsws.pop, newPsw);
+    newPsws.forEach((ele, index) => {
+      result = adminUserPasswordUpdate(authUserId, psw, ele);
       expect(result).toMatchObject(expectError3);
     });
   });
 
   test('test2.3.2: (invalid newPassword) new password length incorrect',() => {
-    newPsw = ['its7Len', '012345', 'abcdefg', '       ', 'abc123!'];
-    result = adminUserPasswordUpdate(authUserId, newPsw, psw);
-    expect(result).toMatchObject(expectError3);
+    newPsws = ['', 'a1', '!', 'its7Len', '012345', 'abc', '       ', 'abc123!'];
+    newPsws.forEach((ele) => {
+      result = adminUserPasswordUpdate(authUserId, psw, ele);
+      expect(result).toMatchObject(expectError3);
+    });
   });
 
   // invalid: when new psw not contains at least (one number and one letter)
   test('test2.3.3: (invalid newPassword) new password not as require',() => {
-    const newPsws = ['12345678', 'abcdefghijk', '!@#$%^&*()_+=[]'];
+    newPsws = ['12345678', 'abcdefghijk', '!@#$%^&*()_+=[]', 'EEEEEEEEE'];
     newPsws.forEach((ele) => {
-      result = adminUserPasswordUpdate(ele, psw, newPsw);
+      result = adminUserPasswordUpdate(authUserId, psw, ele);
       expect(result).toMatchObject(expectError3);
     });
   });
 });
-
-// testing All adminUser
-/**
-  * adminUser
-  * adminUserDetails, adminUserDetailsUpdate, adminUserPasswordUpdate
-  * valid: {object}, {}, {}
-  * invalid: {error: 'specific error message here'}
-**/
