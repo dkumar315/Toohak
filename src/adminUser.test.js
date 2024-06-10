@@ -2,40 +2,38 @@
 import { clear } from './other.js';
 import { adminAuthRegister } from './auth.js';
 import { adminUserDetails, adminUserDetailsUpdate } from './auth.js';
+import { adminUserPasswordUpdate } from './auth.js';
 
 // testing adminUserDetails
 
+// testing adminUserDetailsUpdate
+
+// testing adminUserPasswordUpdate
 /**
-  * adminUserDetailsUpdate
-  * {authUserId, email, nameFirst, nameLast}
+  * adminUserPasswordUpdate
+  * {authUserId, oldPassword, newPassword}
   * valid: {}
   * invalid: {error: 'specific error message here'}
 **/
-// testing adminUserDetailsUpdate
-describe('testing adminUserDetailsUpdate', () => {
-    const expectValid0 = {};
-    const expectError1 = {error:'invalid authUserId'};
-    const expectError2 = {error:'invalid email'};
-    const expectError3 = {error:'invalid nameFirst'};
-    const expectError4 = {error:'invalid nameLast'};
+describe('testing adminUserPasswordUpdate', () => {
+  // 
+  const expectValid0 = {};
+  const expectError1 = {error:'invalid authUserId'};
+  const expectError2 = {error:'invalid oldPassword'};
+  const expectError3 = {error:'invalid newPassword'};
 
-    let authUserId;
-    let email;
-    let psw;
-    let nameFirst;
-    let nameLast;
-    let result;
+  let psw;
+  let newPsw;
+  let result;
+  let authUserId;
 
   beforeEach(() => {
     clear();
 
     // user1
-    email = 'haydensmith@gmail.com';
     psw = 'haydensmith123';
-    nameFirst = 'Hayden';
-    nameLast = 'Smith';
-    const userRegister = adminAuthRegister(email, psw, nameFirst, nameLast);
-    authUserId = userRegister.authUserId;
+    const {email, nameF, nameL} = {'haydensmith@gmail.com', 'Hayden', 'Smith'};
+    authUserId = adminAuthRegister(email, psw, nameF, nameL).authUserId;
   });
 
   afterAll(() => {
@@ -44,93 +42,129 @@ describe('testing adminUserDetailsUpdate', () => {
 
   // valid results
   test('test1.1: valid authUserId', () => {
-    result = adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast);
+    newPsw = 'haydensnewpassword0';
+    result = adminUserPasswordUpdate(authUserId, psw, newPsw);
     expect(result).toMatchObject(expectValid0);
   });
 
-  // valid email (includes the same email used by current auth user)
-  test('test1.2: valid emails', () => {
-    const emails = ['haydensmith@gmail.com', 'hay.s2@gmail.com', 'hayd@icloud.com',
-      'z5411789@ad.unsw.edu.au', 'h_s@protonmail.com', 'hayden@au@yahoo.com'];
-    
-    emails.forEach((ele) => {
-      result = adminUserDetailsUpdate(authUserId, ele, nameFirst, nameLast);
+  test('test1.1.2: valid authUserId, keep changing psws 8 times', () => {
+    const newPsws = Array.from({ length: 8 }, (_, i) => 'haydensNewPsw' + i);
+    newPsws.forEach((newPsw) => {
+      result = adminUserPasswordUpdate(authUserId, psw, newPsw);
       expect(result).toMatchObject(expectValid0);
     });
   });
 
-  // valid names
-  test('test1.3: valid names', () => {
-    const names = ['abc', 'thisNameNineteenLen', 'name has spaces ', '     ',
-      'ALLUPPERCASE', 'hayden-Smith', 'Hayden\'sname', 'all Names\' Com-bo'];
-    // valid nameFirst cases
-    names.forEach((ele) => {
-        result = adminUserDetailsUpdate(authUserId, email, ele, nameLast);
-        expect(result).toMatchObject(expectValid0);
-      });
-    // valid nameLast cases
-    names.forEach((ele) => {
-        result = adminUserDetailsUpdate(authUserId, email, nameFirst, ele);
-        expect(result).toMatchObject(expectValid0);
+  test('test1.1.3: valid authUserId, exactly meet the requirement', () => {
+    const newPsws = ['this8Len', 'only1number', '11111l', 'C8PTICAL'];
+    newPsws.forEach((newPsw) => {
+      result = adminUserPasswordUpdate(authUserId, psw, newPsw);
+      expect(result).toMatchObject(expectValid0);
     });
+  });
+
+  test('test1.1.4: valid authUserId, special characters', () => {
+    const newPsws = ['this psw has space', 'psw!!!!', 'a0!@#$%^&*()_+=[]',
+     'cats on keyboard 55Len !@#$%^&*()_+=[]{}\\|;:\'",.<>?/-', '#d4af37ToDo'];
+    newPsws.forEach((newPsw) => {
+      result = adminUserPasswordUpdate(authUserId, psw, newPsw);
+      expect(result).toMatchObject(expectValid0);
+    });
+  });
+
+  test('test1.1.5: valid authUserId with 2 users', () => {
+    // user2
+    const psw2 = 'vict078999';
+    const {email2, nameF2, nameL2} = {'0789@gmail.com', 'name', 'vict'};
+    const user2 = adminAuthRegister(email2, psw2, nameF2, nameL2).authUserId;
+
+    const res2 = adminUserPasswordUpdate(authUserId2, psw2, newPsw);
+    expect(result2).toMatchObject(expectValid0);
   });
 
   // invalid results
   // invalid Ids
-  test('test2.1: invalid authUserId',() => {
+  test('test2.1: (invalid authUserId) incorrect authUserId input',() => {
     const invalidIds = [0, 2, 3, 9999, -1];
     invalidIds.forEach((ele) => {
-      result = adminUserDetailsUpdate(ele, email, nameFirst, nameLast);
+      result = adminUserPasswordUpdate(ele, psw, newPsw);
       expect(result).toMatchObject(expectError1);
     });
   });
   
-  test('test2.1.2: no user (invalid authUserId)',() => {
+  test('test2.1.2: (invalid authUserId) no user',() => {
     clear();
-    const invalidIds = [0, 1, 2, 3];
-    expect(result).toMatchObject(expectError1);
-  });
-
-  // invalid Emails
-  test('test2.2: invalid emails',() => {
-    const invalidEmails = ['', 'strings', '12345', 'hi!@mails', '@gmail.com'];
-    invalidEmails.forEach((ele) => {
-      result = adminUserDetailsUpdate(authUserId, ele, nameFirst, nameLast);
-      expect(result).toMatchObject(expectError2);
+    const invalidIds = [0, 1, 2, 3, 9999, -1];
+    invalidIds.forEach((ele) => {
+      result = adminUserPasswordUpdate(ele, psw, newPsw);
+      expect(result).toMatchObject(expectError1);
     });
   });
-  // invalid used email
-  test('test2.2.2: (invalid) Email Used by other users', () => {
-    // user2
-    const email2 = '078999@gmail.com';
-    const psw2 = 'vict078999';
-    const nameFirst2 = 'myName';
-    const nameLast2 = 'vict';
-    let userRegister2;
 
-    userRegister2 = adminAuthRegister(email2, psw2, nameFirst2, nameLast2);
-    const authUserId2 = userRegister2.authUserId;
-
-    result = adminUserDetailsUpdate(authUserId, email2, nameFirst, nameLast);
+  test('test2.2: (invalid oldPassword) old password not match input',() => {
+    result = adminUserPasswordUpdate(authUserId, newPsw, newPsw);
     expect(result).toMatchObject(expectError2);
-    const result2 = adminUserDetailsUpdate(authUserId2, email, nameFirst2, nameLast2);
-    expect(result2).toMatchObject(expectError2);
   });
 
-  // invalid Names
-  test('test2.3: invalid names', () => {
-    const invalidNames = ['a', 'ab', ' ', 'includesnumber1', '123', 
-      'abc! specail char', 'str?12', '!@#$%^&*()_+=[]', '{}\\|;:\'",.<>?/', 
-      'this is twenty words', 'overoveroveroverLoooooooogName'];
-    // invalid nameFirst
-    invalidNames.forEach((ele) => {
-      result = adminUserDetailsUpdate(authUserId, email, ele, nameLast);
+  test('test2.2.1: (invalid oldPassword) password match other user\'s',() => {
+    // user2
+    const psw2 = 'vict078999';
+    const {email2, nameF2, nameL2} = {'0789@gmail.com', 'name', 'vict'};
+    const user2 = adminAuthRegister(email2, psw2, nameF2, nameL2).authUserId;
+
+    result = adminUserPasswordUpdate(authUserId, psw2, newPsw);
+    expect(result).toMatchObject(expectError2);
+  });
+
+  test('test2.3: (invalid newPassword) new password same as the old',() => {
+    result = adminUserPasswordUpdate(authUserId, psw, psw);
+    expect(result).toMatchObject(expectError3);
+  });
+
+  test('test2.3.1: (invalid newPassword) new password used before',() => {
+    adminUserPasswordUpdate(authUserId, psw, newPsw);
+    result = adminUserPasswordUpdate(authUserId, newPsw, psw);
+    expect(result).toMatchObject(expectError3);
+  });
+
+  test('test2.3.1.2: (invalid newPassword) muti new passwords used before',() => {
+    const newPsws = ['this8Len', 'only1number', '11111l', 'C8PTICAL', '000000C',
+      'this psw has space', 'psw!!!!', 'a0!@#$%^&*()_+=[]',
+     'cats on keyboard 55Len !@#$%^&*()_+=[]{}\\|;:\'",.<>?/-', '#d4af37ToDo'];
+    // new password is same as last changed password
+    newPsws.forEach((newPsw) => {
+      adminUserPasswordUpdate(authUserId, psw, newPsw);
+      result = adminUserPasswordUpdate(authUserId, newPsw, psw);
+      expect(result).toMatchObject(expectError3);
+      psw = newPsw;
+    });
+    // new password is same as pervious passwords
+    newPsws.forEach((newPsw) => {
+      result = adminUserPasswordUpdate(authUserId, newPsws.pop, newPsw);
       expect(result).toMatchObject(expectError3);
     });
-    // invalid nameLast
-    invalidNames.forEach((ele) => {
-      result = adminUserDetailsUpdate(authUserId, email, nameFirst, ele);
-      expect(result).toMatchObject(expectError4);
+  });
+
+  test('test2.3.2: (invalid newPassword) new password length incorrect',() => {
+    newPsw = ['its7Len', '012345', 'abcdefg', '       ', 'abc123!'];
+    result = adminUserPasswordUpdate(authUserId, newPsw, psw);
+    expect(result).toMatchObject(expectError3);
+  });
+
+  // invalid: when new psw not contains at least (one number and one letter)
+  test('test2.3.3: (invalid newPassword) new password not as require',() => {
+    const newPsws = ['12345678', 'abcdefghijk', '!@#$%^&*()_+=[]'];
+    newPsws.forEach((ele) => {
+      result = adminUserPasswordUpdate(ele, psw, newPsw);
+      expect(result).toMatchObject(expectError3);
     });
   });
 });
+
+// testing All adminUser
+/**
+  * adminUser
+  * adminUserDetails, adminUserDetailsUpdate, adminUserPasswordUpdate
+  * valid: {object}, {}, {}
+  * invalid: {error: 'specific error message here'}
+**/
