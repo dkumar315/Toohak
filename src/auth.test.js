@@ -1,3 +1,18 @@
+import {
+    adminAuthRegister,
+    adminAuthLogin,
+    clear
+  } from './auth.js';
+  
+beforeEach(()=> {
+    clear();
+});
+
+describe('clear', () => {
+    test('has the correct return type, {}', () => {
+      expect(clear()).toStrictEqual({});
+    });
+});
 
 describe('adminAuthRegister', () => {
     
