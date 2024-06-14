@@ -9,44 +9,42 @@ beforeEach(()=> {
 });
 
 describe('clear', () => {
-    test('has the correct return type, {}', () => {
+  test('has the correct return type, {}', () => {
       expect(clear()).toStrictEqual({});
     });
 });  
 
 describe('adminAuthLogin', () => {
-    test.todo('Test for email does not exist');
+  
+  describe('Email input', () => {
+    test('Test for non-existent email', () => {
+      const result = adminAuthLogin("nonexistent@example.com", "MyPassw0rd")
+      expect(result).toHaveProperty('error', 'Email address does not exist');
+    });
 
-    test.todo('test for password input');
-    // password doesn't match corresponding email.
+    test('Test for empty email input', () => {
+      const result = adminAuthLogin("", "MyPassw0rd")
+      expect(result).toHaveProperty('error', 'Email address required')
+    });
+  });
 
-    test.todo('Test for editSong return value (userID), behaviour and side effects');
+  describe('Password input', () => { 
+    test('Test for invalid password', () => {
+      const result = adminAuthLogin("test@example.com", "Invalid Password");
+      expect(result).toHaveProperty('error', 'Incorrect Password.');
+    });
 
+    test('Test for valid password', () => {
+      const result = adminAuthLogin("test@example.com", "MyPassw0ordValid");
+      expect(result).toHaveProperty('authUserId');
+    });
+
+    test('Test for empty password input', () => {
+      const result = adminAuthLogin("test@example.com", "")
+      expect(result).toHaveProperty('error', 'Password required')
+    });
+
+  });
 });
 
 
-
-/*
-
-// You can remove or replace this with your own tests.
-// TIP: you may want to explore "test.each"
-describe('Example block of tests', () => {
-  test('Example test 1', () => {
-    expect(checkPassword('something')).toEqual('Poor Password');
-  });
-
-  test('Example test 2', () => {
-    expect(checkPassword('not a good test')).toEqual('Poor Password');
-  });
-});
-
-
-1. clear
-2. importing files
-
-2. creating acc 
-3. username, password
-4. returning the message
-5. calling the function
-
-*/
