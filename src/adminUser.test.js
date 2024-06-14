@@ -4,8 +4,6 @@ import { adminAuthRegister } from './auth.js';
 // import function(s) to be tested
 import { adminUserDetails } from './auth.js';
 
-// todo: export functions in auth.js
-
 // testing adminUserDetails
 /**
   * adminUserDetails
@@ -15,89 +13,153 @@ import { adminUserDetails } from './auth.js';
 **/
 describe('testing adminUserDetails', () => {
   let expectError;
+
+  beforeAll(() => clear());
   
   beforeEach(() => {
-    clear();
     expectError = {error:'invalid authUserId'};
   });
 
-  afterAll(() => {
-    clear();
-  });
+  // afterAll(() => clear());
 
-  test('test1: with 0 registered user, no valid authUserId', () => {
-      const invalidIds = [0, 1, 2, 3, 9999, -1];
-      invalidIds.forEach((ele) => {
-        expect(adminUserDetails(ele)).toMatchObject(expectError);
-      });
-  });
-
-  test('test2.1: with 1 registered user (valid)', () => {
-    const userRegister = adminAuthRegister('haydensmith@unsw.edu.au', 'haydensmith123', 'Hayden', 'Smith');
-    const authUserId = userRegister.authUserId;
-
-    const expectRes = {
-      userId: 1,
-      name: 'Hayden Smith',
-      email: 'haydensmith@unsw.edu.au',
-      numSuccessfulLogins: 0,
-      numFailedPasswordsSinceLastLogin: 0
-    }
-
-    const result = adminUserDetails(authUserId);
-    expect(result).toMatchObject({user:expectRes});
-  });
-
-  test('test2.2: with 1 registered user (invalid)', () => {
-    const userRegister = adminAuthRegister('haydensmith@gmail.com', 'haydensmith123', 'Hayden', 'Smith');
-    const authUserId = userRegister.authUserId;
-    
-    const invalidIds = [0, 2, 9999, -1];
-    invalidIds.forEach((ele) => {
-      expect(adminUserDetails(ele)).toMatchObject(expectError);
+  describe('test1: with 0 registered user, no valid authUserId', () => {
+    const invalidAuthUserIds = [0, 1, 2, 3, 9999, -1];
+    test.each(invalidAuthUserIds)(
+      'test1.0: with invalid authUserId = %i', (invalidId) => {
+        expect(adminUserDetails(invalidId)).toMatchObject(expectError);
     });
   });
 
-  test('test3.1: with 2 registered users (valid)', () => {
-    const userRegister1 = adminAuthRegister('stringab@gmail.com', 'string12345', 'stringa', 'stringb');
-    const userRegister2 = adminAuthRegister('haydensmith@gmail.com', 'haydensmith123', 'Hayden', 'Smith');
-    const authUserId1 = userRegister1.authUserId;
-    const authUserId2 = userRegister2.authUserId;
-    
-    const expectRes = {
-      users: [
-        {
-          userId: 1,
-          name: 'stringa stringb',
-          email: 'stringab@gmail.com',
-          numSuccessfulLogins: 0,
-          numFailedPasswordsSinceLastLogin: 0,
-        },
-        {
-          userId: 2,
-          name: 'Hayden Smith',
-          email: 'haydensmith@gmail.com',
-          numSuccessfulLogins: 0,
-          numFailedPasswordsSinceLastLogin: 0,
-        },
-      ],
-    }
+  describe('test2: with 1 registered user', () => {
+    let email, password, nameFirst, nameLast, userRegister, authUserId;
 
-    const validIds = [authUserId1, authUserId2];
-    validIds.forEach((ele, index) => {
-      expect(adminUserDetails(ele)).toMatchObject({user:expectRes.users[index]});
+    beforeEach(() => {
+      email = 'haydensmith@unsw.edu.au';
+      password = 'haydensmith123';
+      nameFirst = 'Hayden';
+      nameLast = 'Smith';
+      userRegister = adminAuthRegister(email, password, nameFirst, nameLast);
+      authUserId = userRegister.authUserId;
+    });
+
+    test('test2.1: with valid authUserId', () => {
+      const expectRes = {
+        userId: authUserId,
+        name: nameFirst + ' ' + nameLast,
+        email: email,
+        numSuccessfulLogins: 0,
+        numFailedPasswordsSinceLastLogin: 0
+      };
+      expect(adminUserDetails(authUserId).user).toMatchObject(expectRes);
+    });
+
+    test('test2.2: with invalid authUserId', () => {
+      expect(adminUserDetails(authUserId - 1)).toMatchObject(expectError);
+      expect(adminUserDetails(authUserId + 1)).toMatchObject(expectError);
+    });
+
+    const invalidAuthUserIds = [0, 9999, -1];
+    test.each(invalidAuthUserIds)(
+      `test2.2: with non-existent (invalid) authUserId = %i`, (invalidId) => {
+        expect(adminUserDetails(invalidId)).toMatchObject(expectError);
     });
   });
 
-  test('test3.2: with 2 registered user (invalid)', () => {
-    const userRegister1 = adminAuthRegister('stringab@gmail.com', 'string12345', 'stringa', 'stringb');
-    const userRegister2 = adminAuthRegister('haydensmith@gmail.com', 'haydensmith123', 'Hayden', 'Smith');
-    const authUserId1 = userRegister1.authUserId;
-    const authUserId2 = userRegister2.authUserId;
+  describe('test3: with 2 registered users (multiple users)', () => {
+    let user1, email1, password1, nameFirst1, nameLast1, authUserId1;
+    let user2, email2, password2, nameFirst2, nameLast2, authUserId2;
+    let expectUser1, expectUser2;
 
-    const invalidIds = [0, 3, 5, 9999, -1];
-    invalidIds.forEach((ele) => {
-      expect(adminUserDetails(ele)).toMatchObject(expectError);
+    beforeEach(() => {
+      // user1
+      email1 = 'stringab@gmail.com';
+      password1 = 'string12345';
+      nameFirst1 = 'stringa';
+      nameLast1 = 'stringb';
+
+      // user2
+      email2 = 'haydensmith@gmail.com';
+      password2 = 'haydensmith123';
+      nameFirst2 = 'Hayden';
+      nameLast2 = 'Smith';
+
+      // userId
+      user1 = adminAuthRegister(email1, password1, nameFirst1, nameLast1);
+      user2 = adminAuthRegister(email2, password2, nameFirst2, nameLast2);
+
+      authUserId1 = user1.authUserId;
+      authUserId2 = user2.authUserId;
+
+      expectUser1 = {
+        userId: authUserId1,
+        name: nameFirst1 + ' ' + nameLast1,
+        email: email1,
+        numSuccessfulLogins: 0,
+        numFailedPasswordsSinceLastLogin: 0,
+      };
+      expectUser2 = {
+        userId: authUserId2,
+        name: nameFirst2 + ' ' + nameLast2,
+        email: email2,
+        numSuccessfulLogins: 0,
+        numFailedPasswordsSinceLastLogin: 0,
+      };
+    });
+
+    test('test3.1: with valid authUserIds', () => {
+      expect(adminUserDetails(authUserId1).user).toMatchObject(expectUser1);
+      expect(adminUserDetails(authUserId2).user).toMatchObject(expectUser2);
+    });
+
+    test('test3.2: with invalid authUserIds', () => {
+      expect(adminUserDetails(authUserId1 - 1)).toMatchObject(expectError);
+      expect(adminUserDetails(authUserId2 + 1)).toMatchObject(expectError);
+    });
+
+    const invalidAuthUserIds = [0, 9999, -1];
+    test.each(invalidAuthUserIds)(
+      'test3.2: with invalid authUserId = %i', (inValidId) => {
+      expect(adminUserDetails(inValidId)).toMatchObject(expectError);
+    });
+  });
+
+  describe('test4: test with authadminLogin', () => {
+    let email, password, nameFirst, nameLast, userRegister, authUserId;
+
+    beforeEach(() => {
+      clear();
+      email = 'haydensmith@unsw.edu.au';
+      password = 'haydensmith123';
+      nameFirst = 'Hayden';
+      nameLast = 'Smith';
+      userRegister = adminAuthRegister(email, password, nameFirst, nameLast);
+      authUserId = userRegister.authUserId;
+    });
+
+    test('test4.0: initial before authadminLogin', () => {
+      expect(adminUserDetails(authUserId).user.numSuccessfulLogins).toStrictEqual(0);
+      expect(adminUserDetails(authUserId).user.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
+    });
+
+    test('test4.1: fail to login twice', () => {
+      // adminAuthLogin(email, password + 'invalid');
+      // adminAuthLogin(email, password + 'invalid');
+      // expect(adminUserDetails(authUserId).user.numSuccessfulLogins).toStrictEqual(0);
+      // expect(adminUserDetails(authUserId).user.numFailedPasswordsSinceLastLogin).toStrictEqual(2);
+    });
+    
+    test('test4.2: then successfully login twice, then fail to log in once', () => {
+      // adminAuthLogin(email, password);
+      // adminAuthLogin(email, password);
+      // adminAuthLogin(email, password + 'invalid');
+      // expect(adminUserDetails(authUserId).user.numSuccessfulLogins).toStrictEqual(2);
+      // expect(adminUserDetails(authUserId).user.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
+    });
+
+    test('test4.2: then successfully login', () => {
+      // adminAuthLogin(email, password);
+      // expect(adminUserDetails(authUserId).user.numSuccessfulLogins).toStrictEqual(3);
+      // expect(adminUserDetails(authUserId).user.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
     });
   });
 });
