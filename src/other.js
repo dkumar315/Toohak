@@ -8,7 +8,10 @@ import {
  * @return {object} empty object
  */
 export function clear() {
-  data = {};
+  const data = {
+    users: [],
+    quizzs:[],
+  };
   setData(data);
   
   return {};
