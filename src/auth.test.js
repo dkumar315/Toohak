@@ -8,13 +8,6 @@ beforeEach(()=> {
     clear();
 });
 
-// remove this?
-describe('clear', () => {
-    test('has the correct return type, {}', () => {
-      expect(clear()).toStrictEqual({});
-    });
-});
-
 describe('adminAuthRegister', () => {
     describe('Email creation', () => {
         test('Valid Registeration', () => {
