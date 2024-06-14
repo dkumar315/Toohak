@@ -1,3 +1,5 @@
+const validator = require('validator');
+
 /**
  * Register a user with an email, password, and names.
  * 
@@ -8,23 +10,48 @@
  * 
  * @return {number} authUserId - unique identifier for a user
  */
-function adminAuthRegister(email, password, nameFirst, nameLast) {
+function adminAuthRegister(email, password, nameFirst, nameLast, data) {
+  // Check if email is valid
+  if (!validator.isEmail(email)) {
+    return {error: 'Invalid email.'};
+  }
 
-  return {authUserId: 1};
+  // check nameFirst meets requirements
+  if (!/^[a-zA-Z\s\-']{2,20}$/.test(nameFirst)) {
+    return { 
+      error: 'NameFirst contains characters other than letters, spaces, hyphens, or apostrophes.'
+    };
+  }
+
+  // Check nameLast meets requirements
+  if (!/^[a-zA-Z\s\-']{2,20}$/.test(nameLast)) {
+    return { 
+      error: 'NameLast contains characters other than letters, spaces, hyphens, or apostrophes.' 
+    };
+  }
+
+  // Check if password doesn't meet requirements
+  if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
+    return {error: 'Password does not meet requirements.'};
+  }
+
+  // Placeholder implementation for user registration??
+  const authUserId = generateAuthUserId(data);
+  return {authUserId};
 }
 
 /**
- * Validates a user's login, given their email and password.
+ * Helper function to generate a unique authUserId.
  * 
- * @param {string} email - user's email
- * @param {string} password - user's matching password
+ * @param {number} data - user's ID
  * 
- * @return {number} authUserId - unique identifier for a user
+ * @return {number} data - unique identifier for a user
  */
-function adminAuthLogin(email, password) {
-
-  return {authUserId: 1};
+  function generateAuthUserId(data) {
+  return data.users.length + 1;
 }
+
+
 
 /**
  * Given an admin user's authUserId, return details about the user.
