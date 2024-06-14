@@ -11,11 +11,34 @@ import isEmail from 'validator/lib/isEmail';
  * 
  * @return {number} authUserId - unique identifier for a user
  */
-function adminAuthRegister(email, password, nameFirst, nameLast) {
+// function adminAuthRegister(email, password, nameFirst, nameLast) {
 
-  return {authUserId: 1};
+//   return {authUserId: 1};
+// }
+export function adminAuthRegister(email, password, nameFirst, nameLast) {
+  const data = getData();
+
+  const authUserId = data.users.length + 1;
+  if (!email || !isValidEmail(email)) return {error: 'invalid email'};
+  if (!password || !isValidPassword(password)) return {error: 'invalid password'};
+  if (!nameFirst || !isValidName(nameFirst)) return {error: 'invalid nameFirst'};
+  if (!nameLast || !isValidName(nameLast)) return {error: 'invalid nameLast'};
+ 
+  const newUser = {
+    userId: authUserId,
+    nameFirst: nameFirst,
+    nameLast: nameLast,
+    email: email,
+    password: password,
+    numSuccessfulLogins: 0,
+    numFailedPasswordsSinceLastLogin: 0,
+  }
+ 
+  data.users.push(newUser);
+  setData(data);
+ 
+  return {authUserId: authUserId};
 }
-
 
 /**
  * Validates a user's login, given their email and password.
@@ -38,17 +61,25 @@ function adminAuthLogin(email, password) {
  * @return {object} return userDetails
  * @return {{error: string}} if authUserId invalid
  */
-function adminUserDetails(authUserId) {
-  const userDetails = {
-    userId: 1,
-    name: 'Hayden Smith',
-    email: 'hayden.smith@unsw.edu.au',
-    numSuccessfulLogins: 3,
-    numFailedPasswordsSinceLastLogin: 1,
-  }
+export function adminUserDetails(authUserId) {
+  const data = getData();
+  const userIndex = isValidUser(authUserId);
+
+  if (userIndex === -1) return {error:'invalid authUserId'};
+  const userDetails = data.users[userIndex];
   
+  // assigning it to resolve over long line
+  const {userId, nameFirst, nameLast, email, 
+  numSuccessfulLogins, numFailedPasswordsSinceLastLogin} = userDetails;
+
   return {
-    user: userDetails
+    user: {
+      userId: userId,
+      name: nameFirst + ' ' + nameLast,
+      email: email,
+      numSuccessfulLogins: numSuccessfulLogins,
+      numFailedPasswordsSinceLastLogin: numFailedPasswordsSinceLastLogin
+    }
   };
 }
 
@@ -70,13 +101,9 @@ export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
   if (userIndex === -1) return {error:'invalid authUserId'};
 
   // check email, nameFirst, nameLast whether is valid
-  if (email === undefined || !isValidEmail(email, authUserId)) {
-    return {error:'invalid email'};
-  } else if (nameFirst === undefined || !isValidname(nameFirst)) {
-    return {error:'invalid nameFirst'};
-  } else if (nameLast === undefined || !isValidname(nameLast)) {
-    return {error:'invalid nameLast'};
-  }
+  if (email === undefined || !isValidEmail(email, authUserId)) return {error:'invalid email'};
+  if (nameFirst === undefined || !isValidName(nameFirst)) return {error:'invalid nameFirst'};
+  if (nameLast === undefined || !isValidName(nameLast)) return {error:'invalid nameLast'};
 
   data.users[userIndex].email = email;
   data.users[userIndex].nameFirst = nameFirst;
@@ -136,7 +163,7 @@ export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
 function isValidUser(authUserId) {
   const data = getData();
 
-  if (authUserId === undefined) return -1;
+  if (!authUserId) return -1;
 
   return data.users.findIndex((array) => array.userId === authUserId);
 }
@@ -169,12 +196,12 @@ function isValidEmail(email, authUserId) {
  * 
  * @param {string} name - nameFirst or nameLast of a user 
  * 
- * @return {boolean} true iif contains lettes, spaces, hyphens, or apostrophes
+ * @return {boolean} true iif contains letters, spaces, hyphens, or apostrophes
  */
-function isValidname(name) {
-  const reg = new RegExp(/[^a-zA-Z\s-\']/);
+function isValidName(name) {
+  const pattern = new RegExp(/[^a-zA-Z\s-\']/);
 
-  if (name.length <= 2 || name.length >= 20 || reg.test(name)) return false;
+  if (name.length < 2 || name.length > 20 || pattern.test(name)) return false;
 
   return true;
 }
@@ -186,13 +213,16 @@ function isValidname(name) {
  * 
  * @param {string} password - nameFirst or nameLast of a user 
  * 
- * @return {boolean} true iif len >8 && contains at least one lette and integer
+ * @return {boolean} true iif len > 8 && contains >= 1 (letter & integer)
  */
-function isValidPassword(psw) {
-  const regLtr = new RegExp(/[a-zA-Z]/);
-  const regNum = new RegExp(/[0-9]/);
+function isValidPassword(password) {
+  const stringPattern = new RegExp(/[a-zA-Z]/);
+  const numberPattern = new RegExp(/[0-9]/);
 
-  if (psw.length < 8 || !regLtr.test(psw) || !regNum.test(psw)) return false;
+  if (password.length < 8 || !stringPattern.test(password) || 
+    !numberPattern.test(password)) {
+    return false;
+  }
 
   return true;
 }
