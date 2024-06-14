@@ -93,7 +93,7 @@ function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
  * 
  * @param {number} authUserId - unique identifier for a user
  * 
- * @return {object} return corresonding index of data.users
+ * @return {number} return corresonding index of data.users
  */
 function isValidUser(authUserId) {
   const data = getData();
@@ -108,10 +108,10 @@ function isValidUser(authUserId) {
  * 
  * @param {number} authUserId - unique identifier for a user, 
  * set to -1 if it is new user
- * @param {strung} email - user's email, according to 
+ * @param {string} email - user's email, according to 
  * https://www.npmjs.com/package/validator
  * 
- * @return {object} return true if email is valid and not used by others
+ * @return {boolean} return true if email is valid and not used by others
  */
 function isValidEmail(email, authUserId) {
   const data = getData();
