@@ -8,6 +8,7 @@ beforeEach(()=> {
     clear();
 });
 
+// remove this?
 describe('clear', () => {
     test('has the correct return type, {}', () => {
       expect(clear()).toStrictEqual({});
@@ -15,32 +16,95 @@ describe('clear', () => {
 });
 
 describe('adminAuthRegister', () => {
-    
-    describe('when one email is created', () => {
-        test.todo('Test for email being used by another user');
-        
+    describe('Email creation', () => {
+        test('Valid Registeration', () => {
+            const result = adminAuthRegister("test@example.com", 
+                                            "MyPassw0rd", "Jane", "Smith");
+            expect(result).toHaveProperty('authUserId');
+        });
 
-        test.todo('Email does not satisfy string only');
+        test('Test for existing email address', () => {
+            const result = adminAuthRegister("test@example.com", "MyPassw0rd", 
+                                            "Jane", "Smith");
+                                            // wtf is this error msg, idk anymore.
+            expect(result).toHaveProperty('error', 'Email already exists');
+        });
+    
+        test('Email does not satisfy string only', () => {
+            const result = adminAuthRegister("123", "MyPassw0rd", 
+                                            "Jane", "Smith");
+            expect(result).toHaveProperty('error', 'Invalid email format');
+        });
             // var validator = require('validator');
             // validator.isEmail('foo@bar.com');
     });
 
-    describe('when one username is created', () => {
-        // NameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.
-        test.todo('test for nameFirst input');
-            // write one test case containing lowercase, uppercase
-            // spaces, hyphens or apostrophes.
-            // has less than 2 characters, more than 20 characters
+    describe('Username creation', () => {
+        // NameFirst contains characters other than lowercase letters, 
+        // uppercase letters, spaces, hyphens, or apostrophes.
+        test('tests for invalid nameFirst input', () => {
+            const result = adminAuthRegister("test@example.com", 
+                                            "MyPasswOrd",
+                                            "Jan3", "Smith");
+            expect(result).toHaveProperty('error', 'Contains invalid characters');
+        });
+
+        test('test for nameFirst length less than 2 characters', () => {
+            const result = adminAuthRegister("test@example.com", 
+                                            "MyPasswOrd",
+                                            "J", "Smith");
+            expect(result).toHaveProperty('error', 'Contains less than 2 characters');
+        });  
+
+        test('test for nameFirst length exceeding 20 characters', () => {
+            const result = adminAuthRegister("test@example.com", 
+                                            "MyPasswOrd",
+                                            "JaneJaneJaneJaneJane", "Smith");
+            expect(result).toHaveProperty('error', 'Exceeds 20 character limit');
+        });       
         
-        test.todo('test for nameLast input');
-        // same as nameFirst test case.
+
+        // nameLast
+        test('tests for invalid nameLast input', () => {
+            const result = adminAuthRegister("test@example.com", 
+                                            "MyPasswOrd",
+                                            "Jane", "5mith");
+            expect(result).toHaveProperty('error', 'Contains invalid characters');
+        });
+
+        test('test for nameLast length less than 2 characters', () => {
+            const result = adminAuthRegister("test@example.com", 
+                                            "MyPasswOrd",
+                                            "Jane", "S");
+            expect(result).toHaveProperty('error', 'Contains less than 2 characters');
+        });  
+
+        test('test for nameLast length exceeding 20 characters', () => {
+            const result = adminAuthRegister("test@example.com", 
+                                            "MyPasswOrd",
+                                            "Jane", "SmithSmithSmithSmith");
+            expect(result).toHaveProperty('error', 'Exceeds 20 character limit');
+        });  
+
     });
 
+    describe('Password creation', () => {
+        test('Test for password length less than 8 characters', () => {
+            expect(checkPassword("Pass123")).toEqual({ 
+                "error": "Password is less than 8 characters."
+            });    
+        });
+        
+        test('Test for password missing a number', () => {
+            expect(checkPassword("Password")).toEqual({ 
+                "error": "Password must contain at least one number."
+            });
+        });
 
-    test.todo('test for password input');
-    // password is less than 8 characters
-    // does not contain at least one number and at least one letter.
-
-    test.todo('Test for addSong return value (userID), behaviour and side effects');
-
+        test('Test for password missing a letter', () => {
+            expect(checkPassword("12345678")).toEqual({ 
+                "error": "Password must contain at least one letter." 
+            });
+        });  
+    });
 });
