@@ -1,5 +1,5 @@
 import isEmail from 'validator/lib/isEmail';
-import { getData } from './dataStore';
+import { setData, getData } from './dataStore';
 
 /**
  * Register a user with an email, password, and names.
@@ -11,7 +11,7 @@ import { getData } from './dataStore';
  * 
  * @return {number} authUserId - unique identifier for a user
  */
-function adminAuthRegister(email, password, nameFirst, nameLast) {
+export function adminAuthRegister(email, password, nameFirst, nameLast) {
   const data = getData();
 
 
@@ -65,7 +65,7 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
  * 
  * @return {number} authUserId - unique identifier for a user
  */
-function adminAuthLogin(email, password) {
+export function adminAuthLogin(email, password) {
 
   return {authUserId: 1};
 }
@@ -77,7 +77,7 @@ function adminAuthLogin(email, password) {
  * 
  * @return {object} return userDetails
  */
-function adminUserDetails(authUserId) {
+export function adminUserDetails(authUserId) {
   const userDetails = {
     userId: 1,
     name: 'Hayden Smith',
@@ -116,7 +116,7 @@ function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
  * 
  * @return {object} empty object
  */
-function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
+export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
 
   return {};
 }
