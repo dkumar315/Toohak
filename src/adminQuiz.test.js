@@ -13,28 +13,28 @@ import {
   adminQuizNameUpdate
 } from './quiz.js';
 
-let userId1;
-let quizId1;
-let quizInfo1;
-let userId2;
-let quizId2;
-let quizInfo2;
+describe('Testing for adminQuizNameUpdate', () => {
+  let userId1;
+  let quizId1;
+  let quizInfo1;
+  let userId2;
+  let quizId2;
+  let quizInfo2;
 
-beforeEach(() => {
-  clear();
+  beforeEach(() => {
+    clear();
 
-  userId1 = adminAuthRegister('devk@gmail.com', 'DevK01', 'Devaansh', 'Kumar');
-  adminAuthLogin('devk@gmail.com', 'DevK01');
-  quizId1 = adminQuizCreate(userId1.authUserId, 'My Quiz', 'Quiz on Testing');
-  quizInfo1 = adminQuizInfo(userId1.authUserId, quizId1.quizId);
+    userId1 = adminAuthRegister('devk@gmail.com', 'DevK01', 'Devaansh', 'Kumar');
+    adminAuthLogin('devk@gmail.com', 'DevK01');
+    quizId1 = adminQuizCreate(userId1.authUserId, 'My Quiz', 'Quiz on Testing');
+    quizInfo1 = adminQuizInfo(userId1.authUserId, quizId1.quizId);
 
-  userId2 = adminAuthRegister('krishp@gmail.com', 'KrishP02', 'Krish', 'Patel');
-  adminAuthLogin('krishp@gmail.com', 'KrishP02');
-  quizId2 = adminQuizCreate(userId2.authUserId, 'Your Quiz', 'Quiz on Implementation');
-  quizInfo2 = adminQuizInfo(userId2.authUserId, quizId2.quizId);
-});
+    userId2 = adminAuthRegister('krishp@gmail.com', 'KrishP02', 'Krish', 'Patel');
+    adminAuthLogin('krishp@gmail.com', 'KrishP02');
+    quizId2 = adminQuizCreate(userId2.authUserId, 'Your Quiz', 'Quiz on Implementation');
+    quizInfo2 = adminQuizInfo(userId2.authUserId, quizId2.quizId);
+  });
 
-describe('adminQuizNameUpdate test', () => {
   test('Valid authUserId, quizId and name', () => {
     expect(adminQuizNameUpdate(userId1.authUserId, quizInfo1.quizId, 'Other quiz').toStrictEqual({}));
     quizInfo1 = adminQuizInfo(userId1.authUserId, quizId1.quizId);
