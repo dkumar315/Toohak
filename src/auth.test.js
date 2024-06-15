@@ -1,8 +1,11 @@
 import {
     adminAuthRegister,
     adminAuthLogin,
-    clear
   } from './auth.js';
+
+import {
+    clear
+} from './other.js'
   
 beforeEach(()=> {
     clear();
