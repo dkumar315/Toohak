@@ -1,5 +1,5 @@
-import isEmail from 'validator/lib/isEmail';
 import { setData, getData } from './dataStore';
+import isEmail from 'validator/lib/isEmail';
 
 /**
  * Register a user with an email, password, and names.
@@ -12,33 +12,45 @@ import { setData, getData } from './dataStore';
  * @return {number} authUserId - unique identifier for a user
  */
 export function adminAuthRegister(email, password, nameFirst, nameLast) {
-  const data = getData();
-
-
-  const authUserId = data.users.length + 1;
-
-  // Check if email is valid
-  if (!isEmail(email)) {
+  // Check if email is valid or already exists
+  const emailValidResult = isValidEmail(email, -1);
+  if (!emailValidResult) {
     return {error: 'Invalid email.'};
   }
 
-  // check nameFirst meets requirements
-  if (!/^[a-zA-Z\s\-']{2,20}$/.test(nameFirst)) {
+  const data = getData();
+  const authUserId = data.users.length + 1;
+
+  // Check nameFirst meets requirements
+  const nameFValidResult = isValidName(nameFirst);
+  if (nameFValidResult !== true) {
     return { 
-      error: 'NameFirst must only contain letters, spaces, hyphens, or apostrophes.'
-    };
+      error: 'First name must: ' +
+            'only contain letters, spaces, hyphens, or apostrophes' +
+            'be atleast 2 characters' +
+            'not exceed 20 character limit'
+      };
   }
 
   // Check nameLast meets requirements
-  if (!/^[a-zA-Z\s\-']{2,20}$/.test(nameLast)) {
+  const nameLValidResult = isValidName(nameLast);
+  if (nameLValidResult !== true) {
     return { 
-      error: 'NameLast must only contain letters, spaces, hyphens, or apostrophes.' 
+      error: 'Last name must: ' +
+            'only contain letters, spaces, hyphens, or apostrophes' +
+            'be atleast 2 characters' +
+            'not exceed 20 character limit'
     };
   }
-
-  // Check if password doesn't meet requirements
-  if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
-    return {error: 'Password does not meet requirements.'};
+ 
+  // Check password meets requirements
+  const passValidResult = isValidPassword(password);
+  if (passValidResult !== true) {
+    return {error: 'Password must:' + 
+            'be more than 8 characters' +
+            'contain atleast one character' +
+            'contain atleast one number'
+    };
   }
 
   const newUser = {
@@ -119,4 +131,64 @@ function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
 export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
 
   return {};
+}
+
+
+/**
+ * Given an email, return true if it is not used by the other and it is email
+ * 
+ * @param {number} authUserId - unique identifier for a user, 
+ * set to -1 if it is new user
+ * @param {string} email - user's email, according to 
+ * https://www.npmjs.com/package/validator
+ * 
+ * @return {object} return true if email is valid and not used by others
+ */
+function isValidEmail(email, authUserId) {
+  const data = getData();
+  let isUsed = true;
+  const isRegistered = data.users.filter((user) => user.email === email);
+
+  if (isRegistered.length === 0 || 
+    (isRegistered.length === 1 && isRegistered[0].userId === authUserId)) {
+    isUsed = false;
+  }
+
+  return !isUsed && isEmail(email);
+}
+
+/**
+ * Given a name string, return true iif contains [a-z], [A-Z], " ", "-", or "'"
+ * 
+ * @param {string} name - nameFirst or nameLast of a user 
+ * 
+ * @return {boolean} true iif contains letters, spaces, hyphens, or apostrophes
+ */
+function isValidName(name) {
+  const pattern = new RegExp(/[^a-zA-Z\s-\']/);
+  if (name.length < 2 || name.length > 20 || pattern.test(name)) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Given a password string, return false if its length is smaller than 8, or
+ * not contain at least a letter and at least a number, otherwise return true
+ * potential upgrade: return the strength of password, return -1 if invalid
+ * 
+ * @param {string} password - nameFirst or nameLast of a user 
+ * 
+ * @return {boolean} true iif len > 8 && contains >= 1 (letter & integer)
+ */
+function isValidPassword(password) {
+  const stringPattern = new RegExp(/[a-zA-Z]/);
+  const numberPattern = new RegExp(/[0-9]/);
+
+  if (password.length < 8 || !stringPattern.test(password) || 
+    !numberPattern.test(password)) {
+    return false;
+  }
+
+  return true;
 }
