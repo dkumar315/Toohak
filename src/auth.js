@@ -1,4 +1,4 @@
-import { getData, setData } from './dataStore';
+import {setData, getData} from './dataStore';
 import isEmail from 'validator/lib/isEmail';
 
 /**
@@ -10,25 +10,80 @@ import isEmail from 'validator/lib/isEmail';
  * @param {string} nameLast - user's last name
  * 
  * @return {number} authUserId - unique identifier for a user
+ * @return {{error: string}} if authUserId invalid
  */
-function adminAuthRegister(email, password, nameFirst, nameLast) {
+export function adminAuthRegister(email, password, nameFirst, nameLast) {
+  // Check if email is valid or already exists
+  const emailValidResult = isValidEmail(email, -1);
+  if (!emailValidResult) {
+    return {error: 'Invalid email.'};
+  }
 
-  return {authUserId: 1};
+  const data = getData();
+  const authUserId = data.users.length + 1;
+
+  // Check nameFirst meets requirements
+  const nameFValidResult = isValidName(nameFirst);
+  if (!nameFValidResult) {
+    return {error: 'Firstname does not meet requirements.'};
+  }
+
+  // Check nameLast meets requirements
+  const nameLValidResult = isValidName(nameLast);
+  if (!nameLValidResult) {
+    return {error: 'Lastname does not meet requirements.'};
+  }
+ 
+  // Check password meets requirements
+  const passValidResult = isValidPassword(password);
+  if (!passValidResult) {
+    return {error: 'Password does not meet requirements.'};
+  }
+
+  const newUser = {
+    userId: authUserId,
+    nameFirst: nameFirst,
+    nameLast: nameLast,
+    email: email,
+    password: password,
+    numSuccessfulLogins: 0,
+    numFailedPasswordsSinceLastLogin: 0,
+  }
+
+  data.users.push(newUser);
+  setData(data);
+
+  return {authUserId: authUserId};
 }
 
 
-/**
- * Validates a user's login, given their email and password.
- * 
- * @param {string} email - user's email
- * @param {string} password - user's matching password
- * 
- * @return {number} authUserId - unique identifier for a user
- */
-function adminAuthLogin(email, password) {
-
-  return {authUserId: 1};
+/** 
+* Validates a user's login, given their email and password. 
+*  
+* @param {string} email - user's email 
+* @param {string} password - user's matching password 
+*  
+* @return {number} authUserId - unique identifier for a user 
+* @return {{error: string}} if authUserId or password invalid
+*/ 
+export function adminAuthLogin(email, password) {
+  const data = getData(); 
+  const userIndex = data.users.findIndex(user => user.email === email);
+  if (userIndex === -1) {
+    return {error: 'Invalid email.'};
+  }
+ 
+  let user = data.users[userIndex];
+  if (password.localeCompare(user.password) !== 0) {
+    user.numFailedPasswordsSinceLastLogin += 1;
+    return {error: 'Incorrect Password.'};
+  } 
+  user.numSuccessfulLogins += 1;
+  user.numFailedPasswordsSinceLastLogin = 0;
+  setData(data);
+  return {authUserId: user.userId};
 }
+
 
 /**
  * Given an admin user's authUserId, return details about the user.
@@ -60,6 +115,7 @@ export function adminUserDetails(authUserId) {
   };
 }
 
+
 /**
  * Given an admin user's authUserId and a set of properties, 
  * update the properties of this logged in admin user.
@@ -90,6 +146,7 @@ export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
 
   return {};
 }
+
 
 /**
  * Updates the password of a logged in user.
@@ -130,12 +187,13 @@ export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
   return {};
 }
 
+
 /**
  * Given an admin user's authUserId, return its corresponding userIndex
  * 
  * @param {number} authUserId - unique identifier for a user
  * 
- * @return {number} return corresonding index of data.users
+ * @return {object} return corresonding index of data.users
  */
 function isValidUser(authUserId) {
   const data = getData();
@@ -145,15 +203,16 @@ function isValidUser(authUserId) {
   return data.users.findIndex((array) => array.userId === authUserId);
 }
 
+
 /**
  * Given an email, return true if it is not used by the other and it is email
  * 
  * @param {number} authUserId - unique identifier for a user, 
  * set to -1 if it is new user
- * @param {string} email - user's email, according to 
+ * @param {strung} email - user's email, according to 
  * https://www.npmjs.com/package/validator
  * 
- * @return {boolean} return true if email is valid and not used by others
+ * @return {object} return true if email is valid and not used by others
  */
 function isValidEmail(email, authUserId) {
   const data = getData();
@@ -167,6 +226,7 @@ function isValidEmail(email, authUserId) {
 
   return !isUsed && isEmail(email);
 }
+
 
 /**
  * Given a name string, return true iif contains [a-z], [A-Z], " ", "-", or "'"
@@ -182,6 +242,7 @@ function isValidName(name) {
 
   return true;
 }
+
 
 /**
  * Given a password string, return false if its length is smaller than 8, or
@@ -203,3 +264,4 @@ function isValidPassword(password) {
 
   return true;
 }
+
