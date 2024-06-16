@@ -1,4 +1,5 @@
-import { getData } from ' ./dataStore';
+import {setData, getData} from './dataStore';
+import isEmail from 'validator/lib/isEmail';
 
 /**
  * Register a user with an email, password, and names.
@@ -10,10 +11,64 @@ import { getData } from ' ./dataStore';
  * 
  * @return {number} authUserId - unique identifier for a user
  */
-function adminAuthRegister(email, password, nameFirst, nameLast) {
+export function adminAuthRegister(email, password, nameFirst, nameLast) {
+  // Check if email is valid or already exists
+  const emailValidResult = isValidEmail(email, -1);
+  if (!emailValidResult) {
+    return {error: 'Invalid email.'};
+  }
 
-  return {authUserId: 1};
+  const data = getData();
+  const authUserId = data.users.length + 1;
+
+  // Check nameFirst meets requirements
+  const nameFValidResult = isValidName(nameFirst);
+  if (nameFValidResult !== true) {
+    return { 
+      error: 'First name must: ' +
+            'only contain letters, spaces, hyphens, or apostrophes' +
+            'be atleast 2 characters' +
+            'not exceed 20 character limit'
+      };
+  }
+
+  // Check nameLast meets requirements
+  const nameLValidResult = isValidName(nameLast);
+  if (nameLValidResult !== true) {
+    return { 
+      error: 'Last name must: ' +
+            'only contain letters, spaces, hyphens, or apostrophes' +
+            'be atleast 2 characters' +
+            'not exceed 20 character limit'
+    };
+  }
+ 
+  // Check password meets requirements
+  const passValidResult = isValidPassword(password);
+  if (passValidResult !== true) {
+    return {error: 'Password must:' + 
+            'be more than 8 characters' +
+            'contain atleast one character' +
+            'contain atleast one number'
+    };
+  }
+
+  const newUser = {
+    userID: authUserId,
+    nameFirst: nameFirst,
+    nameLast: nameLast,
+    email: email,
+    password: password,
+    numSuccessfulLogins: 0,
+    numFailedPasswordsSinceLastLogin: 0,
+  }
+
+  data.users.push(newUser);
+  setData(data);
+
+  return {authUserId: authUserId};
 }
+
 
 /** 
 * Validates a user's login, given their email and password. 
@@ -23,18 +78,19 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
 *  
 * @return {number} authUserId - unique identifier for a user 
 */ 
-function adminAuthLogin(email, password) { 
-  const data = getData();
+export function adminAuthLogin(email, password) {
+  const data = getData(); 
   const user = data.users.find(user => user.email === email);
-  if (!user) {
-    return {error: 'Email address does not exist.'};
+
+  if (user === undefined) {
+    return {error: 'Invalid email.'};
+  }
+
+  if (password.localeCompare(user.password) !== 0) {
+    return {error: 'Incorrect Password.'};
   } 
 
-  if (user.password !== password) {
-    return {error: 'Password is incorrect.'};
-  } 
-
-  return {authUserId: user.authUserId};
+  return {authUserId: user.userID};
 } 
 
 /**
@@ -53,9 +109,7 @@ function adminUserDetails(authUserId) {
     numFailedPasswordsSinceLastLogin: 1,
   }
   
-  return {
-    user: userDetails
-  };
+  return {user: userDetails};
 }
 
 /**
@@ -86,4 +140,79 @@ function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
 function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
 
   return {};
+}
+
+/**
+ * Given an admin user's authUserId, return its corresponding userIndex
+ * 
+ * @param {number} authUserId - unique identifier for a user
+ * 
+ * @return {object} return corresonding index of data.users
+ */
+function isValidUser(authUserId) {
+  const data = getData();
+
+  if (!authUserId) return -1;
+
+  return data.users.findIndex((array) => array.userId === authUserId);
+}
+
+
+/**
+ * Given an email, return true if it is not used by the other and it is email
+ * 
+ * @param {number} authUserId - unique identifier for a user, 
+ * set to -1 if it is new user
+ * @param {string} email - user's email, according to 
+ * https://www.npmjs.com/package/validator
+ * 
+ * @return {object} return true if email is valid and not used by others
+ */
+function isValidEmail(email, authUserId) {
+  const data = getData();
+  let isUsed = true;
+  const isRegistered = data.users.filter((user) => user.email === email);
+
+  if (isRegistered.length === 0 || 
+    (isRegistered.length === 1 && isRegistered[0].userId === authUserId)) {
+    isUsed = false;
+  }
+
+  return !isUsed && isEmail(email);
+}
+
+/**
+ * Given a name string, return true iif contains [a-z], [A-Z], " ", "-", or "'"
+ * 
+ * @param {string} name - nameFirst or nameLast of a user 
+ * 
+ * @return {boolean} true iif contains letters, spaces, hyphens, or apostrophes
+ */
+function isValidName(name) {
+  const pattern = new RegExp(/[^a-zA-Z\s-\']/);
+  if (name.length < 2 || name.length > 20 || pattern.test(name)) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Given a password string, return false if its length is smaller than 8, or
+ * not contain at least a letter and at least a number, otherwise return true
+ * potential upgrade: return the strength of password, return -1 if invalid
+ * 
+ * @param {string} password - nameFirst or nameLast of a user 
+ * 
+ * @return {boolean} true iif len > 8 && contains >= 1 (letter & integer)
+ */
+function isValidPassword(password) {
+  const stringPattern = new RegExp(/[a-zA-Z]/);
+  const numberPattern = new RegExp(/[0-9]/);
+
+  if (password.length < 8 || !stringPattern.test(password) || 
+    !numberPattern.test(password)) {
+    return false;
+  }
+
+  return true;
 }

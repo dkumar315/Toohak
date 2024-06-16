@@ -1,8 +1,15 @@
+import { setData } from './dataStore'
 /**
  * Reset the state of the application back to the start.
  *
  * @return {object} empty object
  */
-function clear() {
+export function clear() {
+  const data = {
+    users: [],
+    quizzes: []
+  }
+
+  setData(data);
   return {};
 }
