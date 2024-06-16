@@ -50,7 +50,6 @@ describe('testing adminUserDetails', () => {
         numSuccessfulLogins: 0,
         numFailedPasswordsSinceLastLogin: 0
       };
-      // console.log(authUserId, adminUserDetails(authUserId));
       expect(adminUserDetails(authUserId).user).toMatchObject(expectRes);
     });
 
@@ -271,7 +270,7 @@ describe('testing adminUserDetailsUpdate', () => {
 
     describe('test2.1.2: invalid authUserId',() => {
       const invalidIds = [0, 2, 3, 9999, -1];
-      test.each(invalidIds)('test2.1: invalid authUserId = %i', (invalidId) => {
+      test.each(invalidIds)('test2.1: invalid authUserId = %s', (invalidId) => {
         result = adminUserDetailsUpdate(invalidId, email, nameFirst, nameLast);
         expect(result).toMatchObject(expectError1);
       });
@@ -280,7 +279,7 @@ describe('testing adminUserDetailsUpdate', () => {
     // invalid Emails
     describe('test2.2: invalid emails',() => {
       const invalidEmails = ['', 'strings', '12345', 'hi!@mails', '@gmail.com'];
-      test.each(invalidEmails)('test2.2: invalid emails = %i', (invalidEmail) => {
+      test.each(invalidEmails)('test2.2: invalid emails = %s', (invalidEmail) => {
         result = adminUserDetailsUpdate(authUserId, invalidEmail, nameFirst, nameLast);
         expect(result).toMatchObject(expectError2);
       });
