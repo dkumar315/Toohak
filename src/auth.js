@@ -10,6 +10,7 @@ import isEmail from 'validator/lib/isEmail';
  * @param {string} nameLast - user's last name
  * 
  * @return {number} authUserId - unique identifier for a user
+ * @return {{error: string}} if authUserId invalid
  */
 export function adminAuthRegister(email, password, nameFirst, nameLast) {
   // Check if email is valid or already exists
@@ -24,33 +25,19 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
   // Check nameFirst meets requirements
   const nameFValidResult = isValidName(nameFirst);
   if (nameFValidResult !== true) {
-    return { 
-      error: 'First name must: ' +
-            'only contain letters, spaces, hyphens, or apostrophes' +
-            'be atleast 2 characters' +
-            'not exceed 20 character limit'
-      };
+    return {error: 'Firstname does not meet requirements.'};
   }
 
   // Check nameLast meets requirements
   const nameLValidResult = isValidName(nameLast);
   if (nameLValidResult !== true) {
-    return { 
-      error: 'Last name must: ' +
-            'only contain letters, spaces, hyphens, or apostrophes' +
-            'be atleast 2 characters' +
-            'not exceed 20 character limit'
-    };
+    return {error: 'Firstname does not meet requirements.'};
   }
  
   // Check password meets requirements
   const passValidResult = isValidPassword(password);
   if (passValidResult !== true) {
-    return {error: 'Password must:' + 
-            'be more than 8 characters' +
-            'contain atleast one character' +
-            'contain atleast one number'
-    };
+    return {error: 'Password does not meet requirements.'};
   }
 
   const newUser = {
@@ -77,6 +64,7 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
 * @param {string} password - user's matching password 
 *  
 * @return {number} authUserId - unique identifier for a user 
+* @return {{error: string}} if authUserId invalid
 */ 
 export function adminAuthLogin(email, password) {
   const data = getData(); 
