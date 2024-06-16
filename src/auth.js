@@ -1,5 +1,6 @@
-import {setData, getData} from './dataStore';
+import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
+
 
 /**
  * Register a user with an email, password, and names.
@@ -100,19 +101,7 @@ export function adminUserDetails(authUserId) {
   if (userIndex === -1) return {error:'invalid authUserId'};
   const userDetails = data.users[userIndex];
   
-  // assigning it to resolve over long line
-  const {userId, nameFirst, nameLast, email, 
-  numSuccessfulLogins, numFailedPasswordsSinceLastLogin} = userDetails;
-
-  return {
-    user: {
-      userId: userId,
-      name: nameFirst + ' ' + nameLast,
-      email: email,
-      numSuccessfulLogins: numSuccessfulLogins,
-      numFailedPasswordsSinceLastLogin: numFailedPasswordsSinceLastLogin
-    }
-  };
+  return {user: userDetails};
 }
 
 
@@ -159,30 +148,6 @@ export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
  * @return {{error: string}} if authUserId or passwords invalid
  */
 export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
-  let data = getData();
-
-  // check the authUserId whether is valid and find its userDetails
-  const userIndex = isValidUser(authUserId);
-  if (userIndex === -1) return {error:'invalid authUserId'};
-  const userDetail = data.users[userIndex];
-
-  //  check the oldPassword whether is valid and match the user password
-  if (oldPassword === undefined || userDetail.password !== oldPassword) {
-    return {error:'invalid oldPassword'};
-  }
-
-  // check the newPassword whether is valid and not used before
-  userDetail.passwordHistory = userDetail.passwordHistory || [];
-  if (newPassword === undefined || oldPassword === newPassword || 
-    !isValidPassword(newPassword) || 
-    userDetail.passwordHistory.includes(newPassword)) {
-    return {error:'invalid newPassword'};
-  }
-
-  // if all input valid, then update the password
-  userDetail.password = newPassword;
-  userDetail.passwordHistory.push(oldPassword);
-  setData(data);
 
   return {};
 }
@@ -237,9 +202,9 @@ function isValidEmail(email, authUserId) {
  */
 function isValidName(name) {
   const pattern = new RegExp(/[^a-zA-Z\s-\']/);
-
-  if (name.length < 2 || name.length > 20 || pattern.test(name)) return false;
-
+  if (name.length < 2 || name.length > 20 || pattern.test(name)) {
+    return false;
+  }
   return true;
 }
 
