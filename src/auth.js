@@ -11,10 +11,11 @@ import isEmail from 'validator/lib/isEmail';
  * 
  * @return {number} authUserId - unique identifier for a user
  */
-export function adminAuthRegister(email, password, nameFirst, nameLast) {
+function adminAuthRegister(email, password, nameFirst, nameLast) {
 
   return {authUserId: 1};
 }
+
 
 /**
  * Validates a user's login, given their email and password.
@@ -37,17 +38,25 @@ function adminAuthLogin(email, password) {
  * @return {object} return userDetails
  * @return {{error: string}} if authUserId invalid
  */
-function adminUserDetails(authUserId) {
-  const userDetails = {
-    userId: 1,
-    name: 'Hayden Smith',
-    email: 'hayden.smith@unsw.edu.au',
-    numSuccessfulLogins: 3,
-    numFailedPasswordsSinceLastLogin: 1,
-  }
+export function adminUserDetails(authUserId) {
+  const data = getData();
+  const userIndex = isValidUser(authUserId);
+
+  if (userIndex === -1) return {error:'invalid authUserId'};
+  const userDetails = data.users[userIndex];
   
+  // assigning it to resolve over long line
+  const {userId, nameFirst, nameLast, email, 
+  numSuccessfulLogins, numFailedPasswordsSinceLastLogin} = userDetails;
+
   return {
-    user: userDetails
+    user: {
+      userId: userId,
+      name: nameFirst + ' ' + nameLast,
+      email: email,
+      numSuccessfulLogins: numSuccessfulLogins,
+      numFailedPasswordsSinceLastLogin: numFailedPasswordsSinceLastLogin
+    }
   };
 }
 
@@ -98,7 +107,7 @@ function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
  * 
  * @param {number} authUserId - unique identifier for a user
  * 
- * @return {object} return corresonding index of data.users
+ * @return {number} return corresonding index of data.users
  */
 function isValidUser(authUserId) {
   const data = getData();
@@ -113,10 +122,10 @@ function isValidUser(authUserId) {
  * 
  * @param {number} authUserId - unique identifier for a user, 
  * set to -1 if it is new user
- * @param {strung} email - user's email, according to 
+ * @param {string} email - user's email, according to 
  * https://www.npmjs.com/package/validator
  * 
- * @return {object} return true if email is valid and not used by others
+ * @return {boolean} return true if email is valid and not used by others
  */
 function isValidEmail(email, authUserId) {
   const data = getData();

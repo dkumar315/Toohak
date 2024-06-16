@@ -12,34 +12,23 @@ import { adminUserDetails, adminUserDetailsUpdate } from './auth.js';
   * valid: {}
   * invalid: {error: 'specific error message here'}
 **/
-describe('testing adminUserDetailsUpdate', () => {
-  const expectValid0 = {};
-  const expectError1 = {error:'invalid authUserId'};
-  const expectError2 = {error:'invalid email'};
-  const expectError3 = {error:'invalid nameFirst'};
-  const expectError4 = {error:'invalid nameLast'};
+describe('testing adminUserDetails', () => {
+  let expectError;
 
-  let authUserId;
-  let email;
-  let psw;
-  let nameFirst;
-  let nameLast;
-  let result;
-
+  beforeAll(() => clear());
+  
   beforeEach(() => {
-    clear();
-
-    // user1
-    email = 'haydensmith@gmail.com';
-    psw = 'haydensmith123';
-    nameFirst = 'Hayden';
-    nameLast = 'Smith';
-    const userRegister = adminAuthRegister(email, psw, nameFirst, nameLast);
-    authUserId = userRegister.authUserId;
+    expectError = {error:'invalid authUserId'};
   });
 
-  afterAll(() => {
-    clear();
+  // afterAll(() => clear());
+
+  describe('test1: with 0 registered user, no valid authUserId', () => {
+    const invalidAuthUserIds = [0, 1, 2, 3, 9999, -1];
+    test.each(invalidAuthUserIds)(
+      'test1.0: with invalid authUserId = %i', (invalidId) => {
+        expect(adminUserDetails(invalidId)).toMatchObject(expectError);
+    });
   });
 
   // valid results
