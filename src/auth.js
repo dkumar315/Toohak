@@ -41,7 +41,7 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
   }
 
   const newUser = {
-    userID: authUserId,
+    userId: authUserId,
     nameFirst: nameFirst,
     nameLast: nameLast,
     email: email,
@@ -56,7 +56,6 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
   return {authUserId: authUserId};
 }
 
-
 /** 
 * Validates a user's login, given their email and password. 
 *  
@@ -64,22 +63,25 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
 * @param {string} password - user's matching password 
 *  
 * @return {number} authUserId - unique identifier for a user 
-* @return {{error: string}} if authUserId invalid
+* @return {{error: string}} if authUserId or password invalid
 */ 
 export function adminAuthLogin(email, password) {
   const data = getData(); 
-  const user = data.users.find(user => user.email === email);
-
-  if (user === undefined) {
+  const userIndex = data.users.findIndex(user => user.email === email);
+  if (userIndex === -1) {
     return {error: 'Invalid email.'};
   }
-
+ 
+  let user = data.users[userIndex];
   if (password.localeCompare(user.password) !== 0) {
+    user.numFailedPasswordsSinceLastLogin += 1;
     return {error: 'Incorrect Password.'};
   } 
-
-  return {authUserId: user.userID};
-} 
+  user.numSuccessfulLogins += 1;
+  user.numFailedPasswordsSinceLastLogin = 0;
+  setData(data);
+  return {authUserId: user.userId};
+}
 
 /**
  * Given an admin user's authUserId, return details about the user.
