@@ -1,7 +1,6 @@
 import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
 
-
 /**
  * Register a user with an email, password, and names.
  * 
@@ -101,8 +100,21 @@ export function adminUserDetails(authUserId) {
   if (userIndex === -1) return {error:'invalid authUserId'};
   const userDetails = data.users[userIndex];
   
-  return {user: userDetails};
+  // assigning it to resolve over long line
+  const {userId, nameFirst, nameLast, email, 
+  numSuccessfulLogins, numFailedPasswordsSinceLastLogin} = userDetails;
+
+  return {
+    user: {
+      userId: userId,
+      name: nameFirst + ' ' + nameLast,
+      email: email,
+      numSuccessfulLogins: numSuccessfulLogins,
+      numFailedPasswordsSinceLastLogin: numFailedPasswordsSinceLastLogin
+    }
+  };
 }
+
 
 
 /**
@@ -148,6 +160,30 @@ export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
  * @return {{error: string}} if authUserId or passwords invalid
  */
 export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
+  let data = getData();
+
+  // check the authUserId whether is valid and find its userDetails
+  const userIndex = isValidUser(authUserId);
+  if (userIndex === -1) return {error:'invalid authUserId'};
+  const userDetail = data.users[userIndex];
+
+  //  check the oldPassword whether is valid and match the user password
+  if (!oldPassword || userDetail.password !== oldPassword) {
+    return {error:'invalid oldPassword'};
+  }
+
+  // check the newPassword whether is valid and not used before
+  userDetail.passwordHistory = userDetail.passwordHistory || [];
+  if (!newPassword || oldPassword === newPassword || 
+    !isValidPassword(newPassword) || 
+    userDetail.passwordHistory.includes(newPassword)) {
+    return {error:'invalid newPassword'};
+  }
+
+  // if all input valid, then update the password
+  userDetail.password = newPassword;
+  userDetail.passwordHistory.push(oldPassword);
+  setData(data);
 
   return {};
 }
@@ -174,7 +210,7 @@ function isValidUser(authUserId) {
  * 
  * @param {number} authUserId - unique identifier for a user, 
  * set to -1 if it is new user
- * @param {strung} email - user's email, according to 
+ * @param {string} email - user's email, according to 
  * https://www.npmjs.com/package/validator
  * 
  * @return {object} return true if email is valid and not used by others
@@ -202,9 +238,9 @@ function isValidEmail(email, authUserId) {
  */
 function isValidName(name) {
   const pattern = new RegExp(/[^a-zA-Z\s-\']/);
-  if (name.length < 2 || name.length > 20 || pattern.test(name)) {
-    return false;
-  }
+
+  if (name.length < 2 || name.length > 20 || pattern.test(name)) return false;
+
   return true;
 }
 
