@@ -24,19 +24,19 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
 
   // Check nameFirst meets requirements
   const nameFValidResult = isValidName(nameFirst);
-  if (nameFValidResult !== true) {
+  if (!nameFValidResult) {
     return {error: 'Firstname does not meet requirements.'};
   }
 
   // Check nameLast meets requirements
   const nameLValidResult = isValidName(nameLast);
-  if (nameLValidResult !== true) {
-    return {error: 'Firstname does not meet requirements.'};
+  if (!nameLValidResult) {
+    return {error: 'Lastname does not meet requirements.'};
   }
  
   // Check password meets requirements
   const passValidResult = isValidPassword(password);
-  if (passValidResult !== true) {
+  if (!passValidResult) {
     return {error: 'Password does not meet requirements.'};
   }
 
@@ -143,30 +143,6 @@ export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
  * @return {{error: string}} if authUserId or passwords invalid
  */
 export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
-  let data = getData();
-
-  // check the authUserId whether is valid and find its userDetails
-  const userIndex = isValidUser(authUserId);
-  if (userIndex === -1) return {error:'invalid authUserId'};
-  const userDetail = data.users[userIndex];
-
-  //  check the oldPassword whether is valid and match the user password
-  if (oldPassword === undefined || userDetail.password !== oldPassword) {
-    return {error:'invalid oldPassword'};
-  }
-
-  // check the newPassword whether is valid and not used before
-  userDetail.passwordHistory = userDetail.passwordHistory || [];
-  if (newPassword === undefined || oldPassword === newPassword || 
-    !isValidPassword(newPassword) || 
-    userDetail.passwordHistory.includes(newPassword)) {
-    return {error:'invalid newPassword'};
-  }
-
-  // if all input valid, then update the password
-  userDetail.password = newPassword;
-  userDetail.passwordHistory.push(oldPassword);
-  setData(data);
 
   return {};
 }
