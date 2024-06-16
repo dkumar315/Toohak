@@ -27,6 +27,8 @@ describe('testing adminUserPasswordUpdate', () => {
   let result;
   let authUserId;
 
+  beforeAll(() => clear());
+  
   beforeEach(() => {
     clear();
 
@@ -41,8 +43,14 @@ describe('testing adminUserPasswordUpdate', () => {
     newPasswords = [];
   });
 
-  afterAll(() => {
-    clear();
+  // afterAll(() => clear());
+
+  describe('test1: with 0 registered user, no valid authUserId', () => {
+    const invalidAuthUserIds = [0, 1, 2, 3, 9999, -1];
+    test.each(invalidAuthUserIds)(
+      'test1.0: with invalid authUserId = %i', (invalidId) => {
+        expect(adminUserDetails(invalidId)).toMatchObject(expectError);
+    });
   });
 
   // valid results
@@ -124,6 +132,8 @@ describe('testing adminUserPasswordUpdate', () => {
     test('test2.2.0: (invalid oldPassword) old password is the new password',() => {
       result = adminUserPasswordUpdate(authUserId, newPassword, newPassword);
       expect(result).toMatchObject(expectError2);
+      const result2 = adminUserDetailsUpdate(authUserId2, email, nameFirst2, nameLast2);
+      expect(result2).toMatchObject(expectError2);
     });
   });
 
