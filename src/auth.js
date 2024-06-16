@@ -41,7 +41,7 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
   }
 
   const newUser = {
-    userID: authUserId,
+    userId: authUserId,
     nameFirst: nameFirst,
     nameLast: nameLast,
     email: email,
