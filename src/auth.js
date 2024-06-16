@@ -1,4 +1,4 @@
-import { getData, setData } from './dataStore';
+import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
 
 /**
@@ -10,10 +10,50 @@ import isEmail from 'validator/lib/isEmail';
  * @param {string} nameLast - user's last name
  * 
  * @return {number} authUserId - unique identifier for a user
+ * @return {{error: string}} if authUserId invalid
  */
-function adminAuthRegister(email, password, nameFirst, nameLast) {
+export function adminAuthRegister(email, password, nameFirst, nameLast) {
+  // Check if email is valid or already exists
+  const emailValidResult = isValidEmail(email, -1);
+  if (!emailValidResult) {
+    return {error: 'Invalid email.'};
+  }
 
-  return {authUserId: 1};
+  const data = getData();
+  const authUserId = data.users.length + 1;
+
+  // Check nameFirst meets requirements
+  const nameFValidResult = isValidName(nameFirst);
+  if (!nameFValidResult) {
+    return {error: 'Firstname does not meet requirements.'};
+  }
+
+  // Check nameLast meets requirements
+  const nameLValidResult = isValidName(nameLast);
+  if (!nameLValidResult) {
+    return {error: 'Lastname does not meet requirements.'};
+  }
+ 
+  // Check password meets requirements
+  const passValidResult = isValidPassword(password);
+  if (!passValidResult) {
+    return {error: 'Password does not meet requirements.'};
+  }
+
+  const newUser = {
+    userId: authUserId,
+    nameFirst: nameFirst,
+    nameLast: nameLast,
+    email: email,
+    password: password,
+    numSuccessfulLogins: 0,
+    numFailedPasswordsSinceLastLogin: 0,
+  }
+
+  data.users.push(newUser);
+  setData(data);
+
+  return {authUserId: authUserId};
 }
 
 
@@ -25,7 +65,7 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
  * 
  * @return {number} authUserId - unique identifier for a user
  */
-function adminAuthLogin(email, password) {
+export function adminAuthLogin(email, password) {
 
   return {authUserId: 1};
 }
@@ -102,30 +142,6 @@ export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
  * @return {{error: string}} if authUserId or passwords invalid
  */
 export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
-  let data = getData();
-
-  // check the authUserId whether is valid and find its userDetails
-  const userIndex = isValidUser(authUserId);
-  if (userIndex === -1) return {error:'invalid authUserId'};
-  const userDetail = data.users[userIndex];
-
-  //  check the oldPassword whether is valid and match the user password
-  if (oldPassword === undefined || userDetail.password !== oldPassword) {
-    return {error:'invalid oldPassword'};
-  }
-
-  // check the newPassword whether is valid and not used before
-  userDetail.passwordHistory = userDetail.passwordHistory || [];
-  if (newPassword === undefined || oldPassword === newPassword || 
-    !isValidPassword(newPassword) || 
-    userDetail.passwordHistory.includes(newPassword)) {
-    return {error:'invalid newPassword'};
-  }
-
-  // if all input valid, then update the password
-  userDetail.password = newPassword;
-  userDetail.passwordHistory.push(oldPassword);
-  setData(data);
 
   return {};
 }
@@ -177,9 +193,9 @@ function isValidEmail(email, authUserId) {
  */
 function isValidName(name) {
   const pattern = new RegExp(/[^a-zA-Z\s-\']/);
-
-  if (name.length < 2 || name.length > 20 || pattern.test(name)) return false;
-
+  if (name.length < 2 || name.length > 20 || pattern.test(name)) {
+    return false;
+  }
   return true;
 }
 
