@@ -1,4 +1,4 @@
-import { setData, getData } from './dataStore';
+import {setData, getData} from './dataStore';
 import isEmail from 'validator/lib/isEmail';
 
 /**
@@ -56,18 +56,31 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
   return {authUserId: authUserId};
 }
 
-
-/**
- * Validates a user's login, given their email and password.
- * 
- * @param {string} email - user's email
- * @param {string} password - user's matching password
- * 
- * @return {number} authUserId - unique identifier for a user
- */
+/** 
+* Validates a user's login, given their email and password. 
+*  
+* @param {string} email - user's email 
+* @param {string} password - user's matching password 
+*  
+* @return {number} authUserId - unique identifier for a user 
+* @return {{error: string}} if authUserId or password invalid
+*/ 
 export function adminAuthLogin(email, password) {
-
-  return {authUserId: 1};
+  const data = getData(); 
+  const userIndex = data.users.findIndex(user => user.email === email);
+  if (userIndex === -1) {
+    return {error: 'Invalid email.'};
+  }
+ 
+  let user = data.users[userIndex];
+  if (password.localeCompare(user.password) !== 0) {
+    user.numFailedPasswordsSinceLastLogin += 1;
+    return {error: 'Incorrect Password.'};
+  } 
+  user.numSuccessfulLogins += 1;
+  user.numFailedPasswordsSinceLastLogin = 0;
+  setData(data);
+  return {authUserId: user.userId};
 }
 
 /**
@@ -85,19 +98,7 @@ export function adminUserDetails(authUserId) {
   if (userIndex === -1) return {error:'invalid authUserId'};
   const userDetails = data.users[userIndex];
   
-  // assigning it to resolve over long line
-  const {userId, nameFirst, nameLast, email, 
-  numSuccessfulLogins, numFailedPasswordsSinceLastLogin} = userDetails;
-
-  return {
-    user: {
-      userId: userId,
-      name: nameFirst + ' ' + nameLast,
-      email: email,
-      numSuccessfulLogins: numSuccessfulLogins,
-      numFailedPasswordsSinceLastLogin: numFailedPasswordsSinceLastLogin
-    }
-  };
+  return {user: userDetails};
 }
 
 /**
