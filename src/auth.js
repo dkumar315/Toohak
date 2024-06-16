@@ -71,7 +71,21 @@ export function adminUserDetails(authUserId) {
  * 
  * @return {object} empty object
  */
-function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
+export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
+  let data = getData();
+  const userIndex = isValidUser(authUserId);
+  if (userIndex === -1) return {error:'invalid authUserId'};
+
+  if (!isValidEmail(email, authUserId)) return {error:'invalid email'};
+  if (!isValidName(nameFirst)) return {error:'invalid nameFirst'};
+  if (!isValidName(nameLast)) return {error:'invalid nameLast'};
+
+  data.users[userIndex].email = email;
+  data.users[userIndex].nameFirst = nameFirst;
+  data.users[userIndex].nameLast = nameLast;
+
+  setData(data);
+
   return {};
 }
 
