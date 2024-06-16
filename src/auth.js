@@ -70,15 +70,17 @@ export function adminUserDetails(authUserId) {
  * @param {string} nameLast - user's last name
  * 
  * @return {object} empty object
+ * @return {{error: string}} if authUserId, email, or names invalid
  */
 export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
   let data = getData();
   const userIndex = isValidUser(authUserId);
   if (userIndex === -1) return {error:'invalid authUserId'};
 
-  if (!isValidEmail(email, authUserId)) return {error:'invalid email'};
-  if (!isValidName(nameFirst)) return {error:'invalid nameFirst'};
-  if (!isValidName(nameLast)) return {error:'invalid nameLast'};
+  // check email, nameFirst, nameLast whether is valid
+  if (!email || !isValidEmail(email, authUserId)) return {error:'invalid email'};
+  if (!nameFirst || !isValidName(nameFirst)) return {error:'invalid nameFirst'};
+  if (!nameLast || !isValidName(nameLast)) return {error:'invalid nameLast'};
 
   data.users[userIndex].email = email;
   data.users[userIndex].nameFirst = nameFirst;
@@ -97,8 +99,34 @@ export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
  * @param {number} newPassword - the replacement password submitted by user
  * 
  * @return {object} empty object
+ * @return {{error: string}} if authUserId or passwords invalid
  */
-function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
+export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
+  let data = getData();
+
+  // check the authUserId whether is valid and find its userDetails
+  const userIndex = isValidUser(authUserId);
+  if (userIndex === -1) return {error:'invalid authUserId'};
+  const userDetail = data.users[userIndex];
+
+  //  check the oldPassword whether is valid and match the user password
+  if (oldPassword === undefined || userDetail.password !== oldPassword) {
+    return {error:'invalid oldPassword'};
+  }
+
+  // check the newPassword whether is valid and not used before
+  userDetail.passwordHistory = userDetail.passwordHistory || [];
+  if (newPassword === undefined || oldPassword === newPassword || 
+    !isValidPassword(newPassword) || 
+    userDetail.passwordHistory.includes(newPassword)) {
+    return {error:'invalid newPassword'};
+  }
+
+  // if all input valid, then update the password
+  userDetail.password = newPassword;
+  userDetail.passwordHistory.push(oldPassword);
+  setData(data);
+
   return {};
 }
 
@@ -145,7 +173,7 @@ function isValidEmail(email, authUserId) {
  * 
  * @param {string} name - nameFirst or nameLast of a user 
  * 
- * @return {boolean} true iif contains lettes, spaces, hyphens, or apostrophes
+ * @return {boolean} true iif contains letters, spaces, hyphens, or apostrophes
  */
 function isValidName(name) {
   const pattern = new RegExp(/[^a-zA-Z\s-\']/);
@@ -162,7 +190,7 @@ function isValidName(name) {
  * 
  * @param {string} password - nameFirst or nameLast of a user 
  * 
- * @return {boolean} true iif len >8 && contains at least one lette and integer
+ * @return {boolean} true iif len > 8 && contains >= 1 (letter & integer)
  */
 function isValidPassword(password) {
   const stringPattern = new RegExp(/[a-zA-Z]/);
