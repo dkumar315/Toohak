@@ -8,7 +8,11 @@ import {
  * @return {object} empty object
  */
 export function clear() {
-  data = {};
+  let data = {
+    users: [],
+    quizzes: [],
+  };
+  
   setData(data);
   
   return {};
