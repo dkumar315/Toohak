@@ -1,7 +1,5 @@
 ```javascript
 let data = {
-  // TODO: insert your data structure that contains 
-  // users + quizzes here
   users: [
     {
       // authuserId: number
@@ -26,11 +24,11 @@ let data = {
   quizzes: [
     {
       quizId: 1,
-      quizName: 'Quiz 1',
+      name: 'Quiz 1',
       timeCreated: 1683125870,
       timeLastEdited: 1683125871,
-      quizDescription: 'Quiz on Javascript',
-      quizCreator: 1,
+      description: 'Quiz on Javascript',
+      creatorId: 1,
       questions: [
         {
           questionId: 1,
@@ -52,11 +50,11 @@ let data = {
     },
     {
       quizId: 1,
-      quizName: 'Quiz 2',
+      name: 'Quiz 2',
       timeCreated: 1683125871,
   		timeLastEdited: 1683125872,
-      quizDescription: 'Quiz on Typescript',
-      quizCreator: 2,
+      description: 'Quiz on Typescript',
+      creatorId: 2,
       questions: [
         {
           questionId: 1,
