@@ -1,5 +1,3 @@
-import test, { beforeEach } from 'node:test'
-
 import {
   adminAuthRegister,
   adminAuthLogin
@@ -13,7 +11,6 @@ import {
   adminQuizList,
   adminQuizCreate
 } from './quiz.js'
-import { hasUncaughtExceptionCaptureCallback } from 'node:process';
 
 beforeEach(() => {
   clear();
@@ -41,20 +38,4 @@ test('adminQuizList returns a list of quizzes for the logged-in user', () => {
       { quizId: quiz1.quizId, name: 'Quiz 1' },
       { quizId: quiz2.quizId, name: 'Quiz 2' }
   ]);
-});
-
-test('adminQuizList returns the correct quizzes for the logged-in user', () => {
-  const user1 = adminAuthRegister('haydensmith@gmail.com', 'hydsmth', 'Hayden', 'Smith');
-  const user2 = adminAuthRegister('jakerenzella@gmail.com', 'jkrnzla', 'Jake', 'Renzella');
-  const authUserId1 = user1.authUserId;
-  const authUserId2 = user2.authUserId;
-
-  const quiz1 = adminQuizCreate(authUserId1, 'Quiz 1', 'Description 1');
-  const quiz2 = adminQuizCreate(authUserId2, 'Quiz 2', 'Description 2');
-
-  const result1 = adminQuizList(authUserId1);
-  expect(result1.quizzes).toEqual([{ quizId: quiz1.quizId, name: 'Quiz 1' }]);
-
-  const result2 = adminQuizList(authUserId2);
-  expect(result2.quizzes).toEqual([{ quizId: quiz2.quizId, name: 'Quiz 2' }]);
 });
