@@ -1,8 +1,10 @@
-// requirement functions for testing adminUser
 import { clear } from './other.js';
-import { adminAuthRegister } from './auth.js';
-import { adminUserDetails, adminUserDetailsUpdate } from './auth.js';
-import { adminUserPasswordUpdate } from './auth.js';
+import { 
+  adminAuthRegister, adminAuthLogin, 
+  adminUserDetails, adminUserDetailsUpdate,
+  adminUserPasswordUpdate 
+} from './auth.js';
+
 
 // testing adminUserDetails
 /**
@@ -125,6 +127,7 @@ describe('testing adminUserDetails', () => {
 
   describe('test4: test with authadminLogin', () => {
     let email, password, nameFirst, nameLast, userRegister, authUserId;
+    let result;
 
     beforeEach(() => {
       clear();
@@ -137,29 +140,49 @@ describe('testing adminUserDetails', () => {
     });
 
     test('test4.0: initial before authadminLogin', () => {
-      expect(adminUserDetails(authUserId).user.numSuccessfulLogins).toStrictEqual(0);
-      expect(adminUserDetails(authUserId).user.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
+      result = adminUserDetails(authUserId).user;
+      expect(result.numSuccessfulLogins).toStrictEqual(0);
+      expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
     });
 
-    test.skip('test4.1: fail to login twice', () => {
+    test('test4.1: fail to login twice', () => {
       adminAuthLogin(email, password + 'invalid');
       adminAuthLogin(email, password + 'invalid');
-      expect(adminUserDetails(authUserId).user.numSuccessfulLogins).toStrictEqual(0);
-      expect(adminUserDetails(authUserId).user.numFailedPasswordsSinceLastLogin).toStrictEqual(2);
+
+      result = adminUserDetails(authUserId).user;
+      expect(result.numSuccessfulLogins).toStrictEqual(0);
+      expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(2);
     });
     
-    test.skip('test4.2: then successfully login twice, then fail to log in once', () => {
+    test('test4.2: successfully login twice, then fail to log in once', () => {
       adminAuthLogin(email, password);
       adminAuthLogin(email, password);
       adminAuthLogin(email, password + 'invalid');
-      expect(adminUserDetails(authUserId).user.numSuccessfulLogins).toStrictEqual(2);
-      expect(adminUserDetails(authUserId).user.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
+
+      result = adminUserDetails(authUserId).user;
+      expect(result.numSuccessfulLogins).toStrictEqual(2);
+      expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
     });
 
-    test.skip('test4.2: then successfully login', () => {
+    test('test4.3: successfully login once, fail to login once and successfully login', () => {
+      // successfully login
       adminAuthLogin(email, password);
-      expect(adminUserDetails(authUserId).user.numSuccessfulLogins).toStrictEqual(3);
-      expect(adminUserDetails(authUserId).user.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
+      result = adminUserDetails(authUserId).user;
+      expect(result.numSuccessfulLogins).toStrictEqual(1);
+      expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
+
+      // then fail to login
+      adminAuthLogin(email, password + 'invalid');
+      result = adminUserDetails(authUserId).user;
+      expect(result.numSuccessfulLogins).toStrictEqual(1);
+      expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
+
+      // then successfully login
+      adminAuthLogin(email, password);
+      result = adminUserDetails(authUserId).user;
+      expect(result.numSuccessfulLogins).toStrictEqual(2);
+      expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
+
     });
   });
 });
@@ -519,6 +542,7 @@ describe('testing adminUserPasswordUpdate', () => {
     });
   });
 });
+
 
 // testing All adminUser
 /**
