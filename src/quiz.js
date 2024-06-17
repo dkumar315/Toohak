@@ -60,7 +60,7 @@ function adminQuizInfo(authUserId, quizId) {
     // Validate user ID
     let user = null;
     for (let i = 0; i < data.users.length; i++) {
-      if (data.users[i].uId === authUserId) {
+      if (data.users[i].userId === authUserId) {
         user = data.users[i];
         break;
       }
