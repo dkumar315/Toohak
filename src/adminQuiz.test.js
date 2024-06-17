@@ -54,7 +54,7 @@ describe('Testing for adminQuizDescriptionUpdate', () => {
   });
 
   test('Empty description', () => {
-    expect(adminQuizDescriptionUpdate(userId1.authUserId, quizInfo1.quizId, '').toStrictEqual({ error: expect.any(String) }));
+    expect(adminQuizDescriptionUpdate(userId1.authUserId, quizInfo1.quizId, '').toStrictEqual({}));
     quizInfo1 = adminQuizInfo(userId1.authUserId, quizId1.quizId);
     expect((quizInfo1.description).toStrictEqual(''));
   });
