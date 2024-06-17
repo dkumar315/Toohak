@@ -82,12 +82,12 @@ function adminQuizInfo(authUserId, quizId) {
 export function adminQuizNameUpdate(authUserId, quizId, name) {
   const data = getData();
   
-  const user = data.users.find(user => user.authUserId === authUserId);
+  const user = data.users.find(u => u.userId === authUserId);
   if (!user) {
     return { error: 'AuthUserId is not a valid user' };
   }
   
-  const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+  const quiz = data.quizzes.find(q => q.quizId === quizId);
   if (!quiz) {
     return { error: 'Quiz ID does not refer to a valid quiz' };
   }
@@ -97,7 +97,7 @@ export function adminQuizNameUpdate(authUserId, quizId, name) {
   }
   
   for (const letter of name) {
-    if (!((letter >= 'A' && letter <= 'Z') || (letter >= 'a' && letter <= 'z') || (letter >= '0' && letter <= '9'))) {
+    if (!((letter >= 'A' && letter <= 'Z') || (letter >= 'a' && letter <= 'z') || (letter >= '0' && letter <= '9') || (letter === ' '))) {
       return { error: 'Name contains invalid characters, valid characters are alphanumeric and spaces' };
     }
   }
