@@ -1,3 +1,5 @@
+import { getData } from "./dataStore";
+
 /**
  * This function provides a list of all quizzes that 
  * are owned by the currently logged in user.
@@ -44,9 +46,10 @@ function adminQuizList(authUserId) {
    */
   export function adminQuizRemove(authUserId, quizId) {
     // Validate user ID
+    let data = getData();
     let userIndex = -1;
     for (let i = 0; i < data.users.length; i++) {
-      if (data.users[i].uId === authUserId) {
+      if (data.users[i].id === authUserId) {
         userIndex = i;
         break;
       }
@@ -56,14 +59,10 @@ function adminQuizList(authUserId) {
     }
   
     // Validate quiz ID and ownership
-    let quizIndex = -1;
-    for (let i = 0; i < data.quizzes.length; i++) {
-      if (data.quizzes[i].quizId === quizId) {
-        quizIndex = i;
-        break;
-      }
-    }
-    if (quizIndex === -1) {
+    const quizExists = data.quizzes.some(q=> q.id === quizId);
+    const quizIndex = data.quizzes.findIndex(q=> q.id === quizId);
+   
+    if (!quizExists) {
       return { error: 'Quiz ID does not refer to a valid quiz' };
     }
     if (data.quizzes[quizIndex].ownerId !== authUserId) {
@@ -71,22 +70,16 @@ function adminQuizList(authUserId) {
     }
   
     // Remove the quiz from the quizzes array by creating a new array without the quiz to be removed
-    const newQuizzes = [];
-    for (let i = 0; i < data.quizzes.length; i++) {
-      if (data.quizzes[i].quizId !== quizId) {
-        newQuizzes.push(data.quizzes[i]);
-      }
-    }
-    data.quizzes = newQuizzes;
+    data.quizzes.splice(quizIndex, 1);
   
     // Remove the quiz ID from the user's quizzes array by creating a new array without the quiz ID to be removed
-    const newUserQuizzes = [];
-    for (let i = 0; i < data.users[userIndex].quizzes.length; i++) {
-      if (data.users[userIndex].quizzes[i] !== quizId) {
-        newUserQuizzes.push(data.users[userIndex].quizzes[i]);
-      }
-    }
-    data.users[userIndex].quizzes = newUserQuizzes;
+    // const newUserQuizzes = [];
+    // for (let i = 0; i < data.users[userIndex].quizzes.length(); i++) {
+    //   if (data.users[userIndex].quizzes[i] !== quizId) {
+    //     newUserQuizzes.push(data.users[userIndex].quizzes[i]);
+    //   }
+    // }
+    // data.users[userIndex].quizzes = newUserQuizzes;
   
     return {};
   }
