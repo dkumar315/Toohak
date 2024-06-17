@@ -1,3 +1,8 @@
+import {
+  getData,
+  setData,
+} from './dataStore.js';
+
 /**
  * This function provides a list of all quizzes that 
  * are owned by the currently logged in user.
@@ -74,7 +79,7 @@ function adminQuizInfo(authUserId, quizId) {
  * 
  * @return {object} - Returns an empty object
  */
-function adminQuizNameUpdate(authUserId, quizId, name) {
+export function adminQuizNameUpdate(authUserId, quizId, name) {
   return {};
 }
 
@@ -87,6 +92,29 @@ function adminQuizNameUpdate(authUserId, quizId, name) {
  * 
  * @return {object} - Returns an empty object
  */
-function adminQuizDescriptionUpdate(authUserId, quizId, description) {
+export function adminQuizDescriptionUpdate(authUserId, quizId, description) {
+  const data = getData();
+  
+  const user = data.users.find(u => u.userId === authUserId);
+  if (!user) {
+    return { error: 'AuthUserId is not a valid user.' };
+  }
+  
+  const quiz = data.quizzes.find(q => q.quizId === quizId);
+  if (!quiz) {
+    return { error: 'Quiz ID does not refer to a valid quiz.' };
+  }
+  
+  if (quiz.creatorId !== authUserId) {
+    return { error: 'Quiz ID does not refer to a quiz that this user owns' };
+  }
+  
+  if (description.length > 100) {
+    return { error: 'Description is more than 100 characters in length' };
+  }
+  
+  quiz.description = description;
+  setData(data);
+
   return {};
 }
