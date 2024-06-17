@@ -13,7 +13,7 @@ import {
   adminQuizDescriptionUpdate
 } from './quiz.js';
 
-describe('adminQuizNameUpdate test', () => {
+describe('adminQuizDescriptionUpdate test', () => {
   let userId1;
   let quizId1;
   let quizInfo1;
