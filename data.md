@@ -26,11 +26,11 @@ let data = {
   quizzes: [
     {
       quizId: 1,
-      quizName: 'Quiz 1',
+      Name: 'Quiz 1',
       timeCreated: 1683125870,
       timeLastEdited: 1683125871,
-      quizDescription: 'Quiz on Javascript',
-      quizCreator: 1,
+      Description: 'Quiz on Javascript',
+      creatorId: 1,
       questions: [
         {
           questionId: 1,
