@@ -13,7 +13,7 @@ import {
   adminQuizDescriptionUpdate
 } from './quiz.js';
 
-describe('adminQuizDescriptionUpdate test', () => {
+describe('Testing for adminQuizDescriptionUpdate', () => {
   let userId1;
   let quizId1;
   let quizInfo1;
@@ -35,21 +35,21 @@ describe('adminQuizDescriptionUpdate test', () => {
     quizInfo2 = adminQuizInfo(userId2.authUserId, quizId2.quizId);
   });
 
-  test('Valid authUserId, quizId and name', () => {
+  test('valid authUserId, quizId and name', () => {
     expect(adminQuizDescriptionUpdate(userId1.authUserId, quizInfo1.quizId, 'Quiz on Coding').toStrictEqual({}));
     quizInfo1 = adminQuizInfo(userId1.authUserId, quizId1.quizId);
     expect((quizInfo1.description).toStrictEqual('Quiz on Coding'));
   });
   
-  test('Invalid authUserId', () => {
+  test('invalid authUserId', () => {
     expect(adminQuizDescriptionUpdate(3, quizInfo1.quizId, 'Quiz on Coding').toStrictEqual({ error: expect.any(String) }));
   });
   
-  test('QuizId does not refer to a valid quiz', () => {
+  test('quizId does not refer to a valid quiz', () => {
     expect(adminQuizDescriptionUpdate(userId1.authUserId, 3, 'Quiz on Coding').toStrictEqual({ error: expect.any(String) }));
   });
 
-  test('QuizId does not refer to a quiz that this user owns', () => {
+  test('quizId does not refer to a quiz that this user owns', () => {
     expect(adminQuizDescriptionUpdate(userId1.authUserId, quizInfo2.quizId, 'Quiz on Coding').toStrictEqual({ error: expect.any(String) }));
   });
 
