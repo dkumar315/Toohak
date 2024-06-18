@@ -10,14 +10,14 @@ import {
  * 
  * @return {object} - Returns the details of the quiz
  */
-const { get } = require('./dataStore');
 
-function adminQuizList(authUserId) {
+export function adminQuizList(authUserId) {
   const data = getData();
   const user = data.users.some(user => user.userId === authUserId);
-  if (!user) {
+  if (!user) {    
     return { error: 'AuthUserId is not valid' };
-    }
+  }
+
   const quizarray = [];
   for (const quiz of data.quizzes) {
     if (quiz.creatorId === authUserId) {
@@ -26,9 +26,9 @@ function adminQuizList(authUserId) {
   }
   return {
     quizzes: quizarray,
-    };
+  };
 }
-module.exports = { adminQuizList };
+
 
 /**
  * This function if given basic details about a new quiz, 
@@ -40,7 +40,7 @@ module.exports = { adminQuizList };
  * 
  * @return {object} - Returns the details of the quiz
  */
-function adminQuizCreate(authUserId, name, description) {
+export function adminQuizCreate(authUserId, name, description) {
   const data = getData();
   const user = data.users.find(user => user.userId === authUserId);
   
@@ -75,7 +75,7 @@ function adminQuizCreate(authUserId, name, description) {
   return { quizId: newQuiz.quizId };
 }
 
-module.exports = { adminQuizCreate };
+
 
 
 /**
