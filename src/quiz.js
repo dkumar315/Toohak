@@ -1,7 +1,7 @@
 import {
   getData,
   setData
-} from './dataStore'
+} from './dataStore.js';
 
 /**
  * This function provides a list of all quizzes that 
@@ -121,6 +121,7 @@ export function adminQuizRemove(authUserId, quizId) {
   return {};
 }
 
+
 /**
  * This function gets all of the relevant information,
  * about the current quiz 
@@ -130,15 +131,50 @@ export function adminQuizRemove(authUserId, quizId) {
  * 
  * @return {object} - Returns an empty object
  */
-function adminQuizInfo(authUserId, quizId) {
+export function adminQuizInfo(authUserId, quizId) {
+  let data = getData();
+
+  // Validate user ID
+  let user = null;
+  for (let i = 0; i < data.users.length; i++) {
+    if (data.users[i].userId === authUserId) {
+      user = data.users[i];
+      break;
+    }
+  }
+
+  if (!user) {
+    return { error: 'User ID is not valid' };
+  }
+
+  // Validate quiz ID
+  let quiz = null;
+  for (let i = 0; i < data.quizzes.length; i++) {
+    if (data.quizzes[i].quizId === quizId) {
+      quiz = data.quizzes[i];
+      break;
+    }
+  }
+
+  if (!quiz) {
+    return { error: 'Quiz ID does not refer to a valid quiz' };
+  }
+
+  // Check ownership
+  if (quiz.creatorId !== authUserId) {
+    return { error: 'Quiz ID does not refer to a quiz that this user owns' };
+  }
+
+  // Return quiz details
   return {
-    quizId: 1,
-    name: 'My Quiz',
-    timeCreated: 1683125870,
-    timeLastEdited: 1683125871,
-    description: 'This is my quiz',
+    quizId: quiz.quizId,
+    name: quiz.name,
+    timeCreated: quiz.timeCreated,
+    timeLastEdited: quiz.timeLastEdited,
+    description: quiz.description,
   };
 }
+
 
 /**
  * This function updates the name of the relevant quiz.
@@ -152,6 +188,7 @@ function adminQuizInfo(authUserId, quizId) {
 function adminQuizNameUpdate(authUserId, quizId, name) {
   return {};
 }
+
 
 /**
  * This function updates the description of the relevant quiz.
