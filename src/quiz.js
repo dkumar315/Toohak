@@ -85,7 +85,39 @@ export function adminQuizCreate(authUserId, name, description) {
  * 
  * @return {object} - Returns an empty object
  */
-function adminQuizRemove(authUserId, quizId) {
+export function adminQuizRemove(authUserId, quizId) {
+  let data = getData();
+
+  // Validate user ID
+  let userIndex = -1;
+  for (let i = 0; i < data.users.length; i++) {
+    if (data.users[i].userId === authUserId) {
+      userIndex = i;
+      break;
+    }
+  }
+
+  if (userIndex === -1) {
+    return { error: 'User ID is not valid' };
+  }
+
+  // Validate quiz ID and ownership
+  const quizExists = data.quizzes.some(q=> q.quizId === quizId);
+  const quizIndex = data.quizzes.findIndex(q=> q.quizId === quizId);
+  
+  if (!quizExists) {
+    return { error: 'Quiz ID does not refer to a valid quiz' };
+  }
+
+  if (data.quizzes[quizIndex].creatorId !== authUserId) {
+    return { error: 'User does not own the quiz' };
+  }
+
+  // Remove the quiz from the quizzes array by creating a new array without the quiz to be removed
+  data.quizzes.splice(quizIndex, 1);
+
+  setData(data);
+
   return {};
 }
 
