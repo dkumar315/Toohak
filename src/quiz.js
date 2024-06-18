@@ -185,7 +185,45 @@ export function adminQuizInfo(authUserId, quizId) {
  * 
  * @return {object} - Returns an empty object
  */
-function adminQuizNameUpdate(authUserId, quizId, name) {
+export function adminQuizNameUpdate(authUserId, quizId, name) {
+  const data = getData();
+  
+  const user = data.users.find(u => u.userId === authUserId);
+  if (!user) {
+    return { error: 'AuthUserId is not a valid user' };
+  }
+  
+  const quiz = data.quizzes.find(q => q.quizId === quizId);
+  if (!quiz) {
+    return { error: 'Quiz ID does not refer to a valid quiz' };
+  }
+  
+  if (quiz.creatorId !== authUserId) {
+    return { error: 'Quiz ID does not refer to a quiz that this user owns' };
+  }
+  
+  for (const letter of name) {
+    if (!((letter >= 'A' && letter <= 'Z') || (letter >= 'a' && letter <= 'z') || (letter >= '0' && letter <= '9') || (letter === ' '))) {
+      return { error: 'Name contains invalid characters, valid characters are alphanumeric and spaces' };
+    }
+  }
+  
+  if (name.length < 3) {
+    return { error: 'Name is less than 3 characters long' };
+  }
+
+  if (name.length > 30) {
+    return { error: 'Name is more than 30 characters long.' };
+  }
+  
+  const nameInUse = data.quizzes.find(q => q.creatorId === authUserId && q.quizId !== quizId && q.name === name);
+  if (nameInUse) {
+    return { error: 'Name is already used by the current logged in user for another quiz' };
+  }
+  
+  quiz.name = name;
+  setData(data);
+
   return {};
 }
 
@@ -199,6 +237,6 @@ function adminQuizNameUpdate(authUserId, quizId, name) {
  * 
  * @return {object} - Returns an empty object
  */
-function adminQuizDescriptionUpdate(authUserId, quizId, description) {
+export function adminQuizDescriptionUpdate(authUserId, quizId, description) {
   return {};
 }
