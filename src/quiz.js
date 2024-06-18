@@ -1,6 +1,6 @@
 import {
   getData,
-  setData,
+  setData
 } from './dataStore.js';
 
 /**
@@ -11,16 +11,24 @@ import {
  * 
  * @return {object} - Returns the details of the quiz
  */
-function adminQuizList(authUserId) {
+export function adminQuizList(authUserId) {
+  const data = getData();
+  const user = data.users.some(user => user.userId === authUserId);
+  if (!user) {    
+    return { error: 'AuthUserId is not valid' };
+  }
+
+  const quizarray = [];
+  for (const quiz of data.quizzes) {
+    if (quiz.creatorId === authUserId) {
+      quizarray.push({quizId: quiz.quizId, name: quiz.name})
+    }
+  }
   return {
-    quizzes: [
-      {
-        quizId: 1,
-        name: 'My Quiz',
-      }
-    ]
+    quizzes: quizarray,
   };
 }
+
 
 /**
  * This function if given basic details about a new quiz, 
@@ -32,11 +40,41 @@ function adminQuizList(authUserId) {
  * 
  * @return {object} - Returns the details of the quiz
  */
-function adminQuizCreate(authUserId, name, description) {
-  return {
-    quizId: 2
+export function adminQuizCreate(authUserId, name, description) {
+  const data = getData();
+  const user = data.users.find(user => user.userId === authUserId);
+  
+  if (!user) {
+    return { error: 'AuthUserId is not a valid user.' };
+  }
+  
+  if (!/^[a-zA-Z0-9 ]{3,30}$/.test(name)) {
+    return { error: 'Name contains invalid characters or is not the correct length.' };
+  }
+  
+  if (data.quizzes.some(quiz => quiz.creatorId === authUserId && quiz.name === name)) {
+    return { error: 'Name is already used by the current logged-in user for another quiz.' };
+  }
+  
+  if (description.length > 100) {
+    return { error: 'Description is more than 100 characters in length.' };
+  }
+  
+  const newQuiz = {
+    quizId: data.quizzes.length + 1,
+    creatorId: authUserId,
+    name,
+    description,
+    timeCreated: Math.floor(Date.now() / 1000),
+    timeLastEdited: Math.floor(Date.now() / 1000),
   };
+
+  data.quizzes.push(newQuiz);
+  setData(data);
+
+  return { quizId: newQuiz.quizId };
 }
+
 
 /**
  * This function permanently removes the quiz,
@@ -47,9 +85,42 @@ function adminQuizCreate(authUserId, name, description) {
  * 
  * @return {object} - Returns an empty object
  */
-function adminQuizRemove(authUserId, quizId) {
+export function adminQuizRemove(authUserId, quizId) {
+  let data = getData();
+
+  // Validate user ID
+  let userIndex = -1;
+  for (let i = 0; i < data.users.length; i++) {
+    if (data.users[i].userId === authUserId) {
+      userIndex = i;
+      break;
+    }
+  }
+
+  if (userIndex === -1) {
+    return { error: 'User ID is not valid' };
+  }
+
+  // Validate quiz ID and ownership
+  const quizExists = data.quizzes.some(q=> q.quizId === quizId);
+  const quizIndex = data.quizzes.findIndex(q=> q.quizId === quizId);
+  
+  if (!quizExists) {
+    return { error: 'Quiz ID does not refer to a valid quiz' };
+  }
+
+  if (data.quizzes[quizIndex].creatorId !== authUserId) {
+    return { error: 'User does not own the quiz' };
+  }
+
+  // Remove the quiz from the quizzes array by creating a new array without the quiz to be removed
+  data.quizzes.splice(quizIndex, 1);
+
+  setData(data);
+
   return {};
 }
+
 
 /**
  * This function gets all of the relevant information,
@@ -60,15 +131,50 @@ function adminQuizRemove(authUserId, quizId) {
  * 
  * @return {object} - Returns an empty object
  */
-function adminQuizInfo(authUserId, quizId) {
+export function adminQuizInfo(authUserId, quizId) {
+  let data = getData();
+
+  // Validate user ID
+  let user = null;
+  for (let i = 0; i < data.users.length; i++) {
+    if (data.users[i].userId === authUserId) {
+      user = data.users[i];
+      break;
+    }
+  }
+
+  if (!user) {
+    return { error: 'User ID is not valid' };
+  }
+
+  // Validate quiz ID
+  let quiz = null;
+  for (let i = 0; i < data.quizzes.length; i++) {
+    if (data.quizzes[i].quizId === quizId) {
+      quiz = data.quizzes[i];
+      break;
+    }
+  }
+
+  if (!quiz) {
+    return { error: 'Quiz ID does not refer to a valid quiz' };
+  }
+
+  // Check ownership
+  if (quiz.creatorId !== authUserId) {
+    return { error: 'Quiz ID does not refer to a quiz that this user owns' };
+  }
+
+  // Return quiz details
   return {
-    quizId: 1,
-    name: 'My Quiz',
-    timeCreated: 1683125870,
-    timeLastEdited: 1683125871,
-    description: 'This is my quiz',
+    quizId: quiz.quizId,
+    name: quiz.name,
+    timeCreated: quiz.timeCreated,
+    timeLastEdited: quiz.timeLastEdited,
+    description: quiz.description,
   };
 }
+
 
 /**
  * This function updates the name of the relevant quiz.
@@ -80,8 +186,47 @@ function adminQuizInfo(authUserId, quizId) {
  * @return {object} - Returns an empty object
  */
 export function adminQuizNameUpdate(authUserId, quizId, name) {
+  const data = getData();
+  
+  const user = data.users.find(u => u.userId === authUserId);
+  if (!user) {
+    return { error: 'AuthUserId is not a valid user' };
+  }
+  
+  const quiz = data.quizzes.find(q => q.quizId === quizId);
+  if (!quiz) {
+    return { error: 'Quiz ID does not refer to a valid quiz' };
+  }
+  
+  if (quiz.creatorId !== authUserId) {
+    return { error: 'Quiz ID does not refer to a quiz that this user owns' };
+  }
+  
+  for (const letter of name) {
+    if (!((letter >= 'A' && letter <= 'Z') || (letter >= 'a' && letter <= 'z') || (letter >= '0' && letter <= '9') || (letter === ' '))) {
+      return { error: 'Name contains invalid characters, valid characters are alphanumeric and spaces' };
+    }
+  }
+  
+  if (name.length < 3) {
+    return { error: 'Name is less than 3 characters long' };
+  }
+
+  if (name.length > 30) {
+    return { error: 'Name is more than 30 characters long.' };
+  }
+  
+  const nameInUse = data.quizzes.find(q => q.creatorId === authUserId && q.quizId !== quizId && q.name === name);
+  if (nameInUse) {
+    return { error: 'Name is already used by the current logged in user for another quiz' };
+  }
+  
+  quiz.name = name;
+  setData(data);
+
   return {};
 }
+
 
 /**
  * This function updates the description of the relevant quiz.
