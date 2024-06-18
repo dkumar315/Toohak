@@ -5,6 +5,7 @@ import {
 import {
   adminAuthRegister,
   adminAuthLogin,
+  adminUserDetails
 } from './auth.js';
 
 import {
@@ -13,28 +14,45 @@ import {
   adminQuizInfo,
 } from './quiz.js';
 
-let userId;
-let quizId;
+let user;
+let quiz;
 
 beforeEach(() => {
-  userId = adminAuthRegister('devk@gmail.com', 'DevK01', 'Devaansh', 'Kumar');
-  adminAuthLogin('devk@gmail.com', 'DevK01');
-  quizId = adminQuizCreate(userId.authUserId, 'My Quiz', 'Quiz on Testing');
+  user = adminAuthRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar');
+  adminAuthLogin('devk@gmail.com', 'DevaanshK01');
+  quiz = adminQuizCreate(user.authUserId, 'My Quiz1', 'Quiz on Testing');
 });
 
 describe('clear test', () => {
   test('clears all the user details', () => {
+    expect(adminUserDetails(user.authUserId).user).toStrictEqual({
+      userId: user.authUserId,
+      name: 'Devaansh Kumar',
+      email: 'devk@gmail.com',
+      numSuccessfulLogins: 1,
+      numFailedPasswordsSinceLastLogin: 0
+    });
     clear();
-    expect(adminUserDetails(userId.authUserId).toStrictEqual({}));
+    expect(adminUserDetails(user.authUserId)).toStrictEqual({ error: expect.any(String) });
   });
 
   test('clears all the quizzes', () => {
+    expect(adminQuizList(user.authUserId, quiz.quizId).quizzes).toStrictEqual([
+      { quizId: quiz.quizId, name: 'My Quiz1' }
+    ]);
     clear();
-    expect(adminQuizList(userId.authUserId, quizId.quizId).toStrictEqual({}));
+    expect(adminQuizList(user.authUserId, quiz.quizId)).toStrictEqual({ error: expect.any(String) });
   });
 
   test('clears all the information in the quizzes', () => {
+    expect(adminQuizInfo(user.authUserId, quiz.quizId)).toStrictEqual({
+      quizId: quiz.quizId,
+      name: 'My Quiz1',
+      timeCreated: expect.any(Number),
+      timeLastEdited: expect.any(Number),
+      description: 'Quiz on Testing',
+    });
     clear();
-    expect(adminQuizInfo(userId.authUserId, quizId.quizId).toStrictEqual({}));
+    expect(adminQuizInfo(user.authUserId, quiz.quizId)).toStrictEqual({ error: expect.any(String) });
   });
 });
