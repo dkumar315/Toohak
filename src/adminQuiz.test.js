@@ -16,7 +16,7 @@ import {
       clear();
   });
   test('Creating a quiz with valid inputs', () => {
-      const user = adminAuthRegister('akshatmish@yahoo.com', 'akst123', 'Akshat', 'Mishra');
+      const user = adminAuthRegister('akshatmish@yahoo.com', 'akst123456', 'Akshat', 'Mishra');
       const result = adminQuizCreate(user.authUserId, 'Test Quiz', 'First test quiz.');
       const data = getData();
       
@@ -31,19 +31,19 @@ import {
   });
   
   test('Creating a quiz with invalid name', () => {
-      const user = adminAuthRegister('DaveShalom@gmail.com', 'goodfood', 'devaansh', 'shalom');
+      const user = adminAuthRegister('DaveShalom@gmail.com', 'good23food', 'devaansh', 'shalom');
       const result = adminQuizCreate(user.authUserId, 'T$', 'Second test quiz.');
       expect(result).toHaveProperty('error');
   });
   
   test('Creating a quiz with a name that is too short', () => {
-      const user = adminAuthRegister('krishshalom@gmail.com', 'kptel7', 'chris', 'patel');
+      const user = adminAuthRegister('krishshalom@gmail.com', 'krisptel7', 'chris', 'patel');
       const result = adminQuizCreate(user.authUserId, 'Te', 'Third test quiz.');
       expect(result).toHaveProperty('error');
   });
   
   test('Creating a quiz with a description that is too long', () => {
-      const user = adminAuthRegister('prishalom@gmail.com', 'primis', 'priyasnhu', 'mish');
+      const user = adminAuthRegister('prishalom@gmail.com', 'primi456s', 'priyasnhu', 'mish');
       const longDescription = 'a'.repeat(101);
       const result = adminQuizCreate(user.authUserId, 'Test Quiz', longDescription);
       expect(result).toHaveProperty('error');
