@@ -2,6 +2,7 @@ import {
   getData,
   setData
 } from './dataStore'
+
 /**
  * This function provides a list of all quizzes that 
  * are owned by the currently logged in user.
@@ -10,7 +11,6 @@ import {
  * 
  * @return {object} - Returns the details of the quiz
  */
-
 export function adminQuizList(authUserId) {
   const data = getData();
   const user = data.users.some(user => user.userId === authUserId);
@@ -74,8 +74,6 @@ export function adminQuizCreate(authUserId, name, description) {
 
   return { quizId: newQuiz.quizId };
 }
-
-
 
 
 /**
