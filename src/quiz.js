@@ -1,3 +1,7 @@
+import {
+  getData,
+  setData
+} from './dataStore'
 /**
  * This function provides a list of all quizzes that 
  * are owned by the currently logged in user.
@@ -6,16 +10,25 @@
  * 
  * @return {object} - Returns the details of the quiz
  */
+const { get } = require('./dataStore');
+
 function adminQuizList(authUserId) {
+  const data = getData();
+  const user = data.users.some(user => user.userId === authUserId);
+  if (!user) {
+    return { error: 'AuthUserId is not valid' };
+    }
+  const quizarray = [];
+  for (const quiz of data.quizzes) {
+    if (quiz.creatorId === authUserId) {
+      quizarray.push({quizId: quiz.quizId, name: quiz.name})
+    }
+  }
   return {
-    quizzes: [
-      {
-        quizId: 1,
-        name: 'My Quiz',
-      }
-    ]
-  };
+    quizzes: quizarray,
+    };
 }
+module.exports = { adminQuizList };
 
 /**
  * This function if given basic details about a new quiz, 
@@ -28,10 +41,35 @@ function adminQuizList(authUserId) {
  * @return {object} - Returns the details of the quiz
  */
 function adminQuizCreate(authUserId, name, description) {
-  return {
-    quizId: 2
-  };
+  const data = getData();
+  const user = data.users.find(user => user.id === authUserId);
+  if (!user) {
+    return { error: 'AuthUserId is not a valid user.' };
+    }
+  if (!/^[a-zA-Z0-9 ]{3,30}$/.test(name)) {
+    return { error: 'Name contains invalid characters or is not the correct length.' };
+    }
+  if (data.quizzes.some(quiz => quiz.authUserId === authUserId && quiz.name === name)) {
+    return { error: 'Name is already used by the current logged-in user for another quiz.' };
+    }
+  if (description.length > 100) {
+    return { error: 'Description is more than 100 characters in length.' };
+    }
+  const newQuiz = {
+    quizId: data.quizzes.length + 1,
+    authUserId,
+    name,
+    description,
+    timeCreated: Math.floor(Date.now() / 1000),
+    timeLastEdited: Math.floor(Date.now() / 1000),
+    };
+
+  data.quizzes.push(newQuiz);
+  setData(data);
+
+  return { quizId: newQuiz.quizId };
 }
+
 
 /**
  * This function permanently removes the quiz,
