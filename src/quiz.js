@@ -1,8 +1,42 @@
+import {
+  getData,
+  setData
+} from './dataStore'
 /**
  * This function provides a list of all quizzes that 
  * are owned by the currently logged in user.
  * 
  * @param {number} authUserId - ID of the authorised user
+ * 
+ * @return {object} - Returns the details of the quiz
+ */
+const { get } = require('./dataStore');
+
+function adminQuizList(authUserId) {
+  const data = getData();
+  const user = data.users.some(user => user.userId === authUserId);
+  if (!user) {
+    return { error: 'AuthUserId is not valid' };
+    }
+  const quizarray = [];
+  for (const quiz of data.quizzes) {
+    if (quiz.creatorId === authUserId) {
+      quizarray.push({quizId: quiz.quizId, name: quiz.name})
+    }
+  }
+  return {
+    quizzes: quizarray,
+    };
+}
+module.exports = { adminQuizList };
+
+/**
+ * This function if given basic details about a new quiz, 
+ * creates one for the logged in user.
+ * 
+ * @param {number} authUserId - ID of the authorised user
+ * @param {string} name - The name of the quiz
+ * @param {string} description - The description of the quiz
  * 
  * @return {object} - Returns the details of the quiz
  */
@@ -43,19 +77,6 @@ function adminQuizCreate(authUserId, name, description) {
 
 module.exports = { adminQuizCreate };
 
-/**
- * This function if given basic details about a new quiz, 
- * creates one for the logged in user.
- * 
- * @param {number} authUserId - ID of the authorised user
- * @param {string} name - The name of the quiz
- * @param {string} description - The description of the quiz
- * 
- * @return {object} - Returns the details of the quiz
- */
-function adminQuizCreate(authUserId, name, description) {
-  
-}
 
 /**
  * This function permanently removes the quiz,
