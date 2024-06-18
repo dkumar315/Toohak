@@ -42,33 +42,40 @@ module.exports = { adminQuizList };
  */
 function adminQuizCreate(authUserId, name, description) {
   const data = getData();
-  const user = data.users.find(user => user.id === authUserId);
+  const user = data.users.find(user => user.userId === authUserId);
+  
   if (!user) {
     return { error: 'AuthUserId is not a valid user.' };
-    }
+  }
+  
   if (!/^[a-zA-Z0-9 ]{3,30}$/.test(name)) {
     return { error: 'Name contains invalid characters or is not the correct length.' };
-    }
-  if (data.quizzes.some(quiz => quiz.authUserId === authUserId && quiz.name === name)) {
+  }
+  
+  if (data.quizzes.some(quiz => quiz.creatorId === authUserId && quiz.name === name)) {
     return { error: 'Name is already used by the current logged-in user for another quiz.' };
-    }
+  }
+  
   if (description.length > 100) {
     return { error: 'Description is more than 100 characters in length.' };
-    }
+  }
+  
   const newQuiz = {
     quizId: data.quizzes.length + 1,
-    authUserId,
+    creatorId: authUserId,
     name,
     description,
     timeCreated: Math.floor(Date.now() / 1000),
     timeLastEdited: Math.floor(Date.now() / 1000),
-    };
+  };
 
   data.quizzes.push(newQuiz);
   setData(data);
 
   return { quizId: newQuiz.quizId };
 }
+
+module.exports = { adminQuizCreate };
 
 
 /**
