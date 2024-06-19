@@ -249,8 +249,8 @@ function isValidPassword(password) {
   const stringPattern = new RegExp(/[a-zA-Z]/);
   const numberPattern = new RegExp(/[0-9]/);
 
-  if (!password || password.length < 8 || 
-    !stringPattern.test(password) || !numberPattern.test(password)) {
+  if (password.length < 8 || !stringPattern.test(password) || 
+    !numberPattern.test(password)) {
     return false;
   }
 
