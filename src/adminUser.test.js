@@ -580,9 +580,9 @@ describe('testing adminUser', () => {
   test('test1.0: check details, and then update details and password', () => {
     // check detail and update detail
     result = adminUserDetails(authUserId1).user;
-    expect(result.userId).toBe(authUserId1);
-    expect(result.email).toBe(email1);
-    expect(result.name).toBe(nameFirst1 + ' ' + nameLast1);
+    expect(result.userId).toStrictEqual(authUserId1);
+    expect(result.email).toStrictEqual(email1);
+    expect(result.name).toStrictEqual(nameFirst1 + ' ' + nameLast1);
 
     email1 = 'haydensmith2@ad.unsw.edu.au';
     nameFirst1 = 'Hayden-new';
@@ -591,9 +591,9 @@ describe('testing adminUser', () => {
 
     // (update detail) and check detail
     result = adminUserDetails(authUserId1).user;
-    expect(result.userId).toBe(authUserId1);
-    expect(result.email).toBe(email1);
-    expect(result.name).toBe(nameFirst1 + ' ' + nameLast1);
+    expect(result.userId).toStrictEqual(authUserId1);
+    expect(result.email).toStrictEqual(email1);
+    expect(result.name).toStrictEqual(nameFirst1 + ' ' + nameLast1);
 
     // (update detail, check detail) and update password
     const newPassword = 'haydensnewpassword0';
@@ -609,9 +609,9 @@ describe('testing adminUser', () => {
 
     // (update password, update detail) and check detail
     result = adminUserDetails(authUserId1).user;
-    expect(result.userId).toBe(authUserId1);
-    expect(result.email).toBe(email1);
-    expect(result.name).toBe(nameFirst1 + ' ' + nameLast1);
+    expect(result.userId).toStrictEqual(authUserId1);
+    expect(result.email).toStrictEqual(email1);
+    expect(result.name).toStrictEqual(nameFirst1 + ' ' + nameLast1);
   });
 
   test('test1.1: failed on changing password and rechanging', () => {
@@ -629,9 +629,9 @@ describe('testing adminUser', () => {
   test('test1.2: fail to change details', () => {
     // check deatil
     result = adminUserDetails(authUserId2);
-    expect(result.user.userId).toBe(authUserId2);
-    expect(result.user.email).toBe(email2);
-    expect(result.user.name).toBe(nameFirst2 + ' ' + nameLast2);
+    expect(result.user.userId).toStrictEqual(authUserId2);
+    expect(result.user.email).toStrictEqual(email2);
+    expect(result.user.name).toStrictEqual(nameFirst2 + ' ' + nameLast2);
 
     // fail to update details with invalid nameFirst
     const nameFirst = 'a';
@@ -640,9 +640,9 @@ describe('testing adminUser', () => {
 
     // check deatil
     result = adminUserDetails(authUserId2);
-    expect(result.user.userId).toBe(authUserId2);
-    expect(result.user.email).toBe(email2);
-    expect(result.user.name).toBe(nameFirst2 + ' ' + nameLast2);
+    expect(result.user.userId).toStrictEqual(authUserId2);
+    expect(result.user.email).toStrictEqual(email2);
+    expect(result.user.name).toStrictEqual(nameFirst2 + ' ' + nameLast2);
   });
 
   test('test1.3: changed password, fail to change details', () => {
