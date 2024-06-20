@@ -1,6 +1,10 @@
 import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
 
+const NAME_MIN_LEN = 2;
+const NAME_MAX_LEN = 20;
+const PASSWORD_MIN_LEN = 8;
+
 /**
  * Register a user with an email, password, and names.
  * 
@@ -231,7 +235,7 @@ function isValidEmail(email, authUserId) {
  * @return {boolean} true iif contains letters, spaces, hyphens, or apostrophes
  */
 function isValidName(name) {
-  const pattern = new RegExp(/^[a-zA-Z\s-\']{2,20}$/);
+  const pattern = new RegExp(`^[a-zA-Z\\s-\']{${NAME_MIN_LEN},${NAME_MAX_LEN}}$`);
   return pattern.test(name);
 }
 
@@ -249,7 +253,7 @@ function isValidPassword(password) {
   const stringPattern = new RegExp(/[a-zA-Z]/);
   const numberPattern = new RegExp(/[0-9]/);
 
-  if (password.length < 8 || !stringPattern.test(password) || 
+  if (password.length < PASSWORD_MIN_LEN || !stringPattern.test(password) || 
     !numberPattern.test(password)) {
     return false;
   }
