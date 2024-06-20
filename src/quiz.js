@@ -187,10 +187,20 @@ export function adminQuizInfo(authUserId, quizId) {
  */
 export function adminQuizNameUpdate(authUserId, quizId, name) {
   const data = getData();
+
+  if (authUserId === null) {
+    return { error: 'User ID does not exist' };
+  } else if (quizId === null) {
+    return { error: 'Quiz ID does not exist' };
+  } else if (name === null) {
+    return { error: 'Name not provided' };
+  }
+
+  name = name.trim();
   
   const user = data.users.find(u => u.userId === authUserId);
   if (!user) {
-    return { error: 'AuthUserId is not a valid user' };
+    return { error: 'User ID is not a valid user' };
   }
   
   const quiz = data.quizzes.find(q => q.quizId === quizId);
@@ -222,6 +232,7 @@ export function adminQuizNameUpdate(authUserId, quizId, name) {
   }
   
   quiz.name = name;
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
   setData(data);
 
   return {};
@@ -259,6 +270,7 @@ export function adminQuizDescriptionUpdate(authUserId, quizId, description) {
   }
   
   quiz.description = description;
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
   setData(data);
 
   return {};
