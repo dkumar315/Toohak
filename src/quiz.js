@@ -191,7 +191,6 @@ export function adminQuizInfo(authUserId, quizId) {
 }
 
 
-
 /**
  * This function updates the name of the relevant quiz.
  * 
@@ -222,7 +221,7 @@ export function adminQuizNameUpdate(authUserId, quizId, name) {
   }
   
   name = name.trim();
-  
+
   for (const letter of name) {
     if (!((letter >= 'A' && letter <= 'Z') || 
       (letter >= 'a' && letter <= 'z') || 
