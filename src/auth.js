@@ -14,7 +14,7 @@ const PASSWORD_MIN_LEN = 8;
  * @param {string} nameLast - user's last name
  * 
  * @return {number} authUserId - unique identifier for a user
- * @return {error: string} if authUserId invalid
+ * @return {error: string} if email, password, nameFirst, nameLast invalid
  */
 export function adminAuthRegister(email, password, nameFirst, nameLast) {
   // Check if email is valid or already exists
@@ -50,7 +50,7 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
     nameLast: nameLast,
     email: email,
     password: password,
-    numSuccessfulLogins: 0,
+    numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
   }
 
@@ -80,8 +80,10 @@ export function adminAuthLogin(email, password) {
   let user = data.users[userIndex];
   if (password.localeCompare(user.password) !== 0) {
     user.numFailedPasswordsSinceLastLogin += 1;
-    return {error: 'Incorrect Password.'};
-  } 
+    return { error: 'Incorrect Password.' };
+  }
+
+  // reset numFailedPasswordsSinceLastLogin
   user.numSuccessfulLogins += 1;
   user.numFailedPasswordsSinceLastLogin = 0;
   setData(data);
@@ -94,14 +96,13 @@ export function adminAuthLogin(email, password) {
  * 
  * @param {number} authUserId - unique identifier for a user
  * 
- * @return {object} return userDetails
+ * @return {object} return user - userDetails
  * @return {error: string} if authUserId invalid
  */
 export function adminUserDetails(authUserId) {
   const data = getData();
 
   const userIndex = isValidUser(authUserId);
-
   if (userIndex === -1) return { error: 'invalid authUserId' };
   const user = data.users[userIndex];
 
@@ -115,7 +116,6 @@ export function adminUserDetails(authUserId) {
     }
   };
 }
-
 
 
 /**
@@ -142,6 +142,7 @@ export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
   if (!isValidName(nameFirst)) return { error: 'invalid nameFirst' };
   if (!isValidName(nameLast)) return { error: 'invalid nameLast' };
 
+  // update userDetails
   data.users[userIndex].email = email;
   data.users[userIndex].nameFirst = nameFirst;
   data.users[userIndex].nameLast = nameLast;
@@ -172,13 +173,11 @@ export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
   const user = data.users[userIndex];
 
   //  check the oldPassword whether is valid and match the user password
-  if (!oldPassword || user.password !== oldPassword) {
-    return { error: 'invalid oldPassword' };
-  }
+  if (user.password !== oldPassword) return { error: 'invalid oldPassword' };
 
   // check the newPassword whether is valid and not used before
   user.passwordHistory = user.passwordHistory || [];
-  if (oldPassword === newPassword || !isValidPassword(newPassword) ||
+  if (oldPassword === newPassword || !isValidPassword(newPassword) || 
     user.passwordHistory.includes(newPassword)) {
     return { error: 'invalid newPassword' };
   }
