@@ -243,36 +243,36 @@ describe('Testing for adminQuizNameUpdate', () => {
 
     userId1 = adminAuthRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar');
     adminAuthLogin('devk@gmail.com', 'DevaanshK01');
-    quizId1 = adminQuizCreate(userId1.authUserId, 'My Quiz1', 'Quiz on Testing');
+    quizId1 = adminQuizCreate(userId1.authUserId, 'My Quiz', 'Quiz on Testing');
     quizInfo1 = adminQuizInfo(userId1.authUserId, quizId1.quizId);
 
     userId2 = adminAuthRegister('krishp@gmail.com', 'KrishP02', 'Krish', 'Patel');
     adminAuthLogin('krishp@gmail.com', 'KrishP02');
-    quizId2 = adminQuizCreate(userId2.authUserId, 'Your Quiz2', 'Quiz on Implementation');
+    quizId2 = adminQuizCreate(userId2.authUserId, 'Your Quiz', 'Quiz on Implementation');
     quizInfo2 = adminQuizInfo(userId2.authUserId, quizId2.quizId);
 
     adminAuthRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar');
     adminAuthLogin('devk@gmail.com', 'DevaanshK01');
-    quizId3 = adminQuizCreate(userId1.authUserId, 'Our Quiz3', 'Quiz on Ethics');
+    quizId3 = adminQuizCreate(userId1.authUserId, 'Our Quiz', 'Quiz on Ethics');
     quizInfo3 = adminQuizInfo(userId1.authUserId, quizId3.quizId);
   });
 
-  test('Valid authUserId, quizId and name', () => {
-    expect(adminQuizNameUpdate(userId1.authUserId, quizInfo1.quizId, 'Other quiz4')).toStrictEqual({});
+  test('Valid User ID, Quiz ID and Name', () => {
+    expect(adminQuizNameUpdate(userId1.authUserId, quizInfo1.quizId, 'New Quiz')).toStrictEqual({});
     quizInfo1 = adminQuizInfo(userId1.authUserId, quizId1.quizId);
-    expect((quizInfo1.name)).toStrictEqual('Other quiz4');
+    expect((quizInfo1.name)).toStrictEqual('New Quiz');
   });
   
-  test('Invalid authUserId', () => {
-    expect(adminQuizNameUpdate(3, quizInfo1.quizId, 'Other quiz4')).toStrictEqual({ error: expect.any(String) });
+  test('Invalid User ID', () => {
+    expect(adminQuizNameUpdate(3, quizInfo1.quizId, 'New Quiz')).toStrictEqual({ error: expect.any(String) });
   });
   
-  test('QuizId does not refer to a valid quiz', () => {
-    expect(adminQuizNameUpdate(userId1.authUserId, 4, 'Other quiz4')).toStrictEqual({ error: expect.any(String) });
+  test('Quiz ID does not refer to a valid quiz', () => {
+    expect(adminQuizNameUpdate(userId1.authUserId, 4, 'New Quiz')).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('QuizId does not refer to a quiz that this user owns', () => {
-    expect(adminQuizNameUpdate(userId1.authUserId, quizInfo2.quizId, 'Other quiz4')).toStrictEqual({ error: expect.any(String) });
+  test('Quiz ID does not refer to a quiz that this user owns', () => {
+    expect(adminQuizNameUpdate(userId1.authUserId, quizInfo2.quizId, 'New Quiz')).toStrictEqual({ error: expect.any(String) });
   });
 
   test('Name with symbols and alphanumeric characters', () => {
@@ -298,6 +298,55 @@ describe('Testing for adminQuizNameUpdate', () => {
   test('Name already in use', () => {
     expect(adminQuizNameUpdate(userId1.authUserId, quizInfo1.quizId, quizInfo3.name)).toStrictEqual({ error: expect.any(String) });
   });
+
+  test('Name with leading and trailing spaces', () => {
+    expect(adminQuizNameUpdate(userId1.authUserId, quizInfo1.quizId, '   New Quiz   ')).toStrictEqual({});
+    quizInfo1 = adminQuizInfo(userId1.authUserId, quizId1.quizId);
+    expect((quizInfo1.name)).toStrictEqual('New Quiz');
+  });
+
+  test('Name with multiple spaces in between', () => {
+    expect(adminQuizNameUpdate(userId1.authUserId, quizInfo1.quizId, 'New    Quiz')).toStrictEqual({});
+    quizInfo1 = adminQuizInfo(userId1.authUserId, quizId1.quizId);
+    expect((quizInfo1.name)).toStrictEqual('New    Quiz');
+  });
+
+  test('Update name to the same existing name', () => {
+    expect(adminQuizNameUpdate(userId1.authUserId, quizInfo1.quizId, 'My Quiz')).toStrictEqual({});
+    quizInfo1 = adminQuizInfo(userId1.authUserId, quizId1.quizId);
+    expect((quizInfo1.name)).toStrictEqual('My Quiz');
+  });
+
+  test('User ID is null', () => {
+    expect(adminQuizNameUpdate(null, quizInfo1.quizId, 'New Name')).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('Quiz ID is null', () => {
+    expect(adminQuizNameUpdate(userId1.authUserId, null, 'New Name')).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('Name is null', () => {
+    expect(adminQuizNameUpdate(userId1.authUserId, quizInfo1.quizId, null)).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('Name with alphanumeric characters only', () => {
+    expect(adminQuizNameUpdate(userId1.authUserId, quizInfo1.quizId, 'Quiz 1')).toStrictEqual({});
+    quizInfo1 = adminQuizInfo(userId1.authUserId, quizId1.quizId);
+    expect((quizInfo1.name)).toStrictEqual('Quiz 1');
+  });
+
+  test('Update name of a quiz owned by another user', () => {
+    expect(adminQuizNameUpdate(userId2.authUserId, quizInfo1.quizId, 'New Quiz')).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('Update name to multiple spaces', () => {
+    expect(adminQuizNameUpdate(userId1.authUserId, quizInfo1.quizId, '    ')).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('Update name of a removed quiz', () => {
+    adminQuizRemove(userId1.authUserId, quizId1.quizId);
+    expect(adminQuizNameUpdate(userId1.authUserId, quizId1.quizId, 'New Name')).toStrictEqual({ error: expect.any(String) });
+  });
 });
 
 describe('Testing for adminQuizDescriptionUpdate', () => {
@@ -313,12 +362,12 @@ describe('Testing for adminQuizDescriptionUpdate', () => {
 
     userId1 = adminAuthRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar');
     adminAuthLogin('devk@gmail.com', 'DevaanshK01');
-    quizId1 = adminQuizCreate(userId1.authUserId, 'My Quiz1', 'Quiz on Testing');
+    quizId1 = adminQuizCreate(userId1.authUserId, 'My Quiz', 'Quiz on Testing');
     quizInfo1 = adminQuizInfo(userId1.authUserId, quizId1.quizId);
 
     userId2 = adminAuthRegister('krishp@gmail.com', 'KrishP02', 'Krish', 'Patel');
     adminAuthLogin('krishp@gmail.com', 'KrishP02');
-    quizId2 = adminQuizCreate(userId2.authUserId, 'Your Quiz2', 'Quiz on Implementation');
+    quizId2 = adminQuizCreate(userId2.authUserId, 'Your Quiz', 'Quiz on Implementation');
     quizInfo2 = adminQuizInfo(userId2.authUserId, quizId2.quizId);
   });
 
