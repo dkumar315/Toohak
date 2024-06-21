@@ -29,7 +29,7 @@ describe('clear test', () => {
       userId: user.authUserId,
       name: 'Devaansh Kumar',
       email: 'devk@gmail.com',
-      numSuccessfulLogins: 1,
+      numSuccessfulLogins: 2,
       numFailedPasswordsSinceLastLogin: 0
     });
     clear();

@@ -11,11 +11,10 @@ afterAll(() => clear());
 const validUpdate = {};
 const idError = { error: 'invalid authUserId' };
 const emailError = { error: 'invalid email' };
-const name1Error = { error: 'invalid nameFirst' };
-const name2Error = { error: 'invalid nameLast' };
-const oldPWError = { error: 'invalid oldPassword' };
-const newPWError = { error: 'invalid newPassword' };
-
+const nameFirstError = { error: 'invalid nameFirst' };
+const nameLastError = { error: 'invalid nameLast' };
+const oldPasswordError = { error: 'invalid oldPassword' };
+const newPasswordError = { error: 'invalid newPassword' };
 
 /**
   * adminUserDetails
@@ -48,8 +47,8 @@ describe('testing adminUserDetails', () => {
         userId: authUserId,
         name: nameFirst + ' ' + nameLast,
         email: email,
-        numSuccessfulLogins: 0,
-        numFailedPasswordsSinceLastLogin: 0
+        numSuccessfulLogins: 1,
+        numFailedPasswordsSinceLastLogin: 0,
       };
       expect(adminUserDetails(authUserId).user).toMatchObject(expectRes);
     });
@@ -96,14 +95,14 @@ describe('testing adminUserDetails', () => {
         userId: authUserId1,
         name: nameFirst1 + ' ' + nameLast1,
         email: email1,
-        numSuccessfulLogins: 0,
+        numSuccessfulLogins: 1,
         numFailedPasswordsSinceLastLogin: 0,
       };
       expectUser2 = {
         userId: authUserId2,
         name: nameFirst2 + ' ' + nameLast2,
         email: email2,
-        numSuccessfulLogins: 0,
+        numSuccessfulLogins: 1,
         numFailedPasswordsSinceLastLogin: 0,
       };
     });
@@ -137,7 +136,7 @@ describe('testing adminUserDetails', () => {
         userId: authUserId3,
         name: nameFirst3 + ' ' + nameLast3,
         email: email3,
-        numSuccessfulLogins: 0,
+        numSuccessfulLogins: 1,
         numFailedPasswordsSinceLastLogin: 0,
       };
 
@@ -162,7 +161,7 @@ describe('testing adminUserDetails', () => {
 
     test('test4.0: initial before authadminLogin', () => {
       result = adminUserDetails(authUserId).user;
-      expect(result.numSuccessfulLogins).toStrictEqual(0);
+      expect(result.numSuccessfulLogins).toStrictEqual(1);
       expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
     });
 
@@ -171,7 +170,7 @@ describe('testing adminUserDetails', () => {
       adminAuthLogin(email, password + 'invalid');
 
       result = adminUserDetails(authUserId).user;
-      expect(result.numSuccessfulLogins).toStrictEqual(0);
+      expect(result.numSuccessfulLogins).toStrictEqual(1);
       expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(2);
     });
     
@@ -181,7 +180,7 @@ describe('testing adminUserDetails', () => {
       adminAuthLogin(email, password + 'invalid');
 
       result = adminUserDetails(authUserId).user;
-      expect(result.numSuccessfulLogins).toStrictEqual(2);
+      expect(result.numSuccessfulLogins).toStrictEqual(3);
       expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
     });
 
@@ -189,19 +188,19 @@ describe('testing adminUserDetails', () => {
       // successfully login
       adminAuthLogin(email, password);
       result = adminUserDetails(authUserId).user;
-      expect(result.numSuccessfulLogins).toStrictEqual(1);
+      expect(result.numSuccessfulLogins).toStrictEqual(2);
       expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
 
       // then fail to login
       adminAuthLogin(email, password + 'invalid');
       result = adminUserDetails(authUserId).user;
-      expect(result.numSuccessfulLogins).toStrictEqual(1);
+      expect(result.numSuccessfulLogins).toStrictEqual(2);
       expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
 
       // then successfully login
       adminAuthLogin(email, password);
       result = adminUserDetails(authUserId).user;
-      expect(result.numSuccessfulLogins).toStrictEqual(2);
+      expect(result.numSuccessfulLogins).toStrictEqual(3);
       expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
     });
   });
@@ -212,7 +211,7 @@ describe('testing adminUserDetails', () => {
   * adminUserDetailsUpdate
   * { authUserId, email, nameFirst, nameLast }
   * valid: validUpdate
-  * invalid: idError, emailError, name1Error, name2Error
+  * invalid: idError, emailError, nameFirstError, nameLastError
 **/
 describe('testing adminUserDetailsUpdate', () => {
   let authUserId, email, password, nameFirst, nameLast;
@@ -341,14 +340,14 @@ describe('testing adminUserDetailsUpdate', () => {
     describe('test2.3.1: invalid nameFirst', () => {
       test.each(invalidNames)('invalid nameFirst = \'%s\'', (invalidNameFirst) => {
         result = adminUserDetailsUpdate(authUserId, email, invalidNameFirst, nameLast);
-        expect(result).toMatchObject(name1Error);
+        expect(result).toMatchObject(nameFirstError);
       });
     });
     
     describe('test2.3.2: invalid nameLast', () => {
       test.each(invalidNames)('invalid nameLast = \'%s\'', (invalidNameLast) => {
         result = adminUserDetailsUpdate(authUserId, email, nameFirst, invalidNameLast);
-        expect(result).toMatchObject(name2Error);
+        expect(result).toMatchObject(nameLastError);
       });
     });
   });
@@ -359,7 +358,7 @@ describe('testing adminUserDetailsUpdate', () => {
   * adminUserPasswordUpdate
   * { authUserId, oldPassword, newPassword }
   * valid: validUpdate
-  * invalid: idError, oldPWError, newPWError
+  * invalid: idError, oldPasswordError, newPasswordError
 **/
 describe('testing adminUserPasswordUpdate', () => {
   let authUserId, password, newPassword;
@@ -472,12 +471,12 @@ describe('testing adminUserPasswordUpdate', () => {
   describe('test2.2: invalid oldPasswords',() => {
     test('test2.2.1: old password is empty',() => {
       result = adminUserPasswordUpdate(authUserId, '', newPassword);
-      expect(result).toMatchObject(oldPWError);
+      expect(result).toMatchObject(oldPasswordError);
     });
 
     test('test2.2.2: old password is the new password',() => {
       result = adminUserPasswordUpdate(authUserId, newPassword, newPassword);
-      expect(result).toMatchObject(oldPWError);
+      expect(result).toMatchObject(oldPasswordError);
     });
 
     test('test2.2.3: password match other user\'s', () => {
@@ -488,20 +487,20 @@ describe('testing adminUserPasswordUpdate', () => {
       const nameLast2 = 'vict';
       adminAuthRegister(email2, password2, nameFirst2, nameLast2);
       result = adminUserPasswordUpdate(authUserId, password2, newPassword);
-      expect(result).toMatchObject(oldPWError);
+      expect(result).toMatchObject(oldPasswordError);
     })
   });
 
   describe('test2.3: invalid newPasswords',() => {
     test('test2.3.1: newPassword equals to oldPassword',() => {
       result = adminUserPasswordUpdate(authUserId, password, password);
-      expect(result).toMatchObject(newPWError);
+      expect(result).toMatchObject(newPasswordError);
     });
 
     test('test2.3.2: newPassword used before',() => {
       adminUserPasswordUpdate(authUserId, password, newPassword);
       result = adminUserPasswordUpdate(authUserId, newPassword, password);
-      expect(result).toMatchObject(newPWError);
+      expect(result).toMatchObject(newPasswordError);
     });
 
     describe('test2.3.4: mutiple newPasswords used before',() => {
@@ -516,7 +515,7 @@ describe('testing adminUserPasswordUpdate', () => {
           expect(result).toMatchObject(validUpdate);
           // newPassword as last changed
           result = adminUserPasswordUpdate(authUserId, newPassword, password);
-          expect(result).toMatchObject(newPWError);
+          expect(result).toMatchObject(newPasswordError);
           password = newPassword;
         });
       });
@@ -528,7 +527,7 @@ describe('testing adminUserPasswordUpdate', () => {
     test.each(newPasswords)(
       'invalid newPassword = \'%s\'', (newPassword) => {
       result = adminUserPasswordUpdate(authUserId, password, newPassword);
-      expect(result).toMatchObject(newPWError);
+      expect(result).toMatchObject(newPasswordError);
     });
   });
 
@@ -537,7 +536,7 @@ describe('testing adminUserPasswordUpdate', () => {
     test.each(newPasswords)(
       'invalid newPassword = \'%s\'', (newPassword) => {
       result = adminUserPasswordUpdate(authUserId, password, newPassword);
-      expect(result).toMatchObject(newPWError);
+      expect(result).toMatchObject(newPasswordError);
     });
   });
 });
@@ -547,7 +546,7 @@ describe('testing adminUserPasswordUpdate', () => {
   * adminUser
   * adminUserDetails, adminUserDetailsUpdate, adminUserPasswordUpdate
   * valid: { user }, validUpdate, validUpdate
-  * invalid: idError, emailError, name1Error, name2Error, oldPWError, newPWError
+  * invalid: idError, emailError, nameFirstError, nameLastError, oldPasswordError, newPasswordError
 **/
 describe('testing adminUser', () => {
   let email1, password1, nameFirst1, nameLast1, authUserId1, res1;
@@ -618,7 +617,7 @@ describe('testing adminUser', () => {
     // update password
     const invalidnewPassword = 'abc';
     result = adminUserPasswordUpdate(authUserId1, password1, invalidnewPassword);
-    expect(result).toMatchObject(newPWError);
+    expect(result).toMatchObject(newPasswordError);
 
     // update password
     const newPassword = 'haydensnewpassword0';
@@ -636,7 +635,7 @@ describe('testing adminUser', () => {
     // fail to update details with invalid nameFirst
     const nameFirst = 'a';
     result = adminUserDetailsUpdate(authUserId2, email2, nameFirst, nameLast2);
-    expect(result).toMatchObject(name1Error);
+    expect(result).toMatchObject(nameFirstError);
 
     // check deatil
     result = adminUserDetails(authUserId2);
@@ -654,6 +653,6 @@ describe('testing adminUser', () => {
     // fail to update detail
     const invalidnameLast2 = 'a';
     result = adminUserDetailsUpdate(authUserId2, email2, nameFirst2, invalidnameLast2);
-    expect(result).toMatchObject(name2Error);
+    expect(result).toMatchObject(nameLastError);
   });
 });
