@@ -70,7 +70,7 @@ describe('adminQuizCreate', () => {
 
   test('Creating a quiz with invalid authUserId', () => {
     const result = adminQuizCreate(999, 'Test Quiz', 'This is a test quiz.');
-    expect(result).toStrictEqual({ error: 'AuthUserId is not a valid user.' });
+    expect(result).toStrictEqual({ error: 'AuthUserId is not valid' });
   });
 
   test('Creating a quiz with invalid name', () => {
@@ -83,6 +83,23 @@ describe('adminQuizCreate', () => {
     const user = adminAuthRegister('krishshalom@gmail.com', 'krisptel7', 'chris', 'patel');
     const result = adminQuizCreate(user.authUserId, 'Te', 'Third test quiz.');
     expect(result).toStrictEqual({ error: 'Name contains invalid characters or is not the correct length.' });
+  });
+
+  test('Creating a quiz with a name that is too long', () => {
+    const name = 'n'.repeat(31);
+    const user = adminAuthRegister('krishshalom@gmail.com', 'krisptel7', 'chris', 'patel');
+    const result = adminQuizCreate(user.authUserId, name, 'Third test quiz.');
+    expect(result).toStrictEqual({ error: 'Name contains invalid characters or is not the correct length.' });
+  });
+  
+  test('Creating a quiz with a name that is used by the current user for another quiz', () => {
+    const name = 'Quiz';
+    const user = adminAuthRegister('krishshalom@gmail.com', 'krisptel7', 'chris', 'patel');
+    const result1 = adminQuizCreate(user.authUserId, name, 'Third test quiz.');
+    expect(result1).toEqual(expect.objectContaining({ quizId: expect.any(Number) }));
+    
+    const result2 = adminQuizCreate(user.authUserId, name, 'Third test quiz.');
+    expect(result2).toStrictEqual({ error: 'Name is already used by the current logged-in user for another quiz.' });
   });
 
   test('Creating a quiz with a description that is too long', () => {
@@ -116,38 +133,38 @@ describe('adminQuizRemove tests', () => {
 
   test('Error shown when user ID is invalid', () => {
     const result = adminQuizRemove(999, quizId1.quizId);
-    expect(result).toStrictEqual({ error: 'User ID is not valid' });
+    expect(result).toStrictEqual({ error: 'AuthUserId is not valid' });
   });
   
   test('Error shown when quiz ID is invalid', () => {
     const result = adminQuizRemove(userId1.authUserId, 999);
-    expect(result).toStrictEqual({ error: 'Quiz ID does not refer to a valid quiz' });
-  });
-  
-  test('Error shown when user does not own the quiz', () => {
-    const result = adminQuizRemove(userId1.authUserId, quizId2.quizId);
     expect(result).toStrictEqual({ error: 'User does not own the quiz' });
   });
   
+  test('Error shown when user does not own the quiz', () => {
+    const result = adminQuizRemove(userId2.authUserId, quizId1.quizId);
+    expect(result).toStrictEqual({ error: 'Quiz ID does not refer to a quiz that this user owns' });
+  });
+
   test('Error shown when removing a quiz after it has already been removed', () => {
     adminQuizRemove(userId1.authUserId, quizId1.quizId);
     const result = adminQuizRemove(userId1.authUserId, quizId1.quizId);
-    expect(result).toStrictEqual({ error: 'Quiz ID does not refer to a valid quiz' });
+    expect(result).toStrictEqual({ error: 'User does not own the quiz' });
   });
   
   test('Error shown when removing a quiz with an empty quiz ID', () => {
     const result = adminQuizRemove(userId1.authUserId, null);
-    expect(result).toStrictEqual({ error: 'Quiz ID does not refer to a valid quiz' });
+    expect(result).toStrictEqual({ error: 'User does not own the quiz' });
   });
   
   test('Error shown when removing a quiz with an empty user ID', () => {
     const result = adminQuizRemove(null, quizId1.quizId);
-    expect(result).toStrictEqual({ error: 'User ID is not valid' });
+    expect(result).toStrictEqual({ error: 'AuthUserId is not valid' });
   });
   
   test('Error shown when quiz ID is a string instead of an integer', () => {
     const result = adminQuizRemove(userId1.authUserId, 'invalidQuizId');
-    expect(result).toStrictEqual({ error: 'Quiz ID does not refer to a valid quiz' });
+    expect(result).toStrictEqual({ error: 'User does not own the quiz' });
   });
 });
   
@@ -175,14 +192,14 @@ describe('adminQuizInfo tests', () => {
     });
   });
 
-  test('Error shown when user ID is invalid', () => {
-    const result = adminQuizInfo(999, quizId1.quizId);
-    expect(result).toStrictEqual({ error: 'User ID is not valid' });
+  test('Error shown when authUserId is not valid', () => {
+    const result = adminQuizInfo(789, 1);
+    expect(result).toStrictEqual({ error: 'AuthUserId is not valid' });
   });
 
   test('Error shown when quiz ID is invalid', () => {
     const result = adminQuizInfo(userId1.authUserId, 999);
-    expect(result).toStrictEqual({ error: 'Quiz ID does not refer to a valid quiz' });
+    expect(result).toStrictEqual({ error: 'User does not own the quiz' });
   });
 
   test('Error shown when user does not own the quiz', () => {
@@ -192,22 +209,22 @@ describe('adminQuizInfo tests', () => {
 
   test('Error shown when user ID is a string instead of an integer', () => {
     const result = adminQuizInfo('invalidUserId', quizId1.quizId);
-    expect(result).toStrictEqual({ error: 'User ID is not valid' });
+    expect(result).toStrictEqual({ error: 'AuthUserId is not valid' });
   });
 
   test('Error shown when quiz ID is a string instead of an integer', () => {
     const result = adminQuizInfo(userId1.authUserId, 'invalidQuizId');
-    expect(result).toStrictEqual({ error: 'Quiz ID does not refer to a valid quiz' });
+    expect(result).toStrictEqual({ error: 'User does not own the quiz' });
   });
 
   test('Error shown when quiz ID is null', () => {
     const result = adminQuizInfo(userId1.authUserId, null);
-    expect(result).toStrictEqual({ error: 'Quiz ID does not refer to a valid quiz' });
+    expect(result).toEqual({ error: 'User does not own the quiz' });
   });
 
   test('Error shown when user ID is null', () => {
-    const result = adminQuizInfo(null, quizId1.quizId);
-    expect(result).toStrictEqual({ error: 'User ID is not valid' });
+    const result = adminQuizInfo(null, quizId1);
+    expect(result).toEqual({ error: 'AuthUserId is not valid' });
   });
 });
 
