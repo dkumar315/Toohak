@@ -180,7 +180,7 @@ export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
   user.passwordHistory = user.passwordHistory || [];
   if (oldPassword === newPassword || !isValidPassword(newPassword) || 
     user.passwordHistory.includes(newPassword)) {
-    return { error: 'Invalid newPassword ${newPassword}.' };
+    return { error: `Invalid newPassword ${newPassword}.` };
   }
 
   // if all input valid, then update the password
