@@ -4,6 +4,7 @@ import isEmail from 'validator/lib/isEmail';
 const NAME_MIN_LEN = 2;
 const NAME_MAX_LEN = 20;
 const PASSWORD_MIN_LEN = 8;
+const INVALID_USER_INDEX = -1;
 
 /**
  * Register a user with an email, password, and names.
@@ -103,7 +104,7 @@ export function adminUserDetails(authUserId) {
   const data = getData();
 
   const userIndex = isValidUser(authUserId);
-  if (userIndex === -1) return { error: 'invalid authUserId' };
+  if (userIndex === INVALID_USER_INDEX) return { error: `Invalid authUserId ${authUserId}.` };
   const user = data.users[userIndex];
 
   return {
@@ -135,12 +136,12 @@ export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
 
   // check whether authUserId is exist
   const userIndex = isValidUser(authUserId);
-  if (userIndex === -1) return { error: 'invalid authUserId' };
+  if (userIndex === INVALID_USER_INDEX) return { error: `Invalid authUserId ${authUserId}.` };
 
   // check email, nameFirst, nameLast whether is valid
-  if (!isValidEmail(email, authUserId)) return { error: 'invalid email' };
-  if (!isValidName(nameFirst)) return { error: 'invalid nameFirst' };
-  if (!isValidName(nameLast)) return { error: 'invalid nameLast' };
+  if (!isValidEmail(email, authUserId)) return { error: `Invalid email ${email}.` };
+  if (!isValidName(nameFirst)) return { error: `Invalid nameFirst ${nameFirst}.` };
+  if (!isValidName(nameLast)) return { error: `Invalid nameLast ${nameLast}.` };
 
   // update userDetails
   data.users[userIndex].email = email;
@@ -168,18 +169,18 @@ export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
 
   // check the authUserId whether is valid and find its userDetails
   const userIndex = isValidUser(authUserId);
-  if (userIndex === -1) return { error: 'invalid authUserId' };
+  if (userIndex === INVALID_USER_INDEX) return { error: `Invalid authUserId ${authUserId}.` };
   
   const user = data.users[userIndex];
 
   //  check the oldPassword whether is valid and match the user password
-  if (user.password !== oldPassword) return { error: 'invalid oldPassword' };
+  if (user.password !== oldPassword) return { error: `Invalid oldPassword ${oldPassword}.` };
 
   // check the newPassword whether is valid and not used before
   user.passwordHistory = user.passwordHistory || [];
   if (oldPassword === newPassword || !isValidPassword(newPassword) || 
     user.passwordHistory.includes(newPassword)) {
-    return { error: 'invalid newPassword' };
+    return { error: `Invalid newPassword ${newPassword}.` };
   }
 
   // if all input valid, then update the password
@@ -218,7 +219,7 @@ function isValidEmail(email, authUserId) {
   const data = getData();
 
   const isUsed = data.users.some(user => 
-    user.userId !== authUserId && user.email === email
+user.userId !== authUserId && user.email === email
   );
 
   return !isUsed && isEmail(email);
