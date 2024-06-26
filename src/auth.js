@@ -21,7 +21,7 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
   // Check if email is valid or already exists
   const emailValidResult = isValidEmail(email, INVALID_USER_INDEX);
   if (!emailValidResult) {
-    return { error: 'Email invalid format or already in use' };
+    return { error: `Email invalid format or already in use ${email}.` };
   }
 
   const data = getData();
@@ -30,31 +30,19 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
   // Check nameFirst meets requirements
   const nameFValidResult = isValidName(nameFirst);
   if (!nameFValidResult) {
-    return { error: 'Firstname must: \n' +
-            '- have lowercase or uppercase letters,' +
-            'spaces, hyphens, or apostrophes\n' +
-            '- be between 2 to 20 characters'
-    };
+    return { error: `Firstname does not meet requirements ${email}.` };
   }
 
   // Check nameLast meets requirements
   const nameLValidResult = isValidName(nameLast);
   if (!nameLValidResult) {
-    return { error: 'Lastname must: \n' +
-            '- have lowercase, uppercase letters,' +
-            'spaces, hyphens, or apostrophes\n' +
-            '- be between 2 to 20 characters'
-    };
+    return { error: `Lastname does not meet requirements ${email}.` };
   }
 
   // Check password meets requirements
   const passValidResult = isValidPassword(password);
   if (!passValidResult) {
-    return { error: 'Password must contain: \n' +
-            '- one letter \n' +
-            '- one number \n' +
-            '- more than 8 characters'
-    };
+    return { error: `Invalid password ${email}.` };
   }
 
   const newUser = {
@@ -87,13 +75,13 @@ export function adminAuthLogin(email, password) {
   const data = getData();
   const userIndex = data.users.findIndex(user => user.email === email);
   if (userIndex === INVALID_USER_INDEX) {
-    return { error: 'Invalid email.' };
+    return { error: `Invalid email ${email}.` };
   }
 
   let user = data.users[userIndex];
   if (password.localeCompare(user.password) !== 0) {
     user.numFailedPasswordsSinceLastLogin += 1;
-    return { error: 'Incorrect Password.' };
+    return { error: `Invalid nameLast ${password}.` };
   }
 
   // reset numFailedPasswordsSinceLastLogin
