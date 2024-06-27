@@ -297,6 +297,7 @@ describe('testing adminUserDetailsUpdate', () => {
         const psw2 = 'vict078999';
         const nameFirst2 = 'myName';
         const nameLast2 = 'vict';
+
         const userRegister2 = adminAuthRegister(email2, psw2, nameFirst2, nameLast2);
         const authUserId2 = userRegister2.authUserId;
 
@@ -319,6 +320,7 @@ describe('testing adminUserDetailsUpdate', () => {
         expect(result).toMatchObject(ERROR);
       });
     });
+
     describe('test2.3.2: invalid nameLast', () => {
       test.each(invalidNames)('invalid nameLast = \'%s\'', (invalidNameLast) => {
         result = adminUserDetailsUpdate(authUserId, email, nameFirst, invalidNameLast);
@@ -398,11 +400,11 @@ describe('testing adminUserPasswordUpdate', () => {
       const authUserId2 = user2.authUserId;
 
       test('authUserId with 2 users', () => {
-        let res = adminUserPasswordUpdate(authUserId, password, password2);
-        expect(res).toMatchObject(VALID_UPDATE_RETURN);
+        const res1 = adminUserPasswordUpdate(authUserId, password, password2);
+        expect(res1).toMatchObject(VALID_UPDATE_RETURN);
 
-        res = adminUserPasswordUpdate(authUserId2, password2, password);
-        expect(res).toMatchObject(VALID_UPDATE_RETURN);
+        const res2 = adminUserPasswordUpdate(authUserId2, password2, password);
+        expect(res2).toMatchObject(VALID_UPDATE_RETURN);
       });
 
       test('authUserId with 3 users', () => {
