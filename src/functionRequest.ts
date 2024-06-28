@@ -5,11 +5,11 @@ const SERVER_URL = `${url}:${port}`;
 // ============== helper function ====================================================
 const requestHelper = (method: HttpVerb, path: string, payload: object, token?: string) => {
   let res;
-  const header = { token: token };
+  const params = { token: token };
   if (['GET', 'DELETE'].includes(method)) {
-    res = request(method, SERVER_URL + path, { qs: { payload }, header });
+    res = request(method, SERVER_URL + path, { qs: { payload }, params });
   } else {// ['PUT', 'POST']
-    res = request(method, SERVER_URL + path, { json: { payload }, header });
+    res = request(method, SERVER_URL + path, { json: { payload }, params });
   }
   const bodyObject = JSON.parse(res.body.toString());
   return { statusCode: res.statusCode, body: bodyObject };

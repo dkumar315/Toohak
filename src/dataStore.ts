@@ -1,5 +1,5 @@
 // YOU SHOULD MODIFY THIS OBJECT BELOW ONLY
-let data = {
+let data: Data = {
   users: [],
   quizzes: [],
 };
@@ -13,7 +13,7 @@ export { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN };
 
 export interface Data {
   users: User[],
-  quizzes: any, // fixme
+  quizzes: Quiz[],
 }
 
 export interface User {
@@ -27,7 +27,31 @@ export interface User {
   passwordHistory?: string[]
 }
 
+export interface Quiz {
+  quizId: number,
+  name: string,
+  timeCreated: number,
+  timeLastEdited: number,
+  description: string,
+  creatorId: number,
+  questions?: Question[];
+}
+
+export interface Question {
+  optionId: number,
+  optionString: string,
+}
+
+export interface UserDetails {// fixme move to auth.ts
+  userId: number,
+  email: string,
+  name: string,
+  numSuccessfulLogins: number,
+  numFailedPasswordsSinceLastLogin: number,
+}
+
 export type EmptyObject = Record<string, never>;
+export type ErrorObject = { error: string };
 
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY
 
@@ -48,12 +72,12 @@ Example usage
 */
 
 // Use get() to access the data
-function getData() {
+function getData(): Data {
   return data;
 }
 
 // Use set(newData) to pass in the entire data object, with modifications made
-function setData(newData) {
+function setData(newData: Data): void {
   data = newData;
 }
 

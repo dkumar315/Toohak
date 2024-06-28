@@ -28,6 +28,11 @@ const HOST: string = process.env.IP || '127.0.0.1';
 // ====================================================================
 //  ================= WORK IS DONE BELOW THIS LINE ===================
 // ====================================================================
+import {
+  adminAuthRegister, adminAuthLogin,
+  adminUserDetails
+} from './auth';
+import { clear } from './other.js';
 
 // Example get request
 app.get('/echo', (req: Request, res: Response) => {
@@ -36,6 +41,27 @@ app.get('/echo', (req: Request, res: Response) => {
     res.status(400);
   }
 
+  return res.json(result);
+});
+
+// adminAuth // note: set for testing, incomplete
+app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
+  const { email, password, nameFirst, nameLast } = req.body;
+  return res.json(authRegisterV3(email, password, nameFirst, nameLast));
+});
+
+app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  return res.json(authLoginV3(email, password));
+});
+
+// adminUser
+app.get('/v1/admin/user/details', (req: Request, res: Response) => {
+  const token = parseInt(req.params.token as string);
+  const result = adminUserDetails(token);
+  if ('error' in result) {
+    res.status(401).send(JSON.stringify(result));
+  }
   return res.json(result);
 });
 
