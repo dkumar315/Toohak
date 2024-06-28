@@ -18,7 +18,7 @@ import {
 
 beforeEach(() => {
   clear();
-});
+}); 
 
 describe('adminQuizList', () => {
   test('adminQuizList returns error when authUserId is not valid', () => {

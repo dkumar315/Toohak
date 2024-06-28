@@ -1,11 +1,13 @@
 {
     "scripts": {
         "test": "jest",
-        "test-user": "jest src/adminUser.test.ts",
         "tsc": "tsc --project tsconfig.json",
         "tsc-user": "tsc -w src/adminUser.test.ts src/dataStore.ts src/auth.ts",
         "lint": "eslint 'src/**/*.{ts,js}'",
         "lint-user": "eslint src/adminUser.test.ts src/dataStore.ts src/auth.ts",
+        "auto-tsc": "tsc --watch --noImplicitAny",
+        "lint": "eslint 'src/**/*.{ts,js}'",
+        "lint-user": "eslint src/adminUser.test.js src/auth.js",
         "lint-fix": "eslint --fix 'src/**/*.{ts,js}'",
         "start": "ts-node -T src/server.ts",
         "cleanup-sync-request": "pkill -f node_modules/sync-rpc/lib/worker.js > /dev/null 2>&1",
