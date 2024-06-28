@@ -1,7 +1,7 @@
 import request, { HttpVerb } from 'sync-request';
 // import { port, url } from './config.json';
 // const SERVER_URL = `${url}:${port}`;
-const SERVER_URL = `http://127.0.0.1:3209`;
+const SERVER_URL = 'http://127.0.0.1:3209';
 
 // ============== helper function ====================================================
 function requestHelper(method: HttpVerb, path: string, payload: object, token?: string) {
@@ -9,7 +9,7 @@ function requestHelper(method: HttpVerb, path: string, payload: object, token?: 
   const headers = { token: token };
   if (['GET', 'DELETE'].includes(method)) {
     res = request(method, SERVER_URL + path, { qs: payload, headers });
-  } else {// ['PUT', 'POST']
+  } else { // ['PUT', 'POST']
     res = request(method, SERVER_URL + path, { json: payload, headers });
   }
   // if error at JSON.parse check if is undefined
@@ -21,22 +21,6 @@ function requestHelper(method: HttpVerb, path: string, payload: object, token?: 
   // const bodyObject = JSON.parse(res.body.toString());
   return { status: res.statusCode, ...bodyObject };
 }
-// function requestHelper(method: HttpVerb, path: string, payload: object, token?: string) {
-//   let qs = {};
-//   let json = {};
-//   if (['GET', 'DELETE'].includes(method)) {
-//     qs = payload;
-//   } else {
-//     // ['PUT', 'POST']
-//     json = payload;
-//   }
-
-//   const headers = { token: token };
-//   const res = request(method, SERVER_URL + path, { qs, json, headers });
-
-//   const bodyObject = JSON.parse(res.body.toString());
-//   return { status: res.statusCode, ...bodyObject };
-// }
 
 // ============== adminAuth ====================================================
 export function requestAuthRegister(email: string, password: string, nameFirst: string, nameLast: string) {

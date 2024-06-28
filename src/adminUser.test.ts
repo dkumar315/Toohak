@@ -32,6 +32,8 @@ describe.only('testing adminUserDetails', () => {
       const result = requestUserDetails(token);
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(UNAUTHORIZED);
+    });
+  });
 
   describe('test2: single registered user', () => {
     beforeEach(() => {

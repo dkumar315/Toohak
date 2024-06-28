@@ -17,7 +17,7 @@ export interface UserDetails {
   numFailedPasswordsSinceLastLogin: number,
 }
 
-interface UserDetailReturn { user: UserDetails };
+interface UserDetailReturn { user: UserDetails }
 
 /**
  * Register a user with an email, password, and names.
@@ -208,7 +208,7 @@ export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
  */
 function generateToken(): string {
   const data: Data = getData();
-  const allTokensLength = data.users.reduce((sum, currUser) => 
+  const allTokensLength = data.users.reduce((sum, currUser) =>
     sum + currUser.tokens.length, 0
   );
   const token: string = String(allTokensLength + 1);
