@@ -24,7 +24,8 @@ export interface User {
   nameLast: string,
   numSuccessfulLogins: number,
   numFailedPasswordsSinceLastLogin: number,
-  passwordHistory?: string[]
+  passwordHistory?: string[],
+  tokens: string[],
 }
 
 export interface Quiz {
@@ -34,20 +35,12 @@ export interface Quiz {
   timeLastEdited: number,
   description: string,
   creatorId: number,
-  questions?: Question[];
+  questions?: Question[],
 }
 
 export interface Question {
   optionId: number,
   optionString: string,
-}
-
-export interface UserDetails {// fixme move to auth.ts
-  userId: number,
-  email: string,
-  name: string,
-  numSuccessfulLogins: number,
-  numFailedPasswordsSinceLastLogin: number,
 }
 
 export type EmptyObject = Record<string, never>;

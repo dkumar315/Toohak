@@ -28,6 +28,7 @@ const HOST: string = process.env.IP || '127.0.0.1';
 // ====================================================================
 //  ================= WORK IS DONE BELOW THIS LINE ===================
 // ====================================================================
+import { BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
 import {
   adminAuthRegister, adminAuthLogin,
   adminUserDetails
@@ -47,22 +48,28 @@ app.get('/echo', (req: Request, res: Response) => {
 // adminAuth // note: set for testing, incomplete
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
-  return res.json(authRegisterV3(email, password, nameFirst, nameLast));
+  return res.json(adminAuthRegister(email, password, nameFirst, nameLast));
 });
 
 app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   const { email, password } = req.body;
-  return res.json(authLoginV3(email, password));
+  return res.json(adminAuthLogin(email, password));
 });
 
 // adminUser
 app.get('/v1/admin/user/details', (req: Request, res: Response) => {
-  const token = parseInt(req.params.token as string);
+  const token = req.header('token') as string;
   const result = adminUserDetails(token);
   if ('error' in result) {
-    res.status(401).send(JSON.stringify(result));
+    res.status(UNAUTHORIZED).json(result);
   }
+
   return res.json(result);
+});
+
+// other
+app.delete('/v1/clear', (req: Request, res: Response) => {
+  return res.json(clear());
 });
 
 // ====================================================================
