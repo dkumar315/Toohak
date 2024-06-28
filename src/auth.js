@@ -19,8 +19,7 @@ const INVALID_USER_INDEX = -1;
  */
 export function adminAuthRegister(email, password, nameFirst, nameLast) {
   // Check if email is valid or already exists
-  const emailValidResult = isValidEmail(email, INVALID_USER_INDEX);
-  if (!emailValidResult) {
+  if (!isValidEmail(email, INVALID_USER_INDEX)) {
     return { error: `Email invalid format or already in use ${email}.` };
   }
 
@@ -28,21 +27,18 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
   const authUserId = data.users.length + 1;
 
   // Check nameFirst meets requirements
-  const nameFValidResult = isValidName(nameFirst);
-  if (!nameFValidResult) {
-    return { error: `Firstname does not meet requirements ${email}.` };
+  if (!isValidName(nameFirst)) {
+    return { error: `Firstname does not meet requirements ${nameFirst}.` };
   }
 
   // Check nameLast meets requirements
-  const nameLValidResult = isValidName(nameLast);
-  if (!nameLValidResult) {
-    return { error: `Lastname does not meet requirements ${email}.` };
+  if (!isValidName(nameLast)) {
+    return { error: `Lastname does not meet requirements ${nameLast}.` };
   }
 
   // Check password meets requirements
-  const passValidResult = isValidPassword(password);
-  if (!passValidResult) {
-    return { error: `Invalid password ${email}.` };
+  if (!isValidPassword(password)) {
+    return { error: `Invalid password ${password}.` };
   }
 
   const newUser = {
@@ -80,7 +76,7 @@ export function adminAuthLogin(email, password) {
   const user = data.users[userIndex];
   if (password.localeCompare(user.password) !== 0) {
     user.numFailedPasswordsSinceLastLogin += 1;
-    return { error: `Invalid nameLast ${password}.` };
+    return { error: `Invalid password ${password}.` };
   }
 
   // reset numFailedPasswordsSinceLastLogin
