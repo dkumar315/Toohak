@@ -148,15 +148,14 @@ export function adminUserDetails(token: string): UserDetailReturn | ErrorObject 
  */
 export function adminUserDetailsUpdate(token: string, email: string,
   nameFirst: string, nameLast: string): EmptyObject | ErrorObject {
-  // check whether token is exist
+  const data: Data = getData();
   const userIndex: number = isValidUser(token);
   if (userIndex === INVALID_USER_INDEX) return { error: `Invalid token ${token}.` };
 
-  const data: Data = getData();
   const user: User = data.users[userIndex];
 
   // check email, nameFirst, nameLast whether is valid
-  if (!isValidEmail(email, user.userId)) return { error: `Invalid email ${email}.` };
+  if (!isValidEmail(email, userIndex)) return { error: `Invalid email ${email}.` };
   if (!isValidName(nameFirst)) return { error: `Invalid nameFirst ${nameFirst}.` };
   if (!isValidName(nameLast)) return { error: `Invalid nameLast ${nameLast}.` };
 
@@ -235,18 +234,18 @@ export function isValidUser(token: string): number {
 /**
  * Given an email, return true if it is not used by the other and it is email
  *
- * @param {number} authUserId - unique identifier for a user,
+ * @param {number} userIndex - unique identifier for a user,
  * set to -1 if it is new user
  * @param {string} email - user's email, according to
  * https://www.npmjs.com/package/validator
  *
  * @return {boolean} return true if email is valid and not used by others
  */
-function isValidEmail(email: string, authUserId: number): boolean {
+function isValidEmail(email: string, userIndex: number): boolean {
   const data: Data = getData();
 
-  const isUsed: boolean = data.users.some(user =>
-    user.userId !== authUserId && user.email === email
+  const isUsed: boolean = data.users.some((user, index) =>
+    index !== userIndex && user.email === email
   );
 
   return !isUsed && isEmail(email);
