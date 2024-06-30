@@ -33,7 +33,7 @@ import {
   adminAuthRegister, adminAuthLogin,
   adminUserDetails
 } from './auth';
-import { clear } from './other.js';
+import { clear } from './other';
 
 // Example get request
 app.get('/echo', (req: Request, res: Response) => {
