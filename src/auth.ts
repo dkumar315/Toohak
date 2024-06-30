@@ -10,14 +10,16 @@ const PASSWORD_MIN_LEN: number = 8;
 const INVALID_USER_INDEX: number = -1;
 
 export interface UserDetails {
-  userId: number,
-  email: string,
-  name: string,
-  numSuccessfulLogins: number,
-  numFailedPasswordsSinceLastLogin: number,
+  userId: number;
+  email: string;
+  name: string;
+  numSuccessfulLogins: number;
+  numFailedPasswordsSinceLastLogin: number;
 }
 
-interface UserDetailReturn { user: UserDetails }
+export interface UserDetailReturn {
+  user: UserDetails;
+}
 
 /**
  * Register a user with an email, password, and names.

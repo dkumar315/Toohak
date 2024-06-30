@@ -1,5 +1,5 @@
 import {
-  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN,
+  BAD_REQUEST, UNAUTHORIZED, FORBIDDEN,
   EmptyObject, ErrorObject
 } from './dataStore';
 import { UserDetails } from './auth';
@@ -218,8 +218,7 @@ describe('testing adminUserDetails', () => {
   });
 });
 
-/*
-describe('testing adminUserDetailsUpdate', () => {
+/* describe('testing adminUserDetailsUpdate', () => {
   let authUserId, email, password, nameFirst, nameLast;
   let result;
 
@@ -647,5 +646,4 @@ describe('testing adminUser', () => {
     result = requestUserDetailsUpdate(authUserId2, email2, nameFirst2, invalidnameLast2);
     expect(result).toMatchObject(ERROR);
   });
-});
-*/
+}); */

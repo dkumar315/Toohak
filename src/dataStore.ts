@@ -12,35 +12,35 @@ const FORBIDDEN = 403;
 export { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN };
 
 export interface Data {
-  users: User[],
-  quizzes: Quiz[],
+  users: User[];
+  quizzes: object[];
 }
 
 export interface User {
-  userId: number,
-  password: string,
-  email: string,
-  nameFirst: string,
-  nameLast: string,
-  numSuccessfulLogins: number,
-  numFailedPasswordsSinceLastLogin: number,
-  passwordHistory?: string[],
-  tokens: string[],
+  userId: number;
+  password: string;
+  email: string;
+  nameFirst: string;
+  nameLast: string;
+  numSuccessfulLogins: number;
+  numFailedPasswordsSinceLastLogin: number;
+  passwordHistory?: string[];
+  tokens: string[];
 }
 
 export interface Quiz {
-  quizId: number,
-  name: string,
-  timeCreated: number,
-  timeLastEdited: number,
-  description: string,
-  creatorId: number,
-  questions?: Question[],
+  quizId: number;
+  name: string;
+  timeCreated: number;
+  timeLastEdited: number;
+  description: string;
+  creatorId: number;
+  questions?: Question[];
 }
 
 export interface Question {
-  optionId: number,
-  optionString: string,
+  optionId: number;
+  optionString: string;
 }
 
 export type EmptyObject = Record<string, never>;

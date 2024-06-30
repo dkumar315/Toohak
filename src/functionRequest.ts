@@ -1,5 +1,5 @@
 import request, { HttpVerb } from 'sync-request-curl';
-const config = require('./config.json')
+const config = require('./config.json');
 const SERVER_URL = `${config.url}:${config.port}`;
 
 // ============== helper function ====================================================

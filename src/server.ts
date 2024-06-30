@@ -61,7 +61,7 @@ app.get('/v1/admin/user/details', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const result = adminUserDetails(token);
   if ('error' in result) {
-    res.status(UNAUTHORIZED).send(JSON.stringify(result));
+    res.status(UNAUTHORIZED);
   }
 
   return res.json(result);
