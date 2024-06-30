@@ -19,14 +19,4 @@ tests:
     - kill -SIGINT %1
     - sleep 2
     - cat $SERVER_LOG
-#   coverage: '/src\/.*\.test\.ts/i'
 
-# types:
-#   stage: checks
-#   script:
-#     - npm run tsc
-
-# linting:
-#   stage: checks
-#   script:
-#     - npm run lint
