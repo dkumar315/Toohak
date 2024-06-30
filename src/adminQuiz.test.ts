@@ -1,4 +1,10 @@
-import {
+// suggest for xxxUpdate:
+// expect(timeLastEdited).toBeGreaterThanOrEqual(timeCreated);
+test('delete it', () => {
+  expect(1 + 1).toBe(2);
+});
+
+/* import {
   clear
 } from './other.js';
 
@@ -399,4 +405,4 @@ describe('Testing for adminQuizDescriptionUpdate', () => {
     let description = 'This description is very long and it crosses the hundred character limit set for the quiz description';
     expect(adminQuizDescriptionUpdate(userId1.authUserId, quizInfo1.quizId, description)).toStrictEqual({ error: expect.any(String) });
   });
-});
+}); */

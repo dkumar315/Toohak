@@ -1,10 +1,25 @@
 import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
 
-const NAME_MIN_LEN = 2;
-const NAME_MAX_LEN = 20;
-const PASSWORD_MIN_LEN = 8;
-const INVALID_USER_INDEX = -1;
+// interfeces
+import { Data, User, ErrorObject } from './dataStore';
+
+const NAME_MIN_LEN: number = 2;
+const NAME_MAX_LEN: number = 20;
+const PASSWORD_MIN_LEN: number = 8;
+const INVALID_USER_INDEX: number = -1;
+
+export interface UserDetails {
+  userId: number;
+  email: string;
+  name: string;
+  numSuccessfulLogins: number;
+  numFailedPasswordsSinceLastLogin: number;
+}
+
+export interface UserDetailReturn {
+  user: UserDetails;
+}
 
 /**
  * Register a user with an email, password, and names.
@@ -41,6 +56,8 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
     return { error: `Invalid password ${password}.` };
   }
 
+  const token = generateToken();
+
   const newUser = {
     userId: authUserId,
     nameFirst: nameFirst,
@@ -49,12 +66,13 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
     password: password,
     numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
+    tokens: [token],
   };
 
   data.users.push(newUser);
   setData(data);
 
-  return { authUserId: authUserId };
+  return { token: token };
 }
 
 /**
@@ -82,24 +100,28 @@ export function adminAuthLogin(email, password) {
   // reset numFailedPasswordsSinceLastLogin
   user.numSuccessfulLogins += 1;
   user.numFailedPasswordsSinceLastLogin = 0;
+
+  const token = generateToken();
+  user.tokens.push(token);
+
   setData(data);
-  return { authUserId: user.userId };
+  return { token: token };
 }
 
 /**
- * Given an admin user's authUserId, return details about the user.
+ * Given an login user's token, return details about the user.
  *
- * @param {number} authUserId - unique identifier for a user
+ * @param {number} token - unique identifier for a user
  *
  * @return {object} return user - userDetails
- * @return {object} returns error if authUserId invalid
+ * @return {object} returns error if token invalid
  */
-export function adminUserDetails(authUserId) {
-  const userIndex = isValidUser(authUserId);
-  if (userIndex === INVALID_USER_INDEX) return { error: `Invalid authUserId ${authUserId}.` };
+export function adminUserDetails(token: string): UserDetailReturn | ErrorObject {
+  const userIndex: number = isValidUser(token);
+  if (userIndex === INVALID_USER_INDEX) return { error: `Invalid token ${token}.` };
 
-  const data = getData();
-  const user = data.users[userIndex];
+  const data: Data = getData();
+  const user: User = data.users[userIndex];
 
   return {
     user: {
@@ -182,15 +204,29 @@ export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
 }
 
 /**
- * Given an admin user's authUserId, return its corresponding userIndex
+ * Generate a token that is unique
  *
- * @param {number} authUserId - unique identifier for a user
- *
- * @return {number} return corresonding index of a user with given authUserId
+ * @return {string} return a new token
  */
-export function isValidUser(authUserId) {
-  const data = getData();
-  return data.users.findIndex(user => user.userId === authUserId);
+function generateToken(): string {
+  const data: Data = getData();
+  const allTokensLength = data.users.reduce((sum, currUser) =>
+    sum + currUser.tokens.length, 0
+  );
+  const token: string = String(allTokensLength + 1);
+  return token;
+}
+
+/**
+ * Given an admin user's token, return its corresponding userIndex
+ *
+ * @param {number} token - unique identifier for a user
+ *
+ * @return {number} return corresonding index of a user
+ */
+export function isValidUser(token: string): number {
+  const data: Data = getData();
+  return data.users.findIndex(user => user.tokens.includes(token));
 }
 
 /**
@@ -203,10 +239,10 @@ export function isValidUser(authUserId) {
  *
  * @return {boolean} return true if email is valid and not used by others
  */
-function isValidEmail(email, authUserId) {
-  const data = getData();
+function isValidEmail(email: string, authUserId: number): boolean {
+  const data: Data = getData();
 
-  const isUsed = data.users.some(user =>
+  const isUsed: boolean = data.users.some(user =>
     user.userId !== authUserId && user.email === email
   );
 
@@ -221,7 +257,7 @@ function isValidEmail(email, authUserId) {
  *
  * @return {boolean} true iif contains letters, spaces, hyphens, or apostrophes
  */
-function isValidName(name) {
+function isValidName(name: string): boolean {
   const pattern = new RegExp(`^[a-zA-Z\\s-']{${NAME_MIN_LEN},${NAME_MAX_LEN}}$`);
   return pattern.test(name);
 }
@@ -235,7 +271,7 @@ function isValidName(name) {
  *
  * @return {boolean} true iif len > 8 && contains >= 1 (letter & integer)
  */
-function isValidPassword(password) {
+function isValidPassword(password: string): boolean {
   const stringPattern = /[a-zA-Z]/;
   const numberPattern = /[0-9]/;
 
