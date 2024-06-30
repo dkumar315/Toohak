@@ -72,10 +72,10 @@ app.put('/v1/admin/user/details', (req: Request, res: Response) => {
   const { email, nameFirst, nameLast } = req.body;
   const result = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
   if ('error' in result) {
-    if (!result.error.includes('token')) {
-      return res.status(BAD_REQUEST).json(result);
-    } else {
+    if (result.error.includes('token')) {
       return res.status(UNAUTHORIZED).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
     }
   }
 
