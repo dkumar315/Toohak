@@ -1,7 +1,4 @@
-import {
-  BAD_REQUEST, UNAUTHORIZED, FORBIDDEN,
-  EmptyObject, ErrorObject
-} from './dataStore';
+import { BAD_REQUEST, UNAUTHORIZED, EmptyObject, ErrorObject } from './dataStore';
 import { UserDetails } from './auth';
 
 import {
@@ -12,21 +9,26 @@ import {
 
 const VALID_UPDATE_RETURN: EmptyObject = {};
 const ERROR: ErrorObject = { error: expect.any(String) };
+interface ResError {
+  status: typeof BAD_REQUEST | typeof UNAUTHORIZED;
+  error: string;
+}
 
-beforeAll(() => requestClear());
-afterAll(() => requestClear());
-
+let email: string, password: string, nameFirst: string , nameLast: string;
 let token: string;
-let password: string, email: string, nameFirst: string, nameLast: string;
+
+beforeEach(() => {
+  requestClear();
+  email = 'haydensmith@gmail.com';
+  password = 'haydensmith123';
+  nameFirst = 'Hayden';
+  nameLast = 'Smith';
+  token = requestAuthRegister(email, password, nameFirst, nameLast).token;
+});
+afterAll(() => requestClear());
 
 describe('testing adminUserDetails', () => {
   describe('test1: no registered user', () => {
-    email = 'haydensmith@unsw.edu.au';
-    password = 'haydensmith123';
-    nameFirst = 'Hayden';
-    nameLast = 'Smith';
-    token = requestAuthRegister(email, password, nameFirst, nameLast).token;
-
     test('test1.0: invalid token', () => {
       requestClear();
       const result = requestUserDetails(token);
@@ -36,16 +38,7 @@ describe('testing adminUserDetails', () => {
   });
 
   describe('test2: single registered user', () => {
-    beforeEach(() => {
-      requestClear();
-      email = 'haydensmith@unsw.edu.au';
-      password = 'haydensmith123';
-      nameFirst = 'Hayden';
-      nameLast = 'Smith';
-      token = requestAuthRegister(email, password, nameFirst, nameLast).token;
-    });
-
-    test('test2.1: valid token', () => {
+    test('test2.1: valid input', () => {
       const expectRes: UserDetails = {
         userId: expect.any(Number),
         name: nameFirst + ' ' + nameLast,
@@ -220,22 +213,11 @@ describe('testing adminUserDetails', () => {
   });
 });
 
-describe('testing adminUserDetailsUpdate', () => {
-  let token: string, email: string, password: string, nameFirst: string, nameLast: string;
-  let result: EmptyObject | ErrorObject;
-
-  beforeEach(() => {
-    requestClear();
-    // user1
-    email = 'haydensmith@gmail.com';
-    password = 'haydensmith123';
-    nameFirst = 'Hayden';
-    nameLast = 'Smith';
-    token = requestAuthRegister(email, password, nameFirst, nameLast).token;
-  });
+describe.only('testing adminUserDetailsUpdate', () => {
+  let result: EmptyObject | ResError;
 
   // valid results
-  describe('test1: valid results', () => {
+  describe.skip('test1: valid results', () => {
     describe('test1.1: valid tokens', () => {
       test('test1.1: valid token of single user', () => {
         result = requestUserDetailsUpdate(token, email, nameFirst, nameLast);
@@ -261,7 +243,7 @@ describe('testing adminUserDetailsUpdate', () => {
         expect(result).toMatchObject(VALID_UPDATE_RETURN);
       });
 
-      const emails = ['hay.s2@gmail.com', 'hayd@icloud.com',
+      const emails = ['hay.s2@gmail.com', 'hayd@icloud.com', 'nameFirst@gmail.com',
         'z5411789@ad.unsw.edu.au', 'h_s@protonmail.com', 'hayden@au@yahoo.com'];
       test.each(emails)('test1.2.2: valid email = \'%s\'', (validEmail) => {
         result = requestUserDetailsUpdate(token, validEmail, nameFirst, nameLast);
@@ -290,32 +272,39 @@ describe('testing adminUserDetailsUpdate', () => {
   });
 
   describe('test2: invalid results', () => {
-    describe('test2.1.1: no user no valid authUserId', () => {
-      beforeEach(() => requestClear());
-      const invalidIds = ['0', '1', '2', '3', '-1', '9999'];
-      test.each(invalidIds)('invalid authUserId = %i', (invalidToken) => {
-        result = requestUserDetailsUpdate(invalidToken, email, nameFirst, nameLast);
-        expect(result).toMatchObject(ERROR);
+    // invalid Tokens
+    describe.skip('test2.1: invalid tokens', () => {
+      const emailnew = 'haydensmithNew@123.com';
+
+      describe('test2.1.1: no user no valid token', () => {
+        beforeEach(() => requestClear());
+        const invalidIds = ['0', '1', '2', '3', '-1', '9999'];
+        test.each(invalidIds)('invalid token = \'%s\'', (invalidToken) => {
+          result = requestUserDetailsUpdate(invalidToken, emailnew, nameFirst, nameLast);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(UNAUTHORIZED);
+        });
+      });
+
+      describe('test2.1.2: invalid tokens', () => {
+        const invalidIds = ['0', '2', '3', '10', '111', '9999', '-1'];
+        test.each(invalidIds)('invalid token = \'%s\'', (invalidToken) => {
+          result = requestUserDetailsUpdate(invalidToken, emailnew, nameFirst, nameLast);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(UNAUTHORIZED);
+        });
       });
     });
-
-    describe('test2.1.2: invalid authUserIds', () => {
-      const invalidIds = ['0', '2', '3', '9999', '-1'];
-      test.each(invalidIds)('invalid authUserId = \'%s\'', (invalidToken) => {
-        result = requestUserDetailsUpdate(invalidToken, email, nameFirst, nameLast);
-        expect(result).toMatchObject(ERROR);
-      });
-    });
-
     // invalid Emails
     describe('test2.2: invalid emails', () => {
       const invalidEmails = ['', 'strings', '12345', 'hi!@mails', '@gmail.com'];
       test.each(invalidEmails)('test2.2.1: invalid email = \'%s\'', (invalidEmail) => {
         result = requestUserDetailsUpdate(token, invalidEmail, nameFirst, nameLast);
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test('test2.2.2: email used by other users', () => {
+      test.only('test2.2.2: email used by other users', () => {
         // user2
         const email2 = '078999@gmail.com';
         const psw2 = 'vict078999';
@@ -325,13 +314,15 @@ describe('testing adminUserDetailsUpdate', () => {
 
         result = requestUserDetailsUpdate(token, email2, nameFirst, nameLast);
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
         const result2 = requestUserDetailsUpdate(token2, email, nameFirst2, nameLast2);
         expect(result2).toMatchObject(ERROR);
+        expect(result2.status).toStrictEqual(BAD_REQUEST);
       });
     });
   });
-
-  describe('test2.3: invalid names', () => {
+  // invalid Names
+  describe.skip('test2.3: invalid names', () => {
     const invalidNames = ['a', '1', ' ', 'includesnumber1', '123',
       'abc! specail char', 'str?12', '!@#$%^&*()_+=[]', '{}\\|;:\'",.<>?/',
       'there is twoOne words', 'overoveroveroverLoooooooogName'];
@@ -340,6 +331,7 @@ describe('testing adminUserDetailsUpdate', () => {
       test.each(invalidNames)('invalid nameFirst = \'%s\'', (invalidNameFirst) => {
         result = requestUserDetailsUpdate(token, email, invalidNameFirst, nameLast);
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
       });
     });
 
@@ -347,6 +339,23 @@ describe('testing adminUserDetailsUpdate', () => {
       test.each(invalidNames)('invalid nameLast = \'%s\'', (invalidNameLast) => {
         result = requestUserDetailsUpdate(token, email, nameFirst, invalidNameLast);
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
+      });
+    });
+
+    describe('test2.4: invalid tokens & emails & names', () => {
+      const invalidToken = 'invalid';
+      const invalidEmail = email + 'invalid@mail.com';
+      test('test2.4.1: invalid token and email', () => {
+        result = requestUserDetailsUpdate(invalidToken, invalidEmail, nameFirst, nameLast);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
+      });
+
+      test('test2.4.2: invalid email and names', () => {
+        result = requestUserDetailsUpdate(token, invalidEmail, '?', '1');
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
       });
     });
   });

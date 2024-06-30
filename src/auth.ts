@@ -2,7 +2,7 @@ import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
 
 // interfeces
-import { Data, User, ErrorObject } from './dataStore';
+import { Data, User, ErrorObject, EmptyObject } from './dataStore';
 
 const NAME_MIN_LEN: number = 2;
 const NAME_MAX_LEN: number = 20;
@@ -111,7 +111,7 @@ export function adminAuthLogin(email, password) {
 /**
  * Given an login user's token, return details about the user.
  *
- * @param {number} token - unique identifier for a user
+ * @param {string} token - unique identifier for a login user
  *
  * @return {object} return user - userDetails
  * @return {object} returns error if token invalid
@@ -138,7 +138,7 @@ export function adminUserDetails(token: string): UserDetailReturn | ErrorObject 
  * Given an admin user's authUserId and a set of properties,
  * update the properties of this logged in admin user.
  *
- * @param {number} authUserId - unique identifier for a user
+ * @param {string} token - unique identifier for a login user
  * @param {string} email - user's email
  * @param {string} nameFirst - user's first name
  * @param {string} nameLast - user's last name
@@ -146,21 +146,24 @@ export function adminUserDetails(token: string): UserDetailReturn | ErrorObject 
  * @return {object} empty object
  * @return {object} returns error if authUserId, email, or names invalid
  */
-export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
-  // check whether authUserId is exist
-  const userIndex = isValidUser(authUserId);
-  if (userIndex === INVALID_USER_INDEX) return { error: `Invalid authUserId ${authUserId}.` };
+export function adminUserDetailsUpdate(token: string, email: string,
+  nameFirst: string, nameLast: string): EmptyObject | ErrorObject {
+  // check whether token is exist
+  const userIndex: number = isValidUser(token);
+  if (userIndex === INVALID_USER_INDEX) return { error: `Invalid token ${token}.` };
+
+  const data: Data = getData();
+  const user: User = data.users[userIndex];
 
   // check email, nameFirst, nameLast whether is valid
-  if (!isValidEmail(email, authUserId)) return { error: `Invalid email ${email}.` };
+  if (!isValidEmail(email, user.userId)) return { error: `Invalid email ${email}.` };
   if (!isValidName(nameFirst)) return { error: `Invalid nameFirst ${nameFirst}.` };
   if (!isValidName(nameLast)) return { error: `Invalid nameLast ${nameLast}.` };
 
   // update userDetails
-  const data = getData();
-  data.users[userIndex].email = email;
-  data.users[userIndex].nameFirst = nameFirst;
-  data.users[userIndex].nameLast = nameLast;
+  user.email = email;
+  user.nameFirst = nameFirst;
+  user.nameLast = nameLast;
 
   setData(data);
 
@@ -170,20 +173,21 @@ export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
 /**
  * Updates the password of a logged in user.
  *
- * @param {number} authUserId - unique identifier for a user
- * @param {number} oldPassword - the current password stored requires update
- * @param {number} newPassword - the replacement password submitted by user
+ * @param {string} token - unique identifier for a login user
+ * @param {string} oldPassword - the current password stored requires update
+ * @param {string} newPassword - the replacement password submitted by user
  *
  * @return {object} empty object
  * @return {object} returns error if authUserId or passwords invalid
  */
-export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
+export function adminUserPasswordUpdate(token: string, oldPassword: string,
+  newPassword: string) : EmptyObject | ErrorObject {
   // check the authUserId whether is valid and find its userDetails
-  const userIndex = isValidUser(authUserId);
-  if (userIndex === INVALID_USER_INDEX) return { error: `Invalid authUserId ${authUserId}.` };
+  const userIndex = isValidUser(token);
+  if (userIndex === INVALID_USER_INDEX) return { error: `Invalid token ${token}.` };
 
-  const data = getData();
-  const user = data.users[userIndex];
+  const data: Data = getData();
+  const user: User = data.users[userIndex];
 
   //  check the oldPassword whether is valid and match the user password
   if (user.password !== oldPassword) return { error: `Invalid oldPassword ${oldPassword}.` };
@@ -210,11 +214,10 @@ export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
  */
 function generateToken(): string {
   const data: Data = getData();
-  const allTokensLength = data.users.reduce((sum, currUser) =>
+  const allTokensLength: number = data.users.reduce((sum, currUser) =>
     sum + currUser.tokens.length, 0
   );
-  const token: string = String(allTokensLength + 1);
-  return token;
+  return String(allTokensLength + 1);
 }
 
 /**
