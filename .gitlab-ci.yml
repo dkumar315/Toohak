@@ -6,7 +6,7 @@ stages:
 before_script:
   - npm install
 
-tests with coverage:
+tests:
   stage: checks
   only:
     - master
@@ -19,12 +19,12 @@ tests with coverage:
     - kill -SIGINT %1
     - sleep 2
     - cat $SERVER_LOG
-  coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
-  type:
-    stage: checks
-    script:
-      - npm run tsc
-  eslint:
+coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
+type:
+  stage: checks
+  script:
+    - npm run tsc
+eslint:
     stage: checks
     script:
       - npm run lint
