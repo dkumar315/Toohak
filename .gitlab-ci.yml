@@ -19,7 +19,7 @@ tests:
     - kill -SIGINT %1
     - sleep 2
     - cat $SERVER_LOG
-  coverage: '**/?(*.)+(test).ts'
+  coverage: '/src\/.*\.test\.ts/i'
 
 types:
   stage: checks
@@ -27,6 +27,6 @@ types:
     - npm run tsc
 
 linting:
-    stage: checks
-    script:
-      - npm run lint
+  stage: checks
+  script:
+    - npm run lint
