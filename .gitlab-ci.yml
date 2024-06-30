@@ -19,12 +19,14 @@ tests:
     - kill -SIGINT %1
     - sleep 2
     - cat $SERVER_LOG
-coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
-type:
+coverage: '/src\/**.test.ts/i'
+
+types:
   stage: checks
   script:
     - npm run tsc
-eslint:
+
+linting:
     stage: checks
     script:
       - npm run lint
