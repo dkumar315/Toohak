@@ -6,7 +6,7 @@ import { UserDetails } from './auth';
 
 import {
   requestAuthRegister, requestAuthLogin,
-  requestUserDetails,
+  requestUserDetails, requestUserDetailsUpdate,
   requestClear
 } from './functionRequest';
 
@@ -220,9 +220,9 @@ describe('testing adminUserDetails', () => {
   });
 });
 
-/* describe('testing adminUserDetailsUpdate', () => {
-  let authUserId, email, password, nameFirst, nameLast;
-  let result;
+describe('testing adminUserDetailsUpdate', () => {
+  let token: string, email: string, password: string, nameFirst: string, nameLast: string;
+  let result: EmptyObject | ErrorObject;
 
   beforeEach(() => {
     requestClear();
@@ -231,15 +231,14 @@ describe('testing adminUserDetails', () => {
     password = 'haydensmith123';
     nameFirst = 'Hayden';
     nameLast = 'Smith';
-    const user = requestAuthRegister(email, password, nameFirst, nameLast);
-    authUserId = user.authUserId;
+    token = requestAuthRegister(email, password, nameFirst, nameLast).token;
   });
 
   // valid results
   describe('test1: valid results', () => {
-    describe('test1.1: valid authUserIds', () => {
-      test('test1.1: valid authUserId of single user', () => {
-        result = requestUserDetailsUpdate(authUserId, email, nameFirst, nameLast);
+    describe('test1.1: valid tokens', () => {
+      test('test1.1: valid token of single user', () => {
+        result = requestUserDetailsUpdate(token, email, nameFirst, nameLast);
         expect(result).toMatchObject(VALID_UPDATE_RETURN);
       });
 
@@ -248,12 +247,9 @@ describe('testing adminUserDetails', () => {
         const psw2 = 'haydensmith2123';
         const nameFirst2 = 'HaydenTwo';
         const nameLast2 = 'SmithTwo';
-        const userRegister2 = requestAuthRegister(email2, psw2, nameFirst2, nameLast2);
-        const authUserId2 = userRegister2.authUserId;
+        const token2 = requestAuthRegister(email2, psw2, nameFirst2, nameLast2).token;
 
-        result = adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast);
-        expect(result).toMatchObject(VALID_UPDATE_RETURN);
-        result = requestUserDetailsUpdate(authUserId2, email2, nameFirst2, nameLast2);
+        result = requestUserDetailsUpdate(token2, email2, nameFirst2, nameLast2);
         expect(result).toMatchObject(VALID_UPDATE_RETURN);
       });
     });
@@ -261,14 +257,14 @@ describe('testing adminUserDetails', () => {
     describe('test1.2: valid emails', () => {
       test('test1.2.1: update email is the same as current user email', () => {
         email = 'haydensmith@gmail.com';
-        result = requestUserDetailsUpdate(authUserId, email, nameFirst, nameLast);
+        result = requestUserDetailsUpdate(token, email, nameFirst, nameLast);
         expect(result).toMatchObject(VALID_UPDATE_RETURN);
       });
 
       const emails = ['hay.s2@gmail.com', 'hayd@icloud.com',
         'z5411789@ad.unsw.edu.au', 'h_s@protonmail.com', 'hayden@au@yahoo.com'];
       test.each(emails)('test1.2.2: valid email = \'%s\'', (validEmail) => {
-        result = requestUserDetailsUpdate(authUserId, validEmail, nameFirst, nameLast);
+        result = requestUserDetailsUpdate(token, validEmail, nameFirst, nameLast);
         expect(result).toMatchObject(VALID_UPDATE_RETURN);
       });
     });
@@ -279,14 +275,14 @@ describe('testing adminUserDetails', () => {
 
       describe('test1.3.1: valid nameFirst', () => {
         test.each(names)('valid nameFirst = \'%s\'', (validNameFirst) => {
-          result = requestUserDetailsUpdate(authUserId, email, validNameFirst, nameLast);
+          result = requestUserDetailsUpdate(token, email, validNameFirst, nameLast);
           expect(result).toMatchObject(VALID_UPDATE_RETURN);
         });
       });
 
       describe('test1.3.2: valid nameLast', () => {
         test.each(names)('valid nameLast = \'%s\'', (validNameLast) => {
-          result = requestUserDetailsUpdate(authUserId, email, nameFirst, validNameLast);
+          result = requestUserDetailsUpdate(token, email, nameFirst, validNameLast);
           expect(result).toMatchObject(VALID_UPDATE_RETURN);
         });
       });
@@ -295,18 +291,18 @@ describe('testing adminUserDetails', () => {
 
   describe('test2: invalid results', () => {
     describe('test2.1.1: no user no valid authUserId', () => {
-      beforeEach(() => clear());
-      const invalidIds = [0, 1, 2, 3];
-      test.each(invalidIds)('invalid authUserId = %i', (invalidId) => {
-        result = adminUserDetailsUpdate(invalidId, email, nameFirst, nameLast);
+      beforeEach(() => requestClear());
+      const invalidIds = ['0', '1', '2', '3', '-1', '9999'];
+      test.each(invalidIds)('invalid authUserId = %i', (invalidToken) => {
+        result = requestUserDetailsUpdate(invalidToken, email, nameFirst, nameLast);
         expect(result).toMatchObject(ERROR);
       });
     });
 
     describe('test2.1.2: invalid authUserIds', () => {
-      const invalidIds = [0, 2, 3, 9999, -1];
-      test.each(invalidIds)('invalid authUserId = \'%s\'', (invalidId) => {
-        result = requestUserDetailsUpdate(invalidId, email, nameFirst, nameLast);
+      const invalidIds = ['0', '2', '3', '9999', '-1'];
+      test.each(invalidIds)('invalid authUserId = \'%s\'', (invalidToken) => {
+        result = requestUserDetailsUpdate(invalidToken, email, nameFirst, nameLast);
         expect(result).toMatchObject(ERROR);
       });
     });
@@ -315,7 +311,7 @@ describe('testing adminUserDetails', () => {
     describe('test2.2: invalid emails', () => {
       const invalidEmails = ['', 'strings', '12345', 'hi!@mails', '@gmail.com'];
       test.each(invalidEmails)('test2.2.1: invalid email = \'%s\'', (invalidEmail) => {
-        result = requestUserDetailsUpdate(authUserId, invalidEmail, nameFirst, nameLast);
+        result = requestUserDetailsUpdate(token, invalidEmail, nameFirst, nameLast);
         expect(result).toMatchObject(ERROR);
       });
 
@@ -325,13 +321,11 @@ describe('testing adminUserDetails', () => {
         const psw2 = 'vict078999';
         const nameFirst2 = 'myName';
         const nameLast2 = 'vict';
+        const token2 = requestAuthRegister(email2, psw2, nameFirst2, nameLast2).token;
 
-        const userRegister2 = adminAuthRegister(email2, psw2, nameFirst2, nameLast2);
-        const authUserId2 = userRegister2.authUserId;
-
-        result = requestUserDetailsUpdate(authUserId, email2, nameFirst, nameLast);
+        result = requestUserDetailsUpdate(token, email2, nameFirst, nameLast);
         expect(result).toMatchObject(ERROR);
-        const result2 = requestUserDetailsUpdate(authUserId2, email, nameFirst2, nameLast2);
+        const result2 = requestUserDetailsUpdate(token2, email, nameFirst2, nameLast2);
         expect(result2).toMatchObject(ERROR);
       });
     });
@@ -344,21 +338,21 @@ describe('testing adminUserDetails', () => {
 
     describe('test2.3.1: invalid nameFirst', () => {
       test.each(invalidNames)('invalid nameFirst = \'%s\'', (invalidNameFirst) => {
-        result = requestUserDetailsUpdate(authUserId, email, invalidNameFirst, nameLast);
+        result = requestUserDetailsUpdate(token, email, invalidNameFirst, nameLast);
         expect(result).toMatchObject(ERROR);
       });
     });
 
     describe('test2.3.2: invalid nameLast', () => {
       test.each(invalidNames)('invalid nameLast = \'%s\'', (invalidNameLast) => {
-        result = requestUserDetailsUpdate(authUserId, email, nameFirst, invalidNameLast);
+        result = requestUserDetailsUpdate(token, email, nameFirst, invalidNameLast);
         expect(result).toMatchObject(ERROR);
       });
     });
   });
 });
 
-describe('testing adminUserPasswordUpdate', () => {
+/* describe('testing adminUserPasswordUpdate', () => {
   let authUserId, password, newPassword;
   let newPasswords = [];
   let result;
