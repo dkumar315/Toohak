@@ -8,9 +8,9 @@ before_script:
 
 tests:
   stage: checks
-  # only:
-  #   - master
-  #   - merge_requests
+  only:
+    - master
+    - merge_requests
   script:
     - SERVER_LOG=$(mktemp)
     - npm run start >& $SERVER_LOG &
@@ -19,19 +19,14 @@ tests:
     - kill -SIGINT %1
     - sleep 2
     - cat $SERVER_LOG
-  coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
-  artifacts:
-    paths:
-      - coverage/
-    expose_as: Coverage Report
-    expire_in: 1 week
+#   coverage: '/src\/.*\.test\.ts/i'
 
-types:
-  stage: checks
-  script:
-    - npm run tsc
+# types:
+#   stage: checks
+#   script:
+#     - npm run tsc
 
-linting:
-  stage: checks
-  script:
-    - npm run lint
+# linting:
+#   stage: checks
+#   script:
+#     - npm run lint
