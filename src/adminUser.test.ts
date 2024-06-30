@@ -37,6 +37,7 @@ describe('testing adminUserDetails', () => {
 
   describe('test2: single registered user', () => {
     beforeEach(() => {
+      requestClear();
       email = 'haydensmith@unsw.edu.au';
       password = 'haydensmith123';
       nameFirst = 'Hayden';
@@ -82,6 +83,7 @@ describe('testing adminUserDetails', () => {
     let expectUser1: UserDetails, expectUser2: UserDetails;
 
     beforeEach(() => {
+      requestClear();
       // user1
       email1 = 'stringab@gmail.com';
       password1 = 'string12345';
