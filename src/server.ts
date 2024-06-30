@@ -58,10 +58,10 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
 
 // adminUser
 app.get('/v1/admin/user/details', (req: Request, res: Response) => {
-  const token = req.header('token') as string;
+  const token = req.query.token as string;
   const result = adminUserDetails(token);
   if ('error' in result) {
-    res.status(UNAUTHORIZED).json(result);
+    res.status(UNAUTHORIZED).send(JSON.stringify(result));
   }
 
   return res.json(result);

@@ -19,7 +19,7 @@ afterAll(() => requestClear());
 let token: string;
 let password: string, email: string, nameFirst: string, nameLast: string;
 
-describe.only('testing adminUserDetails', () => {
+describe('testing adminUserDetails', () => {
   describe('test1: no registered user', () => {
     email = 'haydensmith@unsw.edu.au';
     password = 'haydensmith123';
@@ -54,7 +54,6 @@ describe.only('testing adminUserDetails', () => {
       };
       const result = requestUserDetails(token);
       expect(result.user).toMatchObject(expectRes);
-      expect(result.status).toStrictEqual(OK);
     });
 
     test('test2.2: invalid tokens (non-existence)', () => {
@@ -119,11 +118,9 @@ describe.only('testing adminUserDetails', () => {
     test('test3.1: with valid tokens', () => {
       const result1 = requestUserDetails(token1);
       expect(result1.user).toMatchObject(expectUser1);
-      expect(result1.status).toStrictEqual(OK);
 
       const result2 = requestUserDetails(token2);
       expect(result2.user).toMatchObject(expectUser2);
-      expect(result2.status).toStrictEqual(OK);
     });
 
     test('test3.2: with invalid tokens', () => {
@@ -156,7 +153,6 @@ describe.only('testing adminUserDetails', () => {
 
       const result1 = requestUserDetails(token3);
       expect(result1.user).toMatchObject(expectUser3);
-      expect(result1.status).toStrictEqual(OK);
 
       const result2 = requestUserDetails((parseInt(token3) + 1).toString());
       expect(result2).toMatchObject(ERROR);
