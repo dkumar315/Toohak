@@ -113,7 +113,7 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
 }
 
 /**
- * Given an login user's token, log out its corresponding session.
+ * Given an login user's token, remove its corresponding session.
  *
  * @param {string} email - unique email for a login user
  * @param {string} password - password for a login user
@@ -122,6 +122,15 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
  * @return {object} returns error if token is empty or invalid
  */
 export function adminAuthLogout(token: string): EmptyObject | ErrorObject {
+  const data: Data = getData();
+  const sessionIndex: number = data.sessions.sessionIds.findIndex(session =>
+    session.token === token
+  );
+
+  if (sessionIndex === INVALID) return { error: `Invalid token ${token}.` };
+  data.sessions.sessionIds.splice(sessionIndex, 1);
+
+  setData(data);
   return {};
 }
 

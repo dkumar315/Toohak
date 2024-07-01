@@ -1,9 +1,11 @@
 {
   "extends": "./tsconfig.json",
   "includes": [
+    "src/auth.ts",
     "src/dataStore.ts",
     "src/adminUser.test.ts",
-    "src/functionRequest.ts"
+    "src/functionRequest.ts",
+    "src/adminAuthLogout.test.ts",
   ],
   "exclude": [
     "src/quiz.ts",
