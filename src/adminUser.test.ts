@@ -387,7 +387,6 @@ describe('testing requestUserPasswordUpdate', () => {
     password = 'haydensmith123';
     newPassword = '321haydensmith';
     token = requestAuthRegister(email, password, nameFirst, nameLast).token;
-
   });
 
   // user2
@@ -741,6 +740,5 @@ describe('testing adminUser', () => {
     expect(userResult1.user).toMatchObject(userResult2.user);
     expect(userResult3.user).toMatchObject(userResult2.user);
     expect(userResult3.user).toMatchObject(userResult4.user);
-
   });
 });
