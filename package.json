@@ -2,6 +2,7 @@
   "scripts": {
     "test": "jest",
     "tsc": "tsc --project tsconfig.user.json",
+    "tsc-user": "tsc --watch --noEmit src/adminUser.test.ts",
     "auto-tsc": "tsc --watch --noImplicitAny",
     "lint": "eslint src/adminUser.test.ts src/dataStore.ts src/auth.ts src/functionRequest.ts",
     "lint-fix": "eslint --fix 'src/**/*.{ts,js}'",

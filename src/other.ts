@@ -8,7 +8,11 @@ import { setData, Data } from './dataStore';
 export function clear() {
   const data: Data = {
     users: [],
-    quizzes: []
+    quizzes: [],
+    sessions: {
+      globalCounter: 0,
+      sessionIds: [],
+    },
   };
 
   setData(data);

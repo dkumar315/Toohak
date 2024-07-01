@@ -5,6 +5,10 @@ const DATA_FILE = './dataStore.json';
 let data: Data = {
   users: [],
   quizzes: [],
+  sessions: {
+    globalCounter: 0,
+    sessionIds: [],
+  },
 };
 
 // define constants
@@ -14,9 +18,11 @@ const UNAUTHORIZED = 401;
 const FORBIDDEN = 403;
 export { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN };
 
+// interfaces
 export interface Data {
   users: User[];
   quizzes: object[];
+  sessions: Sessions;
 }
 
 export interface User {
@@ -28,7 +34,6 @@ export interface User {
   numSuccessfulLogins: number;
   numFailedPasswordsSinceLastLogin: number;
   passwordHistory?: string[];
-  tokens: string[];
 }
 
 export interface Quiz {
@@ -44,6 +49,16 @@ export interface Quiz {
 export interface Question {
   optionId: number;
   optionString: string;
+}
+
+export interface Sessions {
+  globalCounter: number;
+  sessionIds: Session[];
+}
+
+export interface Session {
+  userId: number;
+  token: string;
 }
 
 export type EmptyObject = Record<string, never>;

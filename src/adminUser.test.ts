@@ -29,7 +29,7 @@ afterAll(() => requestClear());
 
 describe('testing adminUserDetails', () => {
   describe('test1: no registered user', () => {
-    test('test1.0: invalid token', () => {
+    test('test1.0: invalid token (test with clear())', () => {
       requestClear();
       const result = requestUserDetails(token);
       expect(result).toMatchObject(ERROR);
