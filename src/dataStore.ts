@@ -69,7 +69,7 @@ Example usage
 
 // Use get() to access the data
 export function getData(): Data {
-  // loadData();
+  loadData();
   return data;
 }
 
@@ -84,7 +84,7 @@ function loadData(): void {
     const fileData = fs.readFileSync(DATA_FILE, { flag: 'r' });
     data = JSON.parse(String(fileData));
   } catch (error) {
-    console.log('No existing data file found. Starting with empty data.')
+    console.log('No existing data file found. Starting with empty data.');
   }
 }
 
