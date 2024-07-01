@@ -30,7 +30,7 @@ const HOST: string = process.env.IP || '127.0.0.1';
 // ====================================================================
 import { BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
 import {
-  adminAuthRegister, adminAuthLogin, // adminAuthLogout
+  adminAuthRegister, adminAuthLogin, adminAuthLogout,
   adminUserDetails, adminUserDetailsUpdate,
   adminUserPasswordUpdate
 } from './auth';
@@ -55,6 +55,11 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
 app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   const { email, password } = req.body;
   return res.json(adminAuthLogin(email, password));
+});
+
+app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
+  const { token } = req.body;
+  return res.json(adminAuthLogout(token));
 });
 
 // adminUser

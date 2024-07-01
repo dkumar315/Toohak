@@ -113,6 +113,19 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
 }
 
 /**
+ * Given an login user's token, log out its corresponding session.
+ *
+ * @param {string} email - unique email for a login user
+ * @param {string} password - password for a login user
+ *
+ * @return {object} empty object
+ * @return {object} returns error if token is empty or invalid
+ */
+export function adminAuthLogout(token: string): EmptyObject | ErrorObject {
+  return {};
+}
+
+/**
  * Given an login user's token, return details about the user.
  *
  * @param {string} token - unique identifier for a login user
