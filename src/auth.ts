@@ -122,7 +122,6 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
  */
 export function adminUserDetails(token: string): UserDetailReturn | ErrorObject {
   const userId: number = findUserId(token);
-  console.log(getData(), token, userId);
   if (userId === INVALID) return { error: `Invalid token ${token}.` };
 
   const data: Data = getData();
