@@ -211,14 +211,20 @@ describe('testing adminUserDetailsUpdate', () => {
 
   // valid results
   describe('test1: valid results', () => {
-    describe('test1.1: valid tokens', () => {
-      test('test1.1: valid token of single user', () => {
+    describe('test1.1: valid token(s)', () => {
+      test('test1.1: valid inputs of single user', () => {
+        result = requestUserDetailsUpdate(token, 'new' + email, 'new' + nameFirst, 'new' + nameLast);
+        expect(result.status).toStrictEqual(OK);
+        expect(result).toMatchObject(VALID_UPDATE_RETURN);
+      });
+
+      test('test1.2: valid inputs of single user, nothing update', () => {
         result = requestUserDetailsUpdate(token, email, nameFirst, nameLast);
         expect(result.status).toStrictEqual(OK);
         expect(result).toMatchObject(VALID_UPDATE_RETURN);
       });
 
-      test('test1.2: valid authUserIds of mutiple users', () => {
+      test('test1.3: valid tokens of mutiple users', () => {
         const email2: string = 'haydensmith2@gmail.com';
         const psw2: string = 'haydensmith2123';
         const nameFirst2: string = 'HaydenTwo';
@@ -227,6 +233,30 @@ describe('testing adminUserDetailsUpdate', () => {
 
         result = requestUserDetailsUpdate(token2, email2, nameFirst2, nameLast2);
         expect(result).toMatchObject(VALID_UPDATE_RETURN);
+      });
+
+      test('test1.4: mutiple tokens of single user', () => {
+        const newEmail = '1' + email;
+        const newName = 'newName';
+        requestUserDetailsUpdate(token, newEmail, nameFirst, nameLast);
+
+        const token2 = requestAuthLogin(newEmail, password).token;
+        requestUserDetailsUpdate(token2, email, newName, nameLast);
+
+        const token3 = requestAuthLogin(email, password).token;
+        requestUserDetailsUpdate(token3, newEmail, nameFirst, newName);
+
+        const result2 = requestUserDetails(token3);
+        expect(result2.user.email).toStrictEqual(newEmail);
+        expect(result2.user.name).toStrictEqual(nameFirst + ' ' + newName);
+        expect(result2.user.numSuccessfulLogins).toStrictEqual(3);
+        expect(result2.user.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
+
+        const result3 = requestUserDetails(requestAuthLogin(newEmail, password).token);
+        expect(result3.user.email).toStrictEqual(newEmail);
+        expect(result3.user.name).toStrictEqual(result2.user.name);
+        expect(result3.user.numSuccessfulLogins).toStrictEqual(4);
+        expect(result3.user.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
       });
     });
 
