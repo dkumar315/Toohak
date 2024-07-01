@@ -379,12 +379,15 @@ describe('testing requestUserPasswordUpdate', () => {
   let newPasswords: string[] = [];
   let password: string, newPassword: string;
   let result: EmptyObject | ResError;
+  let token: string;
 
   beforeEach(() => {
     requestClear();
     newPasswords = [];
     password = 'haydensmith123';
     newPassword = '321haydensmith';
+    token = requestAuthRegister(email, password, nameFirst, nameLast).token;
+
   });
 
   // user2
@@ -399,6 +402,7 @@ describe('testing requestUserPasswordUpdate', () => {
       test.each(newPasswords)('valid newPassword = \'%s\'', (validId) => {
         result = requestUserPasswordUpdate(token, password, validId);
         expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result.status).toStrictEqual(OK);
       });
     });
 
@@ -407,6 +411,7 @@ describe('testing requestUserPasswordUpdate', () => {
       test.each(newPasswords)('valid newPassword = \'%s\'', (validId) => {
         result = requestUserPasswordUpdate(token, password, validId);
         expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result.status).toStrictEqual(OK);
       });
     });
 
@@ -415,47 +420,56 @@ describe('testing requestUserPasswordUpdate', () => {
       test.each(newPasswords)('valid newPassword = \'%s\'', (validPassword) => {
         result = requestUserPasswordUpdate(token, password, validPassword);
         expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result.status).toStrictEqual(OK);
       });
     });
 
     describe('test1.2.2: valid newPassword, just meet the requirement', () => {
-      newPasswords = ['this8Len', 'only1number', '11111l', 'C8PTICAL'];
+      newPasswords = ['this8Len', 'only1number', '11111l11', 'C8PTICAL'];
       test.each(newPasswords)('valid newPassword = \'%s\'', (validPassword) => {
         result = requestUserPasswordUpdate(token, password, validPassword);
         expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result.status).toStrictEqual(OK);
       });
     });
 
     describe('test1.2.3: valid newPassword, with special characters', () => {
-      newPasswords = ['this password has space', 'password!!!!', '#d4af37ToDo',
+      newPasswords = ['this passw0rd has spaces', 'passw0rd!!!!', '#d4af37ToDo',
         'cats on keyboard 55Len !@#$%^&*()_+=[]{}\\|;:\'",.<>?/-'];
       test.each(newPasswords)('valid newPassword = \'%s\'', (validPassword) => {
         result = requestUserPasswordUpdate(token, password, validPassword);
         expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result.status).toStrictEqual(OK);
       });
     });
 
     describe('test1.2.4: valid token with mutiple users', () => {
-      const token2: string = requestAuthRegister(email2, password2, nameFirst2, nameLast2).token;
+      let token2: string;
+      beforeEach(() => {
+        token2 = requestAuthRegister(email2, password2, nameFirst2, nameLast2).token;
+      });
 
       test('token with 2 users', () => {
         result = requestUserPasswordUpdate(token, password, password2);
         expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result.status).toStrictEqual(OK);
 
         result = requestUserPasswordUpdate(token2, password2, password);
         expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result.status).toStrictEqual(OK);
       });
 
       test('token with 3 users', () => {
         // user3
-        const password3: string = 'vict078999';
+        const password3: string = 'user3!!!';
         const email3: string = '07899@gmail.com';
         const nameFirst3: string = 'name';
         const nameLast3: string = 'vict';
         const token3: string = requestAuthRegister(email3, password3, nameFirst3, nameLast3).token;
 
-        result = requestUserPasswordUpdate(token3, password3, password2);
+        result = requestUserPasswordUpdate(token3, password3, password);
         expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result.status).toStrictEqual(OK);
       });
     });
   });
@@ -467,6 +481,7 @@ describe('testing requestUserPasswordUpdate', () => {
       test.each(invalidTokens)('invalid token = %i', (invalidToken) => {
         result = requestUserPasswordUpdate(invalidToken, password, newPassword);
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
     });
 
@@ -475,6 +490,7 @@ describe('testing requestUserPasswordUpdate', () => {
       test.each(invalidTokens)('invalid token = \'%s\'', (invalidToken) => {
         result = requestUserPasswordUpdate(invalidToken, password, newPassword);
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
     });
 
@@ -482,17 +498,20 @@ describe('testing requestUserPasswordUpdate', () => {
       test('test2.2.1: old password is empty', () => {
         result = requestUserPasswordUpdate(token, '', newPassword);
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
       test('test2.2.2: old password is the new password', () => {
         result = requestUserPasswordUpdate(token, newPassword, newPassword);
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
       test('test2.2.3: password is other user\'s', () => {
         requestAuthRegister(email2, password2, nameFirst2, nameLast2);
         result = requestUserPasswordUpdate(token, password2, newPassword);
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
       });
     });
 
@@ -500,12 +519,14 @@ describe('testing requestUserPasswordUpdate', () => {
       test('test2.3.1: newPassword equals to oldPassword', () => {
         result = requestUserPasswordUpdate(token, password, password);
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
       test('test2.3.2: newPassword used before', () => {
         requestUserPasswordUpdate(token, password, newPassword);
         result = requestUserPasswordUpdate(token, newPassword, password);
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
       describe('test2.3.4: mutiple newPasswords used before', () => {
@@ -517,176 +538,181 @@ describe('testing requestUserPasswordUpdate', () => {
         test.each(newPasswords)('test2.3.3: newPassword = last changed = \'%s\'', (newPassword) => {
           result = requestUserPasswordUpdate(token, password, newPassword);
           expect(result).toMatchObject(VALID_UPDATE_RETURN);
+          expect(result.status).toStrictEqual(OK);
           // newPassword as last changed
           result = requestUserPasswordUpdate(token, newPassword, password);
           expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
           password = newPassword;
         });
       });
+
+      describe('test2.3.5: new password length incorrect', () => {
+        newPasswords = ['', 'a1', '!', 'its7Len', '012345', 'abc', ' ', 'abc123!'];
+        test.each(newPasswords)('invalid newPassword = \'%s\'', (newPassword) => {
+          result = requestUserPasswordUpdate(token, password, newPassword);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+      });
+
+      describe('test2.3.6: new password not as require', () => {
+        newPasswords = ['12345678', 'abcdefghijk', '!@#$%^&*()_+=[]', 'EEEEEEEEE'];
+        test.each(newPasswords)('invalid newPassword = \'%s\'', (newPassword) => {
+          result = requestUserPasswordUpdate(token, password, newPassword);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+      });
     });
+
     describe('test2.4: mutiple invalid inputs', () => {
       const invalidToken = 'invalid';
       test('test2.4.1: invalid token and incorrect oldPassword', () => {
         result = requestUserPasswordUpdate(invalidToken, newPassword, newPassword);
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
 
       test('test2.4.2: invalid token and invlaid newPassword', () => {
         // newPassword same as oldPassword
         result = requestUserPasswordUpdate(invalidToken, password, password);
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
 
         // newPassword not meet requirement
-        result = requestUserPasswordUpdate(token, password, '1a');
+        result = requestUserPasswordUpdate(invalidToken, password, '1a');
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
 
-        result = requestUserPasswordUpdate(token, password, 'invalid: expect to contain number(s)');
+        result = requestUserPasswordUpdate(invalidToken, password, 'invalid: expect to contain number(s)');
         expect(result).toMatchObject(ERROR);
-
-        // newPassword used before
-        requestUserPasswordUpdate(token, password, newPassword);
-        result = requestUserPasswordUpdate(token, newPassword, password);
-        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
 
       test('test2.4.3: invalid newPassword and oldPassword', () => {
         result = requestUserPasswordUpdate(token, 'invalid', 'invalid');
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
 
         requestUserPasswordUpdate(token, password, newPassword);
         result = requestUserPasswordUpdate(token, 'invalid', password);
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
       test('test2.4.4: all invalid', () => {
         result = requestUserPasswordUpdate(invalidToken, newPassword, 'invalid');
         expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
-    });
-  });
-
-  describe('test2.3.4: new password length incorrect', () => {
-    newPasswords = ['', 'a1', '!', 'its7Len', '012345', 'abc', ' ', 'abc123!'];
-    test.each(newPasswords)('invalid newPassword = \'%s\'', (newPassword) => {
-      result = requestUserPasswordUpdate(token, password, newPassword);
-      expect(result).toMatchObject(ERROR);
-    });
-  });
-
-  describe('test2.3.5: new password not as require', () => {
-    newPasswords = ['12345678', 'abcdefghijk', '!@#$%^&*()_+=[]', 'EEEEEEEEE'];
-    test.each(newPasswords)('invalid newPassword = \'%s\'', (newPassword) => {
-      result = requestUserPasswordUpdate(token, password, newPassword);
-      expect(result).toMatchObject(ERROR);
     });
   });
 });
 
-// describe('testing adminUser', () => {
-//   let email1, password1, nameFirst1, nameLast1, authUserId1;
-//   let email2, password2, nameFirst2, nameLast2, authUserId2;
-//   let result;
+/*describe('testing adminUser', () => {
+  let email1: string, password1: string, nameFirst1: string, nameLast1: string;
+  let email2: string, password2: string, nameFirst2: string, nameLast2: string;
+  let toekn1: string, token2: string, result: UserDetails | EmptyObject | ResError;
 
-//   beforeEach(() => {
-//     requestClear();
-//     // user1
-//     email1 = 'haydensmith@gmail.com';
-//     password1 = 'haydensmith123';
-//     nameFirst1 = 'Hayden';
-//     nameLast1 = 'Smith';
-//     const user1 = requestAuthRegister(email1, password1, nameFirst1, nameLast1);
-//     authUserId1 = user1.authUserId;
+  beforeEach(() => {
+    requestClear();
+    // user1
+    email1 = 'haydensmith@gmail.com';
+    password1 = 'haydensmith123';
+    nameFirst1 = 'Hayden';
+    nameLast1 = 'Smith';
+    token1 = requestAuthRegister(email1, password1, nameFirst1, nameLast1).token;
 
-//     // user2
-//     password2 = 'vict078999';
-//     email2 = '0789@gmail.com';
-//     nameFirst2 = 'name';
-//     nameLast2 = 'vict';
-//     const user2 = requestAuthRegister(email2, password2, nameFirst2, nameLast2);
-//     authUserId2 = user2.authUserId;
-//   });
+    // user2
+    password2 = 'vict078999';
+    email2 = '0789@gmail.com';
+    nameFirst2 = 'name';
+    nameLast2 = 'vict';
+    token2 = requestAuthRegister(email2, password2, nameFirst2, nameLast2).token;
+  });
 
-//   afterAll(() => {
-//     requestClear();
-//   });
+  afterAll(() => {
+    requestClear();
+  });
 
-//   test('test1.0: check details, and then update details and password', () => {
-//     // check detail and update detail
-//     result = requestUserDetails(authUserId1).user;
-//     expect(result.userId).toStrictEqual(authUserId1);
-//     expect(result.email).toStrictEqual(email1);
-//     expect(result.name).toStrictEqual(nameFirst1 + ' ' + nameLast1);
+  test('test1.0: check details, and then update details and password', () => {
+    // check detail and update detail
+    result = requestUserDetails(authUserId1).user;
+    expect(result.userId).toStrictEqual(authUserId1);
+    expect(result.email).toStrictEqual(email1);
+    expect(result.name).toStrictEqual(nameFirst1 + ' ' + nameLast1);
 
-//     email1 = 'haydensmith2@ad.unsw.edu.au';
-//     nameFirst1 = 'Hayden-new';
-//     nameLast1 = 'Smith-new';
-//     requestUserDetailsUpdate(authUserId1, email1, nameFirst1, nameLast1);
+    email1 = 'haydensmith2@ad.unsw.edu.au';
+    nameFirst1 = 'Hayden-new';
+    nameLast1 = 'Smith-new';
+    requestUserDetailsUpdate(authUserId1, email1, nameFirst1, nameLast1);
 
-//     // (update detail) and check detail
-//     result = requestUserDetails(authUserId1).user;
-//     expect(result.userId).toStrictEqual(authUserId1);
-//     expect(result.email).toStrictEqual(email1);
-//     expect(result.name).toStrictEqual(nameFirst1 + ' ' + nameLast1);
+    // (update detail) and check detail
+    result = requestUserDetails(authUserId1).user;
+    expect(result.userId).toStrictEqual(authUserId1);
+    expect(result.email).toStrictEqual(email1);
+    expect(result.name).toStrictEqual(nameFirst1 + ' ' + nameLast1);
 
-//     // (update detail, check detail) and update password
-//     const newPassword = 'haydensnewpassword0';
-//     result = requestUserPasswordUpdate(authUserId1, password1, newPassword);
-//     expect(result).toMatchObject(VALID_UPDATE_RETURN);
-//     password1 = newPassword;
+    // (update detail, check detail) and update password
+    const newPassword = 'haydensnewpassword0';
+    result = requestUserPasswordUpdate(authUserId1, password1, newPassword);
+    expect(result).toMatchObject(VALID_UPDATE_RETURN);
+    password1 = newPassword;
 
-//     // (update password) and update detail
-//     email1 = 'haydensmith3@ad.unsw.edu.au';
-//     nameFirst1 = 'Hayden-new-new';
-//     nameLast1 = 'Smith-new-new';
-//     result = requestUserDetailsUpdate(authUserId1, email1, nameFirst1, nameLast1);
+    // (update password) and update detail
+    email1 = 'haydensmith3@ad.unsw.edu.au';
+    nameFirst1 = 'Hayden-new-new';
+    nameLast1 = 'Smith-new-new';
+    result = requestUserDetailsUpdate(authUserId1, email1, nameFirst1, nameLast1);
 
-//     // (update password, update detail) and check detail
-//     result = requestUserDetails(authUserId1).user;
-//     expect(result.userId).toStrictEqual(authUserId1);
-//     expect(result.email).toStrictEqual(email1);
-//     expect(result.name).toStrictEqual(nameFirst1 + ' ' + nameLast1);
-//   });
+    // (update password, update detail) and check detail
+    result = requestUserDetails(authUserId1).user;
+    expect(result.userId).toStrictEqual(authUserId1);
+    expect(result.email).toStrictEqual(email1);
+    expect(result.name).toStrictEqual(nameFirst1 + ' ' + nameLast1);
+  });
 
-//   test('test1.1: failed on changing password and rechanging', () => {
-//     // update password
-//     const invalidnewPassword = 'abc';
-//     result = requestUserPasswordUpdate(authUserId1, password1, invalidnewPassword);
-//     expect(result).toMatchObject(ERROR);
+  test('test1.1: failed on changing password and rechanging', () => {
+    // update password
+    const invalidnewPassword = 'abc';
+    result = requestUserPasswordUpdate(authUserId1, password1, invalidnewPassword);
+    expect(result).toMatchObject(ERROR);
 
-//     // update password
-//     const newPassword = 'haydensnewpassword0';
-//     result = requestUserPasswordUpdate(authUserId1, password1, newPassword);
-//     expect(result).toMatchObject(VALID_UPDATE_RETURN);
-//   });
+    // update password
+    const newPassword = 'haydensnewpassword0';
+    result = requestUserPasswordUpdate(authUserId1, password1, newPassword);
+    expect(result).toMatchObject(VALID_UPDATE_RETURN);
+  });
 
-//   test('test1.2: fail to change details', () => {
-//     // check deatil
-//     result = requestUserDetails(authUserId2);
-//     expect(result.user.userId).toStrictEqual(authUserId2);
-//     expect(result.user.email).toStrictEqual(email2);
-//     expect(result.user.name).toStrictEqual(nameFirst2 + ' ' + nameLast2);
+  test('test1.2: fail to change details', () => {
+    // check deatil
+    result = requestUserDetails(authUserId2);
+    expect(result.user.userId).toStrictEqual(authUserId2);
+    expect(result.user.email).toStrictEqual(email2);
+    expect(result.user.name).toStrictEqual(nameFirst2 + ' ' + nameLast2);
 
-//     // fail to update details with invalid nameFirst
-//     const nameFirst = 'a';
-//     result = requestUserDetailsUpdate(authUserId2, email2, nameFirst, nameLast2);
-//     expect(result).toMatchObject(ERROR);
+    // fail to update details with invalid nameFirst
+    const nameFirst = 'a';
+    result = requestUserDetailsUpdate(authUserId2, email2, nameFirst, nameLast2);
+    expect(result).toMatchObject(ERROR);
 
-//     // check deatil
-//     result = requestUserDetails(authUserId2);
-//     expect(result.user.userId).toStrictEqual(authUserId2);
-//     expect(result.user.email).toStrictEqual(email2);
-//     expect(result.user.name).toStrictEqual(nameFirst2 + ' ' + nameLast2);
-//   });
+    // check deatil
+    result = requestUserDetails(authUserId2);
+    expect(result.user.userId).toStrictEqual(authUserId2);
+    expect(result.user.email).toStrictEqual(email2);
+    expect(result.user.name).toStrictEqual(nameFirst2 + ' ' + nameLast2);
+  });
 
-//   test('test1.3: changed password, fail to change details', () => {
-//     // update password
-//     const newPassword = 'ABc20240610!';
-//     result = requestUserPasswordUpdate(authUserId2, password2, newPassword);
-//     expect(result).toMatchObject(VALID_UPDATE_RETURN);
+  test('test1.3: changed password, fail to change details', () => {
+    // update password
+    const newPassword = 'ABc20240610!';
+    result = requestUserPasswordUpdate(authUserId2, password2, newPassword);
+    expect(result).toMatchObject(VALID_UPDATE_RETURN);
 
-//     // fail to update detail
-//     const invalidnameLast2 = 'a';
-//     result = requestUserDetailsUpdate(authUserId2, email2, nameFirst2, invalidnameLast2);
-//     expect(result).toMatchObject(ERROR);
-//   });
-// });
+    // fail to update detail
+    const invalidnameLast2 = 'a';
+    result = requestUserDetailsUpdate(authUserId2, email2, nameFirst2, invalidnameLast2);
+    expect(result).toMatchObject(ERROR);
+  });
+});*/
