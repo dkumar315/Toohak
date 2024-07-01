@@ -20,3 +20,21 @@ tests:
     - sleep 2
     - cat $SERVER_LOG
 
+coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
+  artifacts:
+    paths:
+      - coverage/
+    expose_as: Coverage Report
+    expire_in: 3 days
+  tests with coverage:
+    parallel: 1
+
+typecheck:
+  stage: checks
+  script:
+    - npm run tsc
+
+linting:
+  stage: checks
+  script:
+    - npm run lint

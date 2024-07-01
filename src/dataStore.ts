@@ -1,3 +1,7 @@
+import fs from 'fs';
+const DATA_FILE = './dataStore.json';
+const LASTSAVE_FILE = './dataStore_backup.json';
+
 // YOU SHOULD MODIFY THIS OBJECT BELOW ONLY
 let data: Data = {
   users: [],
@@ -65,13 +69,32 @@ Example usage
 */
 
 // Use get() to access the data
-function getData(): Data {
+export function getData(): Data {
+  loadData();
   return data;
 }
 
 // Use set(newData) to pass in the entire data object, with modifications made
-function setData(newData: Data): void {
+export function setData(newData: Data): void {
+  saveData(data, newData);
   data = newData;
 }
 
-export { getData, setData };
+function loadData(): void {
+  try {
+    const fileData = fs.readFileSync(DATA_FILE, { flag: 'r' });
+    data = JSON.parse(String(fileData));
+  } catch (error) {
+    try {
+      const fileData = fs.readFileSync(LASTSAVE_FILE, { flag: 'r' });
+      data = JSON.parse(String(fileData));
+    } catch (error) {
+      console.log('No existing data file found. Starting with empty data.');
+    }
+  }
+}
+
+function saveData(data: Data, newData: Data): void {
+  fs.writeFileSync(LASTSAVE_FILE, JSON.stringify(data), { flag: 'w' });
+  fs.writeFileSync(DATA_FILE, JSON.stringify(newData), { flag: 'w' });
+}

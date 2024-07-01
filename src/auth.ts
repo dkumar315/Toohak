@@ -21,6 +21,10 @@ export interface UserDetailReturn {
   user: UserDetails;
 }
 
+export interface TokenReturn {
+  token: string;
+}
+
 /**
  * Register a user with an email, password, and names.
  *
@@ -32,14 +36,14 @@ export interface UserDetailReturn {
  * @return {number} authUserId - unique identifier for a user
  * @return {object} returns error if email, password, nameFirst, nameLast invalid
  */
-export function adminAuthRegister(email, password, nameFirst, nameLast) {
+export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string): TokenReturn | ErrorObject {
   // Check if email is valid or already exists
   if (!isValidEmail(email, INVALID_USER_INDEX)) {
     return { error: `Email invalid format or already in use ${email}.` };
   }
 
-  const data = getData();
-  const authUserId = data.users.length + 1;
+  const data: Data = getData();
+  const authUserId: number = data.users.length + 1;
 
   // Check nameFirst meets requirements
   if (!isValidName(nameFirst)) {
@@ -58,7 +62,7 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
 
   const token = generateToken();
 
-  const newUser = {
+  const newUser: User = {
     userId: authUserId,
     nameFirst: nameFirst,
     nameLast: nameLast,
@@ -84,14 +88,14 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
 * @return {number} authUserId - unique identifier for a user
 * @return {object} returns error if email or password invalid
 */
-export function adminAuthLogin(email, password) {
-  const data = getData();
-  const userIndex = data.users.findIndex(user => user.email === email);
+export function adminAuthLogin(email: string, password: string): TokenReturn | ErrorObject {
+  const data: Data = getData();
+  const userIndex: number = data.users.findIndex(user => user.email === email);
   if (userIndex === INVALID_USER_INDEX) {
     return { error: `Invalid email ${email}.` };
   }
 
-  const user = data.users[userIndex];
+  const user: User = data.users[userIndex];
   if (password.localeCompare(user.password) !== 0) {
     user.numFailedPasswordsSinceLastLogin += 1;
     return { error: `Invalid password ${password}.` };
@@ -101,7 +105,7 @@ export function adminAuthLogin(email, password) {
   user.numSuccessfulLogins += 1;
   user.numFailedPasswordsSinceLastLogin = 0;
 
-  const token = generateToken();
+  const token: string = generateToken();
   user.tokens.push(token);
 
   setData(data);

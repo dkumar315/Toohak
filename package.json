@@ -1,10 +1,9 @@
 {
-  "user": "src/adminUser.test.ts src/auth.ts src/functionRequest.ts src/server.ts",
   "scripts": {
     "test": "jest",
-    "tsc": "tsc --project tsconfig.json",
+    "tsc": "tsc --project tsconfig.user.json",
     "auto-tsc": "tsc --watch --noImplicitAny",
-    "lint": "eslint 'src/**/*.{ts,js}'",
+    "lint": "eslint src/adminUser.test.ts src/dataStore.ts src/auth.ts src/functionRequest.ts",
     "lint-fix": "eslint --fix 'src/**/*.{ts,js}'",
     "start": "ts-node -T src/server.ts",
     "cleanup-sync-request": "pkill -f node_modules/sync-rpc/lib/worker.js > /dev/null 2>&1",
