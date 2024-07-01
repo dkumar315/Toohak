@@ -27,7 +27,7 @@ coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
     expose_as: Coverage Report
     expire_in: 3 days
   tests with coverage:
-    parallel: 1
+    parallel: 2
 
 typecheck:
   stage: checks
