@@ -19,15 +19,12 @@ tests:
     - kill -SIGINT %1
     - sleep 2
     - cat $SERVER_LOG
-
-coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
+  coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
     paths:
       - coverage/
     expose_as: Coverage Report
     expire_in: 3 days
-  tests with coverage:
-    parallel: 2
 
 typecheck:
   stage: checks
