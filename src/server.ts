@@ -41,22 +41,29 @@ import { clear } from './other';
 app.get('/echo', (req: Request, res: Response) => {
   const result = echo(req.query.echo as string);
   if ('error' in result) {
-    res.status(400);
+    res.status(BAD_REQUEST);
   }
   return res.json(result);
 });
 
-// adminAuth // note: set for testing, incomplete
+// register
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
-  return res.json(adminAuthRegister(email, password, nameFirst, nameLast));
+  const result = adminAuthRegister(email, password, nameFirst, nameLast);
+  if ('error' in result) {
+    return res.status(BAD_REQUEST).json(result);
+  }
+
+  return res.json(result);
 });
 
+// login (todo)
 app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   const { email, password } = req.body;
   return res.json(adminAuthLogin(email, password));
 });
 
+// logout
 app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   const { token } = req.body;
   const result = adminAuthLogout(token);
