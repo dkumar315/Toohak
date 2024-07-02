@@ -34,7 +34,7 @@ export interface TokenReturn {
  * @param {string} nameLast - user's last name
  *
  * @return {number} authUserId - unique identifier for a user
- * @return {object} returns error if email, password, nameFirst, nameLast invalid
+ * @return {object} error - if email, password, nameFirst, nameLast invalid
  */
 export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string): TokenReturn | ErrorObject {
   // Check if email is valid or already exists
@@ -85,7 +85,7 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
 * @param {string} password - user's matching password
 *
 * @return {number} authUserId - unique identifier for a user
-* @return {object} returns error if email or password invalid
+* @return {object} error - if email or password invalid
 */
 export function adminAuthLogin(email: string, password: string): TokenReturn | ErrorObject {
   const data: Data = getData();
@@ -119,7 +119,7 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
  * @param {string} password - password for a login user
  *
  * @return {object} empty object
- * @return {object} returns error if token is empty or invalid
+ * @return {object} error - if token is empty or invalid
  */
 export function adminAuthLogout(token: string): EmptyObject | ErrorObject {
   const data: Data = getData();
@@ -139,8 +139,8 @@ export function adminAuthLogout(token: string): EmptyObject | ErrorObject {
  *
  * @param {string} token - unique identifier for a login user
  *
- * @return {object} return user - userDetails
- * @return {object} returns error if token invalid
+ * @return {object} user - userDetails
+ * @return {object} error - if token invalid
  */
 export function adminUserDetails(token: string): UserDetailReturn | ErrorObject {
   const userId: number = findUserId(token);
@@ -171,7 +171,7 @@ export function adminUserDetails(token: string): UserDetailReturn | ErrorObject 
  * @param {string} nameLast - user's last name
  *
  * @return {object} empty object
- * @return {object} returns error if authUserId, email, or names invalid
+ * @return {object} error - if authUserId, email, or names invalid
  */
 export function adminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string): EmptyObject | ErrorObject {
   const data: Data = getData();
@@ -204,7 +204,7 @@ export function adminUserDetailsUpdate(token: string, email: string, nameFirst: 
  * @param {string} newPassword - the replacement password submitted by user
  *
  * @return {object} empty object
- * @return {object} returns error if authUserId or passwords invalid
+ * @return {object} error - if authUserId or passwords invalid
  */
 export function adminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string) : EmptyObject | ErrorObject {
   // check the authUserId whether is valid and find its userDetails
@@ -236,7 +236,7 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
 /**
  * Generate a token that is unique
  *
- * @return {string} return a new token
+ * @return {string} a new token that is globally unique
  */
 function generateToken(): string {
   const data: Data = getData();
@@ -263,7 +263,7 @@ function addSession(authUserId: number, token: string): void {
  *
  * @param {string} token - unique identifier for a user
  *
- * @return {number} return corresonding userId
+ * @return {number} corresonding userId
  */
 function findUserId(token: string): number {
   const data: Data = getData();
@@ -279,7 +279,7 @@ function findUserId(token: string): number {
  *
  * @param {number} authUserId - unique identifier for a user
  *
- * @return {number} return corresonding index of a user
+ * @return {number} corresonding index of a user
  */
 function findUser(authUserId: number): number {
   const data: Data = getData();
@@ -294,7 +294,7 @@ function findUser(authUserId: number): number {
  * @param {string} email - user's email, according to
  * https://www.npmjs.com/package/validator
  *
- * @return {boolean} return true if email is valid and not used by others
+ * @return {boolean} true if email is valid and not used by others
  */
 function isValidEmail(email: string, userIndex: number): boolean {
   const data: Data = getData();

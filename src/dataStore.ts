@@ -17,6 +17,7 @@ const BAD_REQUEST = 400;
 const UNAUTHORIZED = 401;
 const FORBIDDEN = 403;
 export { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN };
+export const COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'brown', 'orange'];
 
 // interfaces
 export interface Data {
@@ -34,6 +35,7 @@ export interface User {
   numSuccessfulLogins: number;
   numFailedPasswordsSinceLastLogin: number;
   passwordHistory?: string[];
+  duration: number;
 }
 
 export interface Quiz {
@@ -43,12 +45,24 @@ export interface Quiz {
   timeLastEdited: number;
   description: string;
   creatorId: number;
-  questions?: Question[];
+  numQuestions: number;
+  questions: Question[]; // should be []
+  duration: number;
 }
 
 export interface Question {
-  optionId: number;
-  optionString: string;
+  questionId: number;
+  question: string;
+  duration: number;
+  points: number;
+  answers: Answer[];
+}
+
+export interface Answer {
+  answerId: string;
+  answer: string;
+  color: string; // randomly generated
+  correct: boolean;
 }
 
 export interface Sessions {
