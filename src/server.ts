@@ -46,17 +46,24 @@ app.get('/echo', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-// adminAuth // note: set for testing, incomplete
+/******************************adminAuth**********************************/
+// register user
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
   return res.json(adminAuthRegister(email, password, nameFirst, nameLast));
 });
 
+// login user
 app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   const { email, password } = req.body;
-  return res.json(adminAuthLogin(email, password));
+  const result = adminAuthLogin(email, password);
+  if ('error' in result) {
+    return res.status(BAD_REQUEST).json(result);
+  }
+  return res.json(result);
 });
 
+// logout user
 app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   const { token } = req.body;
   const result = adminAuthLogout(token);
@@ -66,7 +73,8 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-// adminUser
+/*****************************adminUser***********************************/
+// retrive userdetails
 app.get('/v1/admin/user/details', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const result = adminUserDetails(token);
@@ -76,6 +84,7 @@ app.get('/v1/admin/user/details', (req: Request, res: Response) => {
   return res.json(result);
 });
 
+// update userdetails
 app.put('/v1/admin/user/details', (req: Request, res: Response) => {
   const { token, email, nameFirst, nameLast } = req.body;
   const result = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
@@ -89,6 +98,7 @@ app.put('/v1/admin/user/details', (req: Request, res: Response) => {
   return res.json(result);
 });
 
+// update password
 app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   const { token, oldPassword, newPassword } = req.body;
   const result = adminUserPasswordUpdate(token, oldPassword, newPassword);

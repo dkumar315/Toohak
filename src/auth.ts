@@ -1,7 +1,7 @@
 import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
 
-// interfeces
+// interfaces
 import { Data, User, Session, ErrorObject, EmptyObject } from './dataStore';
 
 const INVALID: number = -1;
