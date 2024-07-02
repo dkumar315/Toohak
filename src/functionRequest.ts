@@ -24,6 +24,10 @@ export function requestAuthLogin(email: string, password: string) {
   return requestHelper('POST', '/v1/admin/auth/login', { email, password });
 }
 
+export function requestAuthLogout(token: string) {
+  return requestHelper('POST', '/v1/admin/auth/logout', { token });
+}
+
 // ============== adminUser ====================================================
 export function requestUserDetails(token: string) {
   return requestHelper('GET', '/v1/admin/user/details', { token });

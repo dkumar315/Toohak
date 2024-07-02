@@ -28,9 +28,10 @@ const HOST: string = process.env.IP || '127.0.0.1';
 // ====================================================================
 //  ================= WORK IS DONE BELOW THIS LINE ===================
 // ====================================================================
-import { BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
+import { BAD_REQUEST, UNAUTHORIZED } from './dataStore';
+// import { BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
 import {
-  adminAuthRegister, adminAuthLogin, // adminAuthLogout
+  adminAuthRegister, adminAuthLogin, adminAuthLogout,
   adminUserDetails, adminUserDetailsUpdate,
   adminUserPasswordUpdate
 } from './auth';
@@ -42,7 +43,6 @@ app.get('/echo', (req: Request, res: Response) => {
   if ('error' in result) {
     res.status(400);
   }
-
   return res.json(result);
 });
 
@@ -57,6 +57,15 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   return res.json(adminAuthLogin(email, password));
 });
 
+app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
+  const { token } = req.body;
+  const result = adminAuthLogout(token);
+  if ('error' in result) {
+    res.status(UNAUTHORIZED);
+  }
+  return res.json(result);
+});
+
 // adminUser
 app.get('/v1/admin/user/details', (req: Request, res: Response) => {
   const token = req.query.token as string;
@@ -64,7 +73,6 @@ app.get('/v1/admin/user/details', (req: Request, res: Response) => {
   if ('error' in result) {
     res.status(UNAUTHORIZED);
   }
-
   return res.json(result);
 });
 
@@ -78,7 +86,6 @@ app.put('/v1/admin/user/details', (req: Request, res: Response) => {
       return res.status(BAD_REQUEST).json(result);
     }
   }
-
   return res.json(result);
 });
 
@@ -92,7 +99,6 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
       return res.status(BAD_REQUEST).json(result);
     }
   }
-
   return res.json(result);
 });
 

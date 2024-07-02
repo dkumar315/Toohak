@@ -17,11 +17,12 @@ const BAD_REQUEST = 400;
 const UNAUTHORIZED = 401;
 const FORBIDDEN = 403;
 export { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN };
+export const COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'brown', 'orange'];
 
 // interfaces
 export interface Data {
   users: User[];
-  quizzes: object[];
+  quizzes: Quiz[];
   sessions: Sessions;
 }
 
@@ -43,12 +44,24 @@ export interface Quiz {
   timeLastEdited: number;
   description: string;
   creatorId: number;
-  questions?: Question[];
+  numQuestions: number;
+  questions: Question[];
+  duration: number;
 }
 
 export interface Question {
-  optionId: number;
-  optionString: string;
+  questionId: number;
+  question: string;
+  duration: number;
+  points: number;
+  answers: Answer[];
+}
+
+export interface Answer {
+  answerId: number;
+  answer: string;
+  colour: string;
+  correct: boolean;
 }
 
 export interface Sessions {
