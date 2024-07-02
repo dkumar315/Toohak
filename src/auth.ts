@@ -2,12 +2,12 @@ import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
 
 // interfeces
-import { Data, User, ErrorObject } from './dataStore';
+import { Data, User, Session, ErrorObject, EmptyObject } from './dataStore';
 
+const INVALID: number = -1;
 const NAME_MIN_LEN: number = 2;
 const NAME_MAX_LEN: number = 20;
 const PASSWORD_MIN_LEN: number = 8;
-const INVALID_USER_INDEX: number = -1;
 
 export interface UserDetails {
   userId: number;
@@ -21,6 +21,10 @@ export interface UserDetailReturn {
   user: UserDetails;
 }
 
+export interface TokenReturn {
+  token: string;
+}
+
 /**
  * Register a user with an email, password, and names.
  *
@@ -32,14 +36,11 @@ export interface UserDetailReturn {
  * @return {number} authUserId - unique identifier for a user
  * @return {object} returns error if email, password, nameFirst, nameLast invalid
  */
-export function adminAuthRegister(email, password, nameFirst, nameLast) {
+export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string): TokenReturn | ErrorObject {
   // Check if email is valid or already exists
-  if (!isValidEmail(email, INVALID_USER_INDEX)) {
+  if (!isValidEmail(email, INVALID)) {
     return { error: `Email invalid format or already in use ${email}.` };
   }
-
-  const data = getData();
-  const authUserId = data.users.length + 1;
 
   // Check nameFirst meets requirements
   if (!isValidName(nameFirst)) {
@@ -56,9 +57,10 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
     return { error: `Invalid password ${password}.` };
   }
 
-  const token = generateToken();
+  const data: Data = getData();
+  const authUserId: number = data.users.length + 1;
 
-  const newUser = {
+  const newUser: User = {
     userId: authUserId,
     nameFirst: nameFirst,
     nameLast: nameLast,
@@ -66,11 +68,12 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
     password: password,
     numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
-    tokens: [token],
   };
-
   data.users.push(newUser);
   setData(data);
+
+  const token: string = generateToken();
+  addSession(authUserId, token);
 
   return { token: token };
 }
@@ -84,43 +87,46 @@ export function adminAuthRegister(email, password, nameFirst, nameLast) {
 * @return {number} authUserId - unique identifier for a user
 * @return {object} returns error if email or password invalid
 */
-export function adminAuthLogin(email, password) {
-  const data = getData();
-  const userIndex = data.users.findIndex(user => user.email === email);
-  if (userIndex === INVALID_USER_INDEX) {
+export function adminAuthLogin(email: string, password: string): TokenReturn | ErrorObject {
+  const data: Data = getData();
+  const userIndex: number = data.users.findIndex(user => user.email === email);
+  if (userIndex === INVALID) {
     return { error: `Invalid email ${email}.` };
   }
 
-  const user = data.users[userIndex];
+  const user: User = data.users[userIndex];
   if (password.localeCompare(user.password) !== 0) {
     user.numFailedPasswordsSinceLastLogin += 1;
+    setData(data);
     return { error: `Invalid password ${password}.` };
   }
 
   // reset numFailedPasswordsSinceLastLogin
   user.numSuccessfulLogins += 1;
   user.numFailedPasswordsSinceLastLogin = 0;
-
-  const token = generateToken();
-  user.tokens.push(token);
-
   setData(data);
+
+  const token: string = generateToken();
+  addSession(user.userId, token);
+
   return { token: token };
 }
 
 /**
  * Given an login user's token, return details about the user.
  *
- * @param {number} token - unique identifier for a user
+ * @param {string} token - unique identifier for a login user
  *
  * @return {object} return user - userDetails
  * @return {object} returns error if token invalid
  */
 export function adminUserDetails(token: string): UserDetailReturn | ErrorObject {
-  const userIndex: number = isValidUser(token);
-  if (userIndex === INVALID_USER_INDEX) return { error: `Invalid token ${token}.` };
+  const userId: number = findUserId(token);
+  console.log(getData(), token, userId);
+  if (userId === INVALID) return { error: `Invalid token ${token}.` };
 
   const data: Data = getData();
+  const userIndex: number = findUser(userId);
   const user: User = data.users[userIndex];
 
   return {
@@ -138,7 +144,7 @@ export function adminUserDetails(token: string): UserDetailReturn | ErrorObject 
  * Given an admin user's authUserId and a set of properties,
  * update the properties of this logged in admin user.
  *
- * @param {number} authUserId - unique identifier for a user
+ * @param {string} token - unique identifier for a login user
  * @param {string} email - user's email
  * @param {string} nameFirst - user's first name
  * @param {string} nameLast - user's last name
@@ -146,21 +152,23 @@ export function adminUserDetails(token: string): UserDetailReturn | ErrorObject 
  * @return {object} empty object
  * @return {object} returns error if authUserId, email, or names invalid
  */
-export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
-  // check whether authUserId is exist
-  const userIndex = isValidUser(authUserId);
-  if (userIndex === INVALID_USER_INDEX) return { error: `Invalid authUserId ${authUserId}.` };
+export function adminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string): EmptyObject | ErrorObject {
+  const data: Data = getData();
+  const userId: number = findUserId(token);
+  if (userId === INVALID) return { error: `Invalid token ${token}.` };
+
+  const userIndex: number = findUser(userId);
+  const user: User = data.users[userIndex];
 
   // check email, nameFirst, nameLast whether is valid
-  if (!isValidEmail(email, authUserId)) return { error: `Invalid email ${email}.` };
+  if (!isValidEmail(email, userIndex)) return { error: `Invalid email ${email}.` };
   if (!isValidName(nameFirst)) return { error: `Invalid nameFirst ${nameFirst}.` };
   if (!isValidName(nameLast)) return { error: `Invalid nameLast ${nameLast}.` };
 
   // update userDetails
-  const data = getData();
-  data.users[userIndex].email = email;
-  data.users[userIndex].nameFirst = nameFirst;
-  data.users[userIndex].nameLast = nameLast;
+  user.email = email;
+  user.nameFirst = nameFirst;
+  user.nameLast = nameLast;
 
   setData(data);
 
@@ -170,20 +178,21 @@ export function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
 /**
  * Updates the password of a logged in user.
  *
- * @param {number} authUserId - unique identifier for a user
- * @param {number} oldPassword - the current password stored requires update
- * @param {number} newPassword - the replacement password submitted by user
+ * @param {string} token - unique identifier for a login user
+ * @param {string} oldPassword - the current password stored requires update
+ * @param {string} newPassword - the replacement password submitted by user
  *
  * @return {object} empty object
  * @return {object} returns error if authUserId or passwords invalid
  */
-export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
+export function adminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string) : EmptyObject | ErrorObject {
   // check the authUserId whether is valid and find its userDetails
-  const userIndex = isValidUser(authUserId);
-  if (userIndex === INVALID_USER_INDEX) return { error: `Invalid authUserId ${authUserId}.` };
+  const userId = findUserId(token);
+  if (userId === INVALID) return { error: `Invalid token ${token}.` };
 
-  const data = getData();
-  const user = data.users[userIndex];
+  const data: Data = getData();
+  const userIndex: number = findUser(userId);
+  const user: User = data.users[userIndex];
 
   //  check the oldPassword whether is valid and match the user password
   if (user.password !== oldPassword) return { error: `Invalid oldPassword ${oldPassword}.` };
@@ -210,40 +219,67 @@ export function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
  */
 function generateToken(): string {
   const data: Data = getData();
-  const allTokensLength = data.users.reduce((sum, currUser) =>
-    sum + currUser.tokens.length, 0
-  );
-  const token: string = String(allTokensLength + 1);
-  return token;
+  data.sessions.globalCounter += 1;
+  setData(data);
+  return String(data.sessions.globalCounter);
 }
 
 /**
- * Given an admin user's token, return its corresponding userIndex
+ * Generate and push a session
+ */
+function addSession(authUserId: number, token: string): void {
+  const data: Data = getData();
+  const newSession: Session = {
+    userId: authUserId,
+    token: token
+  };
+  data.sessions.sessionIds.push(newSession);
+  setData(data);
+}
+
+/**
+ * Given an admin user's token, return userId if valid
  *
- * @param {number} token - unique identifier for a user
+ * @param {string} token - unique identifier for a user
+ *
+ * @return {number} return corresonding userId
+ */
+function findUserId(token: string): number {
+  const data: Data = getData();
+  const session: Session = data.sessions.sessionIds.find(session =>
+    session.token === token
+  );
+  if (!session) return INVALID;
+  return session.userId;
+}
+
+/**
+ * Given an authUserId, return its index in data.users
+ *
+ * @param {number} authUserId - unique identifier for a user
  *
  * @return {number} return corresonding index of a user
  */
-export function isValidUser(token: string): number {
+function findUser(authUserId: number): number {
   const data: Data = getData();
-  return data.users.findIndex(user => user.tokens.includes(token));
+  return data.users.findIndex(user => user.userId === authUserId);
 }
 
 /**
  * Given an email, return true if it is not used by the other and it is email
  *
- * @param {number} authUserId - unique identifier for a user,
+ * @param {number} userIndex - unique identifier for a user,
  * set to -1 if it is new user
  * @param {string} email - user's email, according to
  * https://www.npmjs.com/package/validator
  *
  * @return {boolean} return true if email is valid and not used by others
  */
-function isValidEmail(email: string, authUserId: number): boolean {
+function isValidEmail(email: string, userIndex: number): boolean {
   const data: Data = getData();
 
-  const isUsed: boolean = data.users.some(user =>
-    user.userId !== authUserId && user.email === email
+  const isUsed: boolean = data.users.some((user, index) =>
+    index !== userIndex && user.email === email
   );
 
   return !isUsed && isEmail(email);

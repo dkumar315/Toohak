@@ -1,7 +1,14 @@
+import fs from 'fs';
+const DATA_FILE = './dataStore.json';
+
 // YOU SHOULD MODIFY THIS OBJECT BELOW ONLY
 let data: Data = {
   users: [],
   quizzes: [],
+  sessions: {
+    globalCounter: 0,
+    sessionIds: [],
+  },
 };
 
 // define constants
@@ -11,9 +18,11 @@ const UNAUTHORIZED = 401;
 const FORBIDDEN = 403;
 export { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN };
 
+// interfaces
 export interface Data {
   users: User[];
   quizzes: object[];
+  sessions: Sessions;
 }
 
 export interface User {
@@ -25,7 +34,6 @@ export interface User {
   numSuccessfulLogins: number;
   numFailedPasswordsSinceLastLogin: number;
   passwordHistory?: string[];
-  tokens: string[];
 }
 
 export interface Quiz {
@@ -41,6 +49,16 @@ export interface Quiz {
 export interface Question {
   optionId: number;
   optionString: string;
+}
+
+export interface Sessions {
+  globalCounter: number;
+  sessionIds: Session[];
+}
+
+export interface Session {
+  userId: number;
+  token: string;
 }
 
 export type EmptyObject = Record<string, never>;
@@ -65,13 +83,26 @@ Example usage
 */
 
 // Use get() to access the data
-function getData(): Data {
+export function getData(): Data {
+  loadData();
   return data;
 }
 
 // Use set(newData) to pass in the entire data object, with modifications made
-function setData(newData: Data): void {
+export function setData(newData: Data): void {
   data = newData;
+  saveData(data);
 }
 
-export { getData, setData };
+function loadData(): void {
+  try {
+    const fileData = fs.readFileSync(DATA_FILE, { flag: 'r' });
+    data = JSON.parse(String(fileData));
+  } catch (error) {
+    console.log('No existing data file found. Starting with empty data.');
+  }
+}
+
+function saveData(data: Data): void {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' });
+}

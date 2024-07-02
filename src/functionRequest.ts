@@ -29,6 +29,10 @@ export function requestUserDetails(token: string) {
   return requestHelper('GET', '/v1/admin/user/details', { token });
 }
 
+export function requestUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string) {
+  return requestHelper('PUT', '/v1/admin/user/details', { token, email, nameFirst, nameLast });
+}
+
 // ============== other ========================================================
 export function requestClear() {
   return requestHelper('DELETE', '/v1/clear', {});
