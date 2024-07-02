@@ -33,6 +33,10 @@ export function requestUserDetailsUpdate(token: string, email: string, nameFirst
   return requestHelper('PUT', '/v1/admin/user/details', { token, email, nameFirst, nameLast });
 }
 
+export function requestUserPasswordUpdate(token: string, oldPassword: string, newPassword: string) {
+  return requestHelper('PUT', '/v1/admin/user/password', { token, oldPassword, newPassword });
+}
+
 // ============== other ========================================================
 export function requestClear() {
   return requestHelper('DELETE', '/v1/clear', {});

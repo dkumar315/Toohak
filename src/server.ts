@@ -30,8 +30,9 @@ const HOST: string = process.env.IP || '127.0.0.1';
 // ====================================================================
 import { BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
 import {
-  adminAuthRegister, adminAuthLogin,
-  adminUserDetails, adminUserDetailsUpdate
+  adminAuthRegister, adminAuthLogin, // adminAuthLogout
+  adminUserDetails, adminUserDetailsUpdate,
+  adminUserPasswordUpdate
 } from './auth';
 import { clear } from './other';
 
@@ -68,9 +69,22 @@ app.get('/v1/admin/user/details', (req: Request, res: Response) => {
 });
 
 app.put('/v1/admin/user/details', (req: Request, res: Response) => {
-  const token = req.body.token as string;
-  const { email, nameFirst, nameLast } = req.body;
+  const { token, email, nameFirst, nameLast } = req.body;
   const result = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
+  if ('error' in result) {
+    if (result.error.includes('token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
+
+  return res.json(result);
+});
+
+app.put('/v1/admin/user/password', (req: Request, res: Response) => {
+  const { token, oldPassword, newPassword } = req.body;
+  const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
   if ('error' in result) {
     if (result.error.includes('token')) {
       return res.status(UNAUTHORIZED).json(result);
