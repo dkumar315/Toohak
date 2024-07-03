@@ -49,14 +49,14 @@ export interface Quiz {
   description: string;
   creatorId: number;
   numQuestions: number;
-  questions: Question[]; // should be []
-  duration: number;
+  questions: Question[];
+  duration: number; // in seconds
 }
 
 export interface Question {
   questionId: number;
   question: string;
-  duration: number;
+  duration: number; // in seconds
   points: number;
   answers: Answer[];
 }

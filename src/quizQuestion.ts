@@ -5,6 +5,13 @@ import {
 } from './dataStore';
 import { findUserId } from './auth';
 
+const MAX_DURATIONS_MINS = 3;
+const MINS_TO_SECS = 60;
+export const MAX_DURATIONS_SECS = MAX_DURATIONS_MINS * MINS_TO_SECS;
+export const MIN_POINT_AWARD = 1;
+export const MAX_POINT_AWARD = 10;
+export const MAX_ANSWER_STRING_LEN = 30;
+
 export interface QuestionBody {
   question: string;
   duration: number;
@@ -71,7 +78,7 @@ function isValidQuizId(quizId: number, authUserId: number): number | ErrorObject
  *
  * @return {boolean} true - if all requirements below are satisfied:
  *  question string length > 5 characters && question string length < 50 characters,
- *  sum of the question durations <= 3 minutes,
+ *  sum of the question durations <= 3 minutes (input duration of question in seconds),
  *  points awarded >= 1 && points awarded <= 10,
  *  answers length > 2 && answer length < 6,
  *  answer strings are not duplicates of one another,

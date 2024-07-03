@@ -51,9 +51,26 @@ export function requestUserPasswordUpdate(token: string, oldPassword: string, ne
   return requestHelper('PUT', '/v1/admin/user/password', { token, oldPassword, newPassword });
 }
 
+// ============== adminQuiz ============================================
+export function requestQuizList(token: string) {
+  return requestHelper('GET', '/v1/admin/quiz/list', { token });
+}
+
+export function requestQuizCreate(token: string, name: string, description: string) {
+  return requestHelper('POST', '/v1/admin/quiz', { token, name, description });
+}
+
+export function requestQuizRemove(token: string, quizId: number) {
+  return requestHelper('DELETE', `/v1/admin/quiz/${quizId}`, { token });
+}
+
+export function requestQuizInfo(token: string, quizId: number) {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}`, { token });
+}
+
 // ============== adminQuizQuestion ============================================
-export function requestQuizQuestionCreate(token: string, quizid: number, questionBody: QuestionBody) {
-  return requestHelper('POST', `/v1/admin/quiz/${quizid}/question`, { token, questionBody });
+export function requestQuizQuestionCreate(token: string, quizId: number, questionBody: QuestionBody) {
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/question`, { token, questionBody });
 }
 
 // ============== other ========================================================

@@ -1,7 +1,8 @@
 import {
   getData,
   setData
-} from './dataStore.js';
+} from './dataStore';
+import { findUserId } from './auth';
 
 const MAX_DESCRIPTION_LENGTH = 100;
 const FALSE_INDEX = -1; 
@@ -55,7 +56,8 @@ export function validateOwnership(authUserId, quizId) {
  * 
  * @return {object} - Returns the details of the quiz
  */
-export function adminQuizList(authUserId) {
+export function adminQuizList(token) {
+  const authUserId = findUserId(token);
   const userValidation = validateUserId(authUserId);
   if (userValidation !== true) {
     return userValidation;
@@ -83,9 +85,9 @@ export function adminQuizList(authUserId) {
  * 
  * @return {object} - Returns the details of the quiz
  */
-export function adminQuizCreate(authUserId, name, description) {
+export function adminQuizCreate(token, name, description) {
+  const authUserId = findUserId(token);
   const userValidation = validateUserId(authUserId);
-  
 
   if (userValidation !== true) {
     return userValidation;
@@ -129,7 +131,8 @@ export function adminQuizCreate(authUserId, name, description) {
  * 
  * @return {object} - Returns an empty object
  */
-export function adminQuizRemove(authUserId, quizId) {
+export function adminQuizRemove(token, quizId) {
+    const authUserId = findUserId(token);
   const userValidation = validateUserId(authUserId);
   
 
@@ -170,7 +173,8 @@ export function adminQuizRemove(authUserId, quizId) {
  * @return {object} - Returns an empty object
  * 
  */
-export function adminQuizInfo(authUserId, quizId) {
+export function adminQuizInfo(token, quizId) {
+    const authUserId = findUserId(token);
   const userValidation = validateUserId(authUserId);
   if (userValidation !== true) {
     return userValidation;

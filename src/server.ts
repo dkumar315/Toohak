@@ -35,6 +35,10 @@ import {
   adminUserPasswordUpdate
 } from './auth';
 import {
+  adminQuizList, adminQuizCreate,
+  adminQuizRemove, adminQuizInfo
+} from './quiz';
+import {
   adminQuizQuestionCreate
 } from './quizQuestion';
 import { clear } from './other';
@@ -107,15 +111,41 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   }
   return res.json(result);
 });
+
 // adminQuiz
+app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const result = adminQuizList(token);
+  return res.json(result);
+});
+
+app.post('/v1/admin/quiz', (req: Request, res: Response) => {
+  const { token, name, description } = req.body;
+  const result = adminQuizCreate(token, name, description);
+  return res.json(result);
+});
+
+app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid as string);
+  const token = req.query.token as string;
+  const result = adminQuizRemove(quizId, token);
+  return res.json(result);
+});
+
+app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid as string);
+  const token = req.query.token as string;
+  const result = adminQuizInfo(quizId, token);
+  return res.json(result);
+});
 
 // adminQuizQuestion
 // Create quiz question
 app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
-  const quizid = parseInt(req.params.quizid as string);
+  const quizId = parseInt(req.params.quizid as string);
   const { token, questionBody } = req.body;
 
-  const result = adminQuizQuestionCreate(token, quizid, questionBody);
+  const result = adminQuizQuestionCreate(token, quizId, questionBody);
   if ('error' in result) {
     if (result.error.includes('token')) {
       return res.status(UNAUTHORIZED).json(result);
