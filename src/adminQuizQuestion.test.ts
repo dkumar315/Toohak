@@ -10,7 +10,8 @@ import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Quiz } from './dataSt
 import { ERROR, ResError } from './functionRequest'; // VALID_EMPTY_RETURN
 import {
   QuestionBody, QuestionIdReturn, AnswerInput,
-  MAX_DURATIONS_SECS, MIN_POINT_AWARD, MAX_POINT_AWARD, MAX_ANSWER_STRING_LEN
+  MIN_QUESTION_LEN, MAX_QUESTION_LEN, MAX_DURATIONS_SECS,
+  MIN_POINTS_AWARD, MAX_POINTS_AWARD, MAX_ANSWER_STRING_LEN
 } from './quizQuestion';
 
 interface QuestionIdRes {
@@ -92,7 +93,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
 
     describe('test1.4 just meet requiremnets', () => {
       test('test 1.4.1 question string have 5 characters in length', () => {
-        questionBody.question = 'q'.repeat(5);
+        questionBody.question = 'q'.repeat(MIN_QUESTION_LEN);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
@@ -106,7 +107,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
 
       test('test1.4.2 question string have 50 characters in length', () => {
-        questionBody.question = 'q'.repeat(50);
+        questionBody.question = 'q'.repeat(MAX_QUESTION_LEN);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
@@ -157,14 +158,14 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
 
       test('test1.4.6 point awarded for the question is 1', () => {
-        questionBody.points = MIN_POINT_AWARD;
+        questionBody.points = MIN_POINTS_AWARD;
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
       });
 
       test('test1.4.7 points awarded for the question are 10', () => {
-        questionBody.points = MAX_POINT_AWARD;
+        questionBody.points = MAX_POINTS_AWARD;
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
@@ -233,7 +234,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
     });
 
-    describe.only('test2.2 invalid quizId', () => {
+    describe('test2.2 invalid quizId', () => {
       test('test2.2.1 invalid quizId, quiz is not exist', () => {
         result = requestQuizQuestionCreate(token, quizId + 1, questionBody);
         expect(result).toMatchObject(ERROR);
@@ -262,14 +263,14 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
 
       test('test2.3.2 string is 4 characters in length', () => {
-        questionBody.question = 'q'.repeat(4);
+        questionBody.question = 'q'.repeat(MIN_QUESTION_LEN - 1);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
       test('test2.3.3 string is greater than 50 characters in length', () => {
-        questionBody.question = 'q'.repeat(51);
+        questionBody.question = 'q'.repeat(MAX_QUESTION_LEN + 1);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
@@ -277,21 +278,27 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
     });
 
     describe('test2.4 invalid answers length', () => {
-      test('test2.4.1 invalid answers, question have only 1 true answer', () => {
+      test('test2.4.1 question does not have answer', () => {
+        questionBody.answers = [];
+        result = requestQuizQuestionCreate(token, quizId, questionBody);
+        expect(result).toMatchObject(ERROR);
+      });
+
+      test('test2.4.2 uestion have only 1 true answer', () => {
         questionBody.answers.push(trueAnswer1);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test('test2.4.2 invalid answers, question have only 1 false answer', () => {
+      test('test2.4.3 question have only 1 false answer', () => {
         questionBody.answers.push(falseAnswer1);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test('test2.4.3 invalid answers, question have only 7 answers', () => {
+      test('test2.4.4 invalid answers, question have only 7 answers', () => {
         const extraAnswer = {
           answer: 'N/A',
           correct: false,
@@ -378,14 +385,14 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
 
       test('test2.7.3 points awarded is more than 10', () => {
-        questionBody.points = MAX_POINT_AWARD + 1;
+        questionBody.points = MAX_POINTS_AWARD + 1;
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
     });
 
-    describe('test2.7 invalid length of answer string', () => {
+    describe('test2.8 invalid length of answer string', () => {
       const tooShortAnswer = {
         answer: '',
         correct: false,
@@ -395,21 +402,21 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
         correct: false,
       };
 
-      test('test2.7.1 answer is empty', () => {
+      test('test2.8.1 answer is empty', () => {
         questionBody.answers.push(tooShortAnswer);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test('test2.7.2 answer is over long', () => {
+      test('test2.8.2 answer is over long', () => {
         questionBody.answers.unshift(tooShortAnswer);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test('test2.7.3 answers are too short or too long', () => {
+      test('test2.8.3 answers are too short or too long', () => {
         questionBody.answers.unshift(tooShortAnswer, trueAnswer1);
         questionBody.answers.push(tooLongAnswer, trueAnswer2);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
@@ -417,7 +424,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test('test2.7.4 answers are all too short or too long', () => {
+      test('test2.8.4 answers are all too short or too long', () => {
         questionBody.answers = [tooShortAnswer, tooLongAnswer];
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
@@ -425,36 +432,36 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
     });
 
-    describe('test2.8 invalid answers', () => {
-      test('test2.8.1 1 answers are duplicate', () => {
+    describe('test2.9 invalid questionBody.answers', () => {
+      test('test2.9.1 1 answers are duplicate', () => {
         questionBody.answers.push(trueAnswer1);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test('test2.8.2 mutiple answers are duplicate', () => {
+      test('test2.9.2 mutiple answers are duplicate', () => {
         questionBody.answers.push(trueAnswer1, trueAnswer2, falseAnswer1);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test('test2.8.3 all answers are duplicate', () => {
+      test('test2.9.3 all answers are duplicate', () => {
         questionBody.answers.push(trueAnswer1, falseAnswer1);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test('test2.8.4 all answers are duplicate', () => {
+      test('test2.9.4 all answers are duplicate', () => {
         questionBody.answers = [trueAnswer1, trueAnswer1, trueAnswer1];
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test('test2.8.5 all false answers', () => {
+      test('test2.9.5 all false answers', () => {
         questionBody.answers = [falseAnswer1, falseAnswer2, falseAnswer3];
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
@@ -499,7 +506,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
     test('test3.5 valid token and quizId, multiple invalid question properties', () => {
       questionBody.question = 'q'.repeat(51);
       questionBody.duration = 0;
-      questionBody.points = MAX_POINT_AWARD + 1;
+      questionBody.points = MAX_POINTS_AWARD + 1;
       questionBody.answers = [
         { answer: '', correct: false },
         { answer: 'a'.repeat(MAX_ANSWER_STRING_LEN + 1), correct: false },

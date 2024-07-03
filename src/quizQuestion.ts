@@ -5,15 +5,23 @@ import {
 } from './dataStore';
 import { findUserId } from './auth';
 
-const MAX_DURATIONS_MINS = 3;
-const MINS_TO_SECS = 60;
-export const MAX_DURATIONS_SECS = MAX_DURATIONS_MINS * MINS_TO_SECS;
-export const MIN_POINT_AWARD = 1;
-export const MAX_POINT_AWARD = 10;
-export const MAX_ANSWER_STRING_LEN = 30;
-const NO_PERMISSION = -2;
+const MIN_QUESTION_LEN = 5, MAX_QUESTION_LEN = 50;
+const MIN_ANSWERS_LEN = 2, MAX_ANSWERS_LEN = 6;
 
-interface validateQuizId {
+const MAX_DURATIONS_MINS = 3, MINS_TO_SECS = 60;
+const MAX_DURATIONS_SECS = MAX_DURATIONS_MINS * MINS_TO_SECS;
+
+const MIN_POINTS_AWARD = 1, MAX_POINTS_AWARD = 10;
+const MIN_ANSWER_STRING_LEN = 1, MAX_ANSWER_STRING_LEN = 30;
+
+export {
+  MIN_QUESTION_LEN, MAX_QUESTION_LEN,
+  MAX_DURATIONS_SECS,
+  MIN_POINTS_AWARD, MAX_POINTS_AWARD,
+  MAX_ANSWER_STRING_LEN
+};
+
+interface Validate {
   isValid: boolean;
   quizIndex?: number;
   errorMsg?: ErrorObject;
@@ -48,15 +56,18 @@ export interface QuestionIdReturn {
  * @return {object} error - if email, password, nameFirst, nameLast invalid
  */
 export function adminQuizQuestionCreate(token: string, quizId: number, questionBody: QuestionBody): QuestionIdReturn | ErrorObject {
+  // check token
   const userId: number = findUserId(token);
-  if (userId === INVALID) return { error: `Invalid string - token: ${token} not exist.` };
+  if (userId === INVALID) return { error: `Invalid token string: ${token} not exist.` };
   
-  const validate: validateQuizId = isValidQuizId(quizId, userId);
-  console.log(quizId);
-  console.log(validate);
-  if (!validate.isValid) return validate.errorMsg;
+  // check userId
+  const quizIndex: Validate = isValidQuizId(quizId, userId);
+  if (!quizIndex.isValid) return quizIndex.errorMsg;
 
-  // 400: !isValidQuestionBody
+  // check questionBody
+  const isValidQuestion: Validate = isValidQuestionBody(questionBody, quizIndex.quizIndex);
+  if (!isValidQuestion.isValid) return isValidQuestion.errorMsg;
+
   // 200: create question (+ generateRandomColor), timeLastEdited
   return { questionId: 5546 }
 }
@@ -67,28 +78,29 @@ export function adminQuizQuestionCreate(token: string, quizId: number, questionB
  * @param {number} quizId - a unique identifier for a valid quiz
  * @param {number} authUserId - a unique identifier for a login user
  *
- * @return {object} quizId - unique identifier for a qiz of a user
+ * @return {object} quizId - unique identifier for a quiz of a user
  * @return {object} error - if quizId not found, or not own by current user
  */
-function isValidQuizId(quizId: number, authUserId: number): validateQuizId {
+function isValidQuizId(quizId: number, authUserId: number): Validate {
   const data: Data = getData();
   const quizIndex: number = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
-  
-  let validateQuiz: validateQuizId = { isValid: true, quizIndex: quizIndex};
 
+  let isValidId: Validate = { isValid: false, quizIndex: quizIndex};
+
+  // userId not exist
   if (quizIndex === INVALID) {
-    validateQuiz.isValid = false;
-    validateQuiz.errorMsg = { error: `Invalid number - quizId: ${quizId} not exists.` };
-    return validateQuiz;
+    isValidId.errorMsg = { error: `Invalid quizId number: ${quizId} not exists.` };
+    return isValidId;
   } 
 
+  // user does not own the quiz
   if (data.quizzes[quizIndex].creatorId !== authUserId) {
-    validateQuiz.isValid = false;
-    validateQuiz.errorMsg = { error: `Invalid number - quizId: ${quizId} not exists.` };
-    return validateQuiz;
+    isValidId.errorMsg = { error: `Invalid quizId number: ${quizId} access denied.` };
+    return isValidId;
   }
 
-  return validateQuiz;
+  isValidId.isValid = true;
+  return isValidId;
 }
 
 /**
@@ -104,8 +116,56 @@ function isValidQuizId(quizId: number, authUserId: number): validateQuizId {
  *  answer strings are not duplicates of one another,
  *  there are at least one correct answer
  */
-function isValidQuestionBody(questionBody: QuestionBody): boolean {
-  return false;
+function isValidQuestionBody(questionBody: QuestionBody, quizIndex: number): Validate {
+  const data: Data = getData();
+  let isValidQuestion: Validate = { isValid: false };
+
+  // Question string invalid when has less than 5 or greater than 50 characters
+  const questionsLen = questionBody.question.length;
+  if (questionsLen < MIN_QUESTION_LEN || questionsLen > MAX_QUESTION_LEN) {
+    isValidQuestion.errorMsg = { 
+      error: `Invalid question string: ${questionBody.question}, len invalid.` 
+    };
+    return isValidQuestion;
+  }
+
+  // question invalid when has more than 6 answers or less than 2 answers
+  const answersLen = questionBody.answers.length;
+  if (answersLen < MIN_ANSWERS_LEN || answersLen > MAX_ANSWERS_LEN) {
+    isValidQuestion.errorMsg = { 
+      error: `Invalid answers number: ${questionBody.answers.length}.`
+    };
+    return isValidQuestion;
+  }
+
+  // question duration invalid when it is not a positive number
+  // or the sum of the question durations in the quiz exceeds 3 minutes
+  if (questionBody.duration <= 0 || 
+    data.quizzes[quizIndex].duration + questionBody.duration > MAX_DURATIONS_SECS) {
+    isValidQuestion.errorMsg = { 
+      error: `Invalid duration(s) number: ${questionBody.duration}.`
+    };
+    return isValidQuestion;
+  }
+
+  // points awarded invalid when points are less than 1 or greater than 10
+  if (questionBody.points < MIN_POINTS_AWARD || 
+    questionBody.points > MAX_POINTS_AWARD) {
+    isValidQuestion.errorMsg = {
+      error: `Invalid points number: ${questionBody.points}.` 
+    };
+    return isValidQuestion;
+  }
+
+  if (!isValidAnswer(questionBody.answers)) {
+    isValidQuestion.errorMsg = { 
+      error: `Invalid answers object: ${questionBody.answers}.` 
+    };
+    return isValidQuestion;
+  }
+
+  isValidQuestion.isValid = true;
+  return isValidQuestion;
 }
 
 /**
@@ -115,19 +175,17 @@ function isValidQuestionBody(questionBody: QuestionBody): boolean {
  *
  * @return {boolean} true - if no answer strings are duplicates of another
  */
-function isValidAnswer(answer: string[]): boolean {
-  return false;
-}
+function isValidAnswer(answers: AnswerInput[]): boolean {
+  const invalidAnswerLen = answers.some(ans => 
+    ans.answer.length <  MIN_ANSWER_STRING_LEN || 
+    ans.answer.length > MAX_ANSWER_STRING_LEN);
 
-/**
- * check any answer strings are duplicates of one another (within the same question)
- * 
- * @param {array} answer - an array of answer string of questionBody
- *
- * @return {boolean} true - if no answer strings are duplicates of another
- */
-function isDuplicateAnswer(answer: string[]): boolean {
-  return false;
+  const uniqueAnswers: Set<string> = new Set(answers.map(ans => ans.answer));
+  const hasDuplicateAnswer: boolean = uniqueAnswers.size !== answers.length;
+
+  const hasCorrectAnswer = answers.some(answer => answer.correct);
+
+  return !invalidAnswerLen && !hasDuplicateAnswer && hasCorrectAnswer;
 }
 
 /**
@@ -137,9 +195,8 @@ function isDuplicateAnswer(answer: string[]): boolean {
  * @return {string} color - a name of a random color
  */
 function generateRandomColor(): string {
-  // index = Math.floor(Math.random() * colorRange.length);
-  // return COLORS[index];
-  return COLORS[0];
+  const index: number = Math.floor(Math.random() * COLORS.length);
+  return COLORS[index];
 }
 
 /**
