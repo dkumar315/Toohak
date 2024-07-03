@@ -9,7 +9,7 @@ import {
 import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Quiz, COLORS } from './dataStore';
 import { ERROR, ResError } from './functionRequest'; // VALID_EMPTY_RETURN
 import {
-  QuestionBody, QuestionIdReturn, AnswerInput,
+  QuestionBody, AnswerInput,
   MIN_QUESTION_LEN, MAX_QUESTION_LEN, MAX_DURATIONS_SECS,
   MIN_POINTS_AWARD, MAX_POINTS_AWARD, MAX_ANSWER_STRING_LEN
 } from './quizQuestion';

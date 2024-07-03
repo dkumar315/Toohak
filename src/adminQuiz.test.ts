@@ -24,14 +24,14 @@ import {
 
 beforeEach(() => {
   clear();
-}); 
+});
 
 describe('adminQuizList', () => {
   test('adminQuizList returns error when authUserId is not valid', () => {
     const result = adminQuizList(789);
     expect(result).toStrictEqual({ error: expect.any(String) });
   });
-  
+
   test('adminQuizList returns an empty list for a user with no quizzes', () => {
     adminAuthRegister('akshatmishra@gmail.com', 'aks123456', 'Akshat', 'Mishra');
     const user = adminAuthLogin('akshatmishra@gmail.com', 'aks123456');
@@ -39,7 +39,7 @@ describe('adminQuizList', () => {
     const result = adminQuizList(authUserId);
     expect(result).toStrictEqual({"quizzes": []});
   });
-  
+
   test('adminQuizList returns a list of quizzes for the logged-in user', () => {
     const user = adminAuthRegister('tonystark@gmail.com', 'assem1234ble', 'Tony', 'Stark');
     const authUserId = user.authUserId;
@@ -63,7 +63,7 @@ describe('adminQuizCreate', () => {
     const result = adminQuizCreate(user.authUserId, 'Test Quiz', 'First test quiz.');
     expect(result).toEqual(expect.objectContaining({ quizId: expect.any(Number) }));
 
-    const quizzes = adminQuizList(user.authUserId); 
+    const quizzes = adminQuizList(user.authUserId);
     expect(quizzes).toStrictEqual({
       quizzes: [
         {
@@ -97,13 +97,13 @@ describe('adminQuizCreate', () => {
     const result = adminQuizCreate(user.authUserId, name, 'Third test quiz.');
     expect(result).toStrictEqual({ error: expect.any(String) });
   });
-  
+
   test('Creating a quiz with a name that is used by the current user for another quiz', () => {
     const name = 'Quiz';
     const user = adminAuthRegister('krishshalom@gmail.com', 'krisptel7', 'chris', 'patel');
     const result1 = adminQuizCreate(user.authUserId, name, 'Third test quiz.');
     expect(result1).toEqual(expect.objectContaining({ quizId: expect.any(Number) }));
-    
+
     const result2 = adminQuizCreate(user.authUserId, name, 'Third test quiz.');
     expect(result2).toStrictEqual({ error: expect.any(String) });
   });
@@ -141,12 +141,12 @@ describe('adminQuizRemove tests', () => {
     const result = adminQuizRemove(999, quizId1.quizId);
     expect(result).toStrictEqual({ error: expect.any(String) });
   });
-  
+
   test('Error shown when quiz ID is invalid', () => {
     const result = adminQuizRemove(userId1.authUserId, 999);
     expect(result).toStrictEqual({ error: expect.any(String) });
   });
-  
+
   test('Error shown when user does not own the quiz', () => {
     const result = adminQuizRemove(userId2.authUserId, quizId1.quizId);
     expect(result).toStrictEqual({ error: expect.any(String) });
@@ -157,23 +157,23 @@ describe('adminQuizRemove tests', () => {
     const result = adminQuizRemove(userId1.authUserId, quizId1.quizId);
     expect(result).toStrictEqual({ error: expect.any(String) });
   });
-  
+
   test('Error shown when removing a quiz with an empty quiz ID', () => {
     const result = adminQuizRemove(userId1.authUserId, null);
     expect(result).toStrictEqual({ error: expect.any(String) });
   });
-  
+
   test('Error shown when removing a quiz with an empty user ID', () => {
     const result = adminQuizRemove(null, quizId1.quizId);
     expect(result).toStrictEqual({ error: expect.any(String) });
   });
-  
+
   test('Error shown when quiz ID is a string instead of an integer', () => {
     const result = adminQuizRemove(userId1.authUserId, 'invalidQuizId');
     expect(result).toStrictEqual({ error: expect.any(String) });
   });
 });
-  
+
 describe('adminQuizInfo tests', () => {
   let userId1, userId2, quizId1, quizId2;
 
@@ -268,11 +268,11 @@ describe('Testing for adminQuizNameUpdate', () => {
     quizInfo1 = adminQuizInfo(userId1.authUserId, quizId1.quizId);
     expect((quizInfo1.name)).toStrictEqual('New Quiz');
   });
-  
+
   test('Invalid User ID', () => {
     expect(adminQuizNameUpdate(3, quizInfo1.quizId, 'New Quiz')).toStrictEqual({ error: expect.any(String) });
   });
-  
+
   test('Quiz ID does not refer to a valid quiz', () => {
     expect(adminQuizNameUpdate(userId1.authUserId, 4, 'New Quiz')).toStrictEqual({ error: expect.any(String) });
   });
@@ -382,11 +382,11 @@ describe('Testing for adminQuizDescriptionUpdate', () => {
     quizInfo1 = adminQuizInfo(userId1.authUserId, quizId1.quizId);
     expect((quizInfo1.description)).toStrictEqual('Quiz on Coding');
   });
-  
+
   test('invalid authUserId', () => {
     expect(adminQuizDescriptionUpdate(3, quizInfo1.quizId, 'Quiz on Coding')).toStrictEqual({ error: expect.any(String) });
   });
-  
+
   test('quizId does not refer to a valid quiz', () => {
     expect(adminQuizDescriptionUpdate(userId1.authUserId, 3, 'Quiz on Coding')).toStrictEqual({ error: expect.any(String) });
   });

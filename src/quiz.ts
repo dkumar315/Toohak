@@ -5,7 +5,7 @@ import {
 import { findUserId } from './auth';
 
 const MAX_DESCRIPTION_LENGTH = 100;
-const FALSE_INDEX = -1; 
+const FALSE_INDEX = -1;
 const MIN_NAME_LENGTH = 3;
 const MAX_NAME_LENGTH = 30;
 
@@ -20,7 +20,6 @@ export function validateUserId(authUserId) {
   return true;
 }
 
-
 export function validateQuizId(quizId) {
   const data = getData();
 
@@ -31,7 +30,6 @@ export function validateQuizId(quizId) {
 
   return true;
 }
-
 
 export function validateOwnership(authUserId, quizId) {
   const data = getData();
@@ -49,11 +47,11 @@ export function validateOwnership(authUserId, quizId) {
 }
 
 /**
- * This function provides a list of all quizzes that 
+ * This function provides a list of all quizzes that
  * are owned by the currently logged in user.
- * 
+ *
  * @param {number} authUserId - ID of the authorised user
- * 
+ *
  * @return {object} - Returns the details of the quiz
  */
 export function adminQuizList(token) {
@@ -67,22 +65,21 @@ export function adminQuizList(token) {
   const quizArray = [];
   for (const quiz of data.quizzes) {
     if (quiz.creatorId === authUserId) {
-      quizArray.push({quizId: quiz.quizId, name: quiz.name})
+      quizArray.push({ quizId: quiz.quizId, name: quiz.name });
     }
   }
 
   return { quizzes: quizArray };
 }
 
-
 /**
- * This function if given basic details about a new quiz, 
+ * This function if given basic details about a new quiz,
  * creates one for the logged in user.
- * 
+ *
  * @param {number} authUserId - ID of the authorised user
  * @param {string} name - The name of the quiz
  * @param {string} description - The description of the quiz
- * 
+ *
  * @return {object} - Returns the details of the quiz
  */
 export function adminQuizCreate(token, name, description) {
@@ -124,20 +121,18 @@ export function adminQuizCreate(token, name, description) {
   return { quizId: newQuiz.quizId };
 }
 
-
 /**
  * This function permanently removes the quiz,
- * when it is given the quiz as the input 
+ * when it is given the quiz as the input
  *
  * @param {number} authUserId - ID of the authorised user
  * @param {number} quizId - ID of the quiz
- * 
+ *
  * @return {object} - Returns an empty object
  */
 export function adminQuizRemove(token, quizId) {
-    const authUserId = findUserId(token);
+  const authUserId = findUserId(token);
   const userValidation = validateUserId(authUserId);
-  
 
   if (userValidation !== true) {
     return userValidation;
@@ -165,16 +160,15 @@ export function adminQuizRemove(token, quizId) {
   return {};
 }
 
-
 /**
  * This function gets all of the relevant information,
- * about the current quiz 
+ * about the current quiz
  *
  * @param {number} authUserId - ID of the authorised user
  * @param {number} quizId - ID of the quiz
- * 
+ *
  * @return {object} - Returns an empty object
- * 
+ *
  */
 export function adminQuizInfo(token, quizId) {
   const authUserId = findUserId(token);
@@ -212,19 +206,17 @@ export function adminQuizInfo(token, quizId) {
   };
 }
 
-
 /**
  * This function updates the name of the relevant quiz.
- * 
+ *
  * @param {number} authUserId - ID of the authorised user
  * @param {number} quizId - ID of the quiz
  * @param {string} name - Name of the quiz
- * 
+ *
  * @return {object} - Returns an empty object
  */
 export function adminQuizNameUpdate(authUserId, quizId, name) {
   const userValidation = validateUserId(authUserId);
-  
 
   if (userValidation !== true) {
     return userValidation;
@@ -243,18 +235,18 @@ export function adminQuizNameUpdate(authUserId, quizId, name) {
   if (!name) {
     return { error: `Name ${name} not found` };
   }
-  
+
   name = name.trim();
 
   for (const letter of name) {
-    if (!((letter >= 'A' && letter <= 'Z') || 
-      (letter >= 'a' && letter <= 'z') || 
-      (letter >= '0' && letter <= '9') || 
+    if (!((letter >= 'A' && letter <= 'Z') ||
+      (letter >= 'a' && letter <= 'z') ||
+      (letter >= '0' && letter <= '9') ||
       (letter === ' '))) {
       return { error: `Name ${name} contains invalid characters, only alphanumeric and spaces allowed` };
     }
   }
-  
+
   if (name.length < MIN_NAME_LENGTH) {
     return { error: `Name is less than ${MIN_NAME_LENGTH} characters long.` };
   }
@@ -262,9 +254,9 @@ export function adminQuizNameUpdate(authUserId, quizId, name) {
   if (name.length > MAX_NAME_LENGTH) {
     return { error: `Name is more than ${MAX_NAME_LENGTH} characters long.` };
   }
-  
+
   const data = getData();
-  
+
   const nameInUse = data.quizzes.find(q => q.creatorId === authUserId && q.quizId !== quizId && q.name === name);
   if (nameInUse) {
     return { error: `Name ${name} is already used by the current logged-in user for another quiz.` };
@@ -286,14 +278,13 @@ export function adminQuizNameUpdate(authUserId, quizId, name) {
   return {};
 }
 
-
 /**
  * This function updates the description of the relevant quiz.
- * 
+ *
  * @param {number} authUserId - ID of the authorised user
  * @param {number} quizId - ID of the quiz
  * @param {string} description - Description of the quiz
- * 
+ *
  * @return {object} - Returns an empty object
  */
 export function adminQuizDescriptionUpdate(authUserId, quizId, description) {
@@ -315,7 +306,7 @@ export function adminQuizDescriptionUpdate(authUserId, quizId, description) {
   if (description.length > MAX_DESCRIPTION_LENGTH) {
     return { error: `Description is more than ${MAX_DESCRIPTION_LENGTH} characters in length.` };
   }
-  
+
   const data = getData();
 
   const quiz = data.quizzes.find(q => q.quizId === quizId);

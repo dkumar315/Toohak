@@ -44,7 +44,7 @@ import {
 import { clear } from './other';
 
 // Routes
-// Errors are thrown in the following order: 
+// Errors are thrown in the following order:
 // 401 (UNAUTHORIZED), then 403 (FORBIDDEN), then 400 (BAD_REQUEST)
 //
 // Example get request
