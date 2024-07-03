@@ -11,6 +11,13 @@ export const MAX_DURATIONS_SECS = MAX_DURATIONS_MINS * MINS_TO_SECS;
 export const MIN_POINT_AWARD = 1;
 export const MAX_POINT_AWARD = 10;
 export const MAX_ANSWER_STRING_LEN = 30;
+const NO_PERMISSION = -2;
+
+interface validateQuizId {
+  isValid: boolean;
+  quizIndex?: number;
+  errorMsg?: ErrorObject;
+}
 
 export interface QuestionBody {
   question: string;
@@ -41,9 +48,14 @@ export interface QuestionIdReturn {
  * @return {object} error - if email, password, nameFirst, nameLast invalid
  */
 export function adminQuizQuestionCreate(token: string, quizId: number, questionBody: QuestionBody): QuestionIdReturn | ErrorObject {
-	// 401: '' or !findUserId
-  // return { error: `Invalid string - token: ${token} not exist.` };
-  // 403: !isValidQuizId
+  const userId: number = findUserId(token);
+  if (userId === INVALID) return { error: `Invalid string - token: ${token} not exist.` };
+  
+  const validate: validateQuizId = isValidQuizId(quizId, userId);
+  console.log(quizId);
+  console.log(validate);
+  if (!validate.isValid) return validate.errorMsg;
+
   // 400: !isValidQuestionBody
   // 200: create question (+ generateRandomColor), timeLastEdited
   return { questionId: 5546 }
@@ -58,17 +70,25 @@ export function adminQuizQuestionCreate(token: string, quizId: number, questionB
  * @return {object} quizId - unique identifier for a qiz of a user
  * @return {object} error - if quizId not found, or not own by current user
  */
-function isValidQuizId(quizId: number, authUserId: number): number | ErrorObject {
-  // const data: Data = getData();
-  // const quizIndex: number = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
-  // if (quizIndex === INVALID) {
-  //   return { error: `Invalid number - quizId: ${quizId} not exists.` };
-  // } else if (data.quiz[quizIndex].creatorId === authUserId) {
-  //   return { error: `Invalid number - quizId: ${quizId} access denied.` };
-  // }
+function isValidQuizId(quizId: number, authUserId: number): validateQuizId {
+  const data: Data = getData();
+  const quizIndex: number = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
+  
+  let validateQuiz: validateQuizId = { isValid: true, quizIndex: quizIndex};
 
-  // return quizIndex;
-  return 1;
+  if (quizIndex === INVALID) {
+    validateQuiz.isValid = false;
+    validateQuiz.errorMsg = { error: `Invalid number - quizId: ${quizId} not exists.` };
+    return validateQuiz;
+  } 
+
+  if (data.quizzes[quizIndex].creatorId !== authUserId) {
+    validateQuiz.isValid = false;
+    validateQuiz.errorMsg = { error: `Invalid number - quizId: ${quizId} not exists.` };
+    return validateQuiz;
+  }
+
+  return validateQuiz;
 }
 
 /**
