@@ -11,6 +11,7 @@ export function clear() {
     quizzes: [],
     sessions: {
       globalCounter: 0,
+      questionCounter: 0,
       sessionIds: [],
     },
   };

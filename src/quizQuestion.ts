@@ -59,17 +59,35 @@ export function adminQuizQuestionCreate(token: string, quizId: number, questionB
   // check token
   const userId: number = findUserId(token);
   if (userId === INVALID) return { error: `Invalid token string: ${token} not exist.` };
-  
+
   // check userId
-  const quizIndex: Validate = isValidQuizId(quizId, userId);
-  if (!quizIndex.isValid) return quizIndex.errorMsg;
+  const isvalidObj: Validate = isValidQuizId(quizId, userId);
+  if (!isvalidObj.isValid) return isvalidObj.errorMsg;
+
+  const data: Data = getData();
+  const quizIndex = isvalidObj.quizIndex;
+  const quiz = data.quizzes[quizIndex];
 
   // check questionBody
-  const isValidQuestion: Validate = isValidQuestionBody(questionBody, quizIndex.quizIndex);
+  const isValidQuestion: Validate = isValidQuestionBody(questionBody, quiz.duration);
   if (!isValidQuestion.isValid) return isValidQuestion.errorMsg;
 
   // 200: create question (+ generateRandomColor), timeLastEdited
-  return { questionId: 5546 }
+  const { answers, ...question } = questionBody;
+  const answersArray: Answer[] = questionBody.answers.map(({ answer, correct }, index) => 
+    ({ answerId: index + 1, answer, colour: generateRandomColor(), correct }));
+
+  data.sessions.questionCounter += 1;
+  const questionId: number = data.sessions.questionCounter;
+  const newQuestion: Question = { questionId, ...question, answers: answersArray }
+
+  quiz.timeLastEdited = timeStamp();
+  quiz.numQuestions += 1;
+  quiz.questions.push(newQuestion);
+  quiz.duration += questionBody.duration;
+
+  setData(data);
+  return { questionId: questionId }
 }
 
 /**
@@ -116,7 +134,7 @@ function isValidQuizId(quizId: number, authUserId: number): Validate {
  *  answer strings are not duplicates of one another,
  *  there are at least one correct answer
  */
-function isValidQuestionBody(questionBody: QuestionBody, quizIndex: number): Validate {
+function isValidQuestionBody(questionBody: QuestionBody, quizDuration: number): Validate {
   const data: Data = getData();
   let isValidQuestion: Validate = { isValid: false };
 
@@ -141,7 +159,7 @@ function isValidQuestionBody(questionBody: QuestionBody, quizIndex: number): Val
   // question duration invalid when it is not a positive number
   // or the sum of the question durations in the quiz exceeds 3 minutes
   if (questionBody.duration <= 0 || 
-    data.quizzes[quizIndex].duration + questionBody.duration > MAX_DURATIONS_SECS) {
+    quizDuration + questionBody.duration > MAX_DURATIONS_SECS) {
     isValidQuestion.errorMsg = { 
       error: `Invalid duration(s) number: ${questionBody.duration}.`
     };

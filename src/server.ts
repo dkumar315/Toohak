@@ -126,16 +126,16 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
 });
 
 app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
-  const quizId = parseInt(req.params.quizid as string);
   const token = req.query.token as string;
-  const result = adminQuizRemove(quizId, token);
+  const quizId = parseInt(req.params.quizid as string);
+  const result = adminQuizRemove(token, quizId);
   return res.json(result);
 });
 
 app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
-  const quizId = parseInt(req.params.quizid as string);
   const token = req.query.token as string;
-  const result = adminQuizInfo(quizId, token);
+  const quizId = parseInt(req.params.quizid as string);
+  const result = adminQuizInfo(token, quizId);
   return res.json(result);
 });
 

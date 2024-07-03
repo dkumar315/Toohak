@@ -177,7 +177,7 @@ export function adminQuizRemove(token, quizId) {
  * 
  */
 export function adminQuizInfo(token, quizId) {
-    const authUserId = findUserId(token);
+  const authUserId = findUserId(token);
   const userValidation = validateUserId(authUserId);
   if (userValidation !== true) {
     return userValidation;
@@ -206,6 +206,9 @@ export function adminQuizInfo(token, quizId) {
     timeCreated: quiz.timeCreated,
     timeLastEdited: quiz.timeLastEdited,
     description: quiz.description,
+    numQuestions: quiz.numQuestions,
+    questions: quiz.questions,
+    duration: quiz.duration,
   };
 }
 

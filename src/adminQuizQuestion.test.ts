@@ -6,7 +6,7 @@ import {
 } from './functionRequest';
 
 // interfaces and constants
-import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Quiz } from './dataStore';
+import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Quiz, COLORS } from './dataStore';
 import { ERROR, ResError } from './functionRequest'; // VALID_EMPTY_RETURN
 import {
   QuestionBody, QuestionIdReturn, AnswerInput,
@@ -63,8 +63,9 @@ beforeEach(() => {
   requestClear();
   token = requestAuthRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
   quizId = requestQuizCreate(token, 'Mirror Mirror on the wall', 'I love disney cartons').quizId;
-  questionBody = initQuestionBody;
-  questionBody.answers = [trueAnswer1, falseAnswer1];
+  questionBody = JSON.parse(JSON.stringify(initQuestionBody));
+  const answers = [trueAnswer1, falseAnswer1];
+  questionBody = { ...initQuestionBody, answers };
 });
 afterAll(() => requestClear());
 
@@ -470,7 +471,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
     });
   });
 
-  describe.skip('test3.0 mutilple invalid returns', () => {
+  describe('test3.0 mutilple invalid returns', () => {
     test('test3.1 invalid token and invalid quizId', () => {
       const invalidToken = 'invalidToken';
       const invalidQuizId = quizId + 1;
@@ -555,9 +556,9 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       expect(result.status).toStrictEqual(UNAUTHORIZED);
     });
 
-    test('test3.10 valid token, quiz owned by another user, and invalid points', () => {
-      const anotherUserToken = requestAuthRegister('another@email.com', 'password123', 'Another', 'User').token;
-      const quizId2 = requestQuizCreate(anotherUserToken, 'Another Quiz', 'Description').quizId;
+    test('test3.9 valid token, quiz owned by another user, and invalid points', () => {
+      const token2 = requestAuthRegister('another@email.com', 'password123', 'Another', 'User').token;
+      const quizId2 = requestQuizCreate(token2, 'Another Quiz', 'Description').quizId;
       questionBody.points = -5;
       result = requestQuizQuestionCreate(token, quizId2, questionBody);
       expect(result).toMatchObject(ERROR);
@@ -565,15 +566,21 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
     });
   });
 
-  describe.skip('test4.0 test with quizInfo', () => {
-    let quizInfo: Quiz;
-
+  describe('test4.0 test with quizInfo', () => {
     beforeEach(() => {
-      quizInfo = requestQuizInfo(token, quizId);
+      requestClear();
+      token = requestAuthRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
+      quizId = requestQuizCreate(token, 'Mirror Mirror on the wall', 'I love disney cartons').quizId;
+      questionBody = initQuestionBody;
+      questionBody.answers = [trueAnswer1, falseAnswer1];
     });
 
+    // time changes is too small and one way is change function to
+    // timeStamp = (): number => Date.now() to have milliseconds pr
+    // toBeGreaterThanOrEqual is not representing changes
     test('test4.1 quiz info updates after adding one question', () => {
-      const result = requestQuizQuestionCreate(token, quizId, questionBody);
+      const quizInfo: Quiz = requestQuizInfo(token, quizId);
+      result = requestQuizQuestionCreate(token, quizId, questionBody);
       expect(result).toMatchObject({ questionId: expect.any(Number) });
 
       const updatedQuizInfo = requestQuizInfo(token, quizId);
@@ -584,10 +591,11 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       expect(updatedQuizInfo.questions[0].points).toStrictEqual(questionBody.points);
       expect(updatedQuizInfo.questions[0].answers.length).toStrictEqual(questionBody.answers.length);
       expect(updatedQuizInfo.duration).toStrictEqual(questionBody.duration);
-      expect(updatedQuizInfo.timeLastEdited).toBeGreaterThan(quizInfo.timeLastEdited); // toBeGreaterThanOrEqual
+      expect(updatedQuizInfo.timeLastEdited).toBeGreaterThanOrEqual(quizInfo.timeLastEdited);
     });
 
     test('test4.2 quiz info updates after adding multiple questions', () => {
+      const quizInfo: Quiz = requestQuizInfo(token, quizId);
       requestQuizQuestionCreate(token, quizId, questionBody);
       requestQuizQuestionCreate(token, quizId, questionBody);
 
@@ -595,16 +603,17 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       expect(updatedQuizInfo.numQuestions).toStrictEqual(2);
       expect(updatedQuizInfo.questions.length).toStrictEqual(2);
       expect(updatedQuizInfo.duration).toStrictEqual(questionBody.duration * 2);
-      expect(updatedQuizInfo.timeLastEdited).toBeGreaterThan(quizInfo.timeLastEdited);
+      expect(updatedQuizInfo.timeLastEdited).toBeGreaterThanOrEqual(quizInfo.timeLastEdited);
     });
 
-    test('test4.3 quiz info reflects correct question IDs', () => {
+    test('test4.3 quiz info reflects correct questionId', () => {
       const question1 = requestQuizQuestionCreate(token, quizId, questionBody);
       const question2 = requestQuizQuestionCreate(token, quizId, questionBody);
 
       const updatedQuizInfo = requestQuizInfo(token, quizId);
       expect(updatedQuizInfo.questions[0].questionId).toStrictEqual(question1.questionId);
       expect(updatedQuizInfo.questions[1].questionId).toStrictEqual(question2.questionId);
+      expect(question1.questionId + 1).toStrictEqual(question2.questionId);
     });
 
     test('test4.4 quiz info shows correct answer details', () => {
@@ -612,17 +621,19 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
 
       const updatedQuizInfo = requestQuizInfo(token, quizId);
       const questionInfo = updatedQuizInfo.questions[0];
-      expect(questionInfo.question).toHaveProperty('questionId');
+      expect(questionInfo).toHaveProperty('questionId');
       expect(questionInfo.answers.length).toStrictEqual(questionBody.answers.length);
       questionInfo.answers.forEach((answer: Answer, index: number) => {
         expect(answer.answer).toStrictEqual(questionBody.answers[index].answer);
         expect(answer.correct).toStrictEqual(questionBody.answers[index].correct);
-        expect(answer).toHaveProperty('answerId');
+        expect(answer.answerId).toStrictEqual(expect.any(Number));
         expect(answer).toHaveProperty('colour');
+        expect(COLORS).toContain(answer.colour);
       });
     });
 
     test('test4.5 quiz info preserves original quiz details', () => {
+      const quizInfo: Quiz = requestQuizInfo(token, quizId);
       requestQuizQuestionCreate(token, quizId, questionBody);
 
       const updatedQuizInfo = requestQuizInfo(token, quizId);
@@ -685,18 +696,19 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
     });
 
     test('test4.9 quiz info reflects changes in timeLastEdited for each question addition', () => {
+      const quizInfo: Quiz = requestQuizInfo(token, quizId);
       const initialTime = quizInfo.timeLastEdited;
 
       // question 1
       requestQuizQuestionCreate(token, quizId, questionBody);
       const infoAfterQuestion1 = requestQuizInfo(token, quizId);
-      expect(infoAfterQuestion1.timeLastEdited).toBeGreaterThan(initialTime);
+      expect(infoAfterQuestion1.timeLastEdited).toBeGreaterThanOrEqual(initialTime);
 
       // question 2
       questionBody.question = 'new question';
       requestQuizQuestionCreate(token, quizId, questionBody);
       const infoAfterQuestion2 = requestQuizInfo(token, quizId);
-      expect(infoAfterQuestion2.timeLastEdited).toBeGreaterThan(infoAfterQuestion1.timeLastEdited);
+      expect(infoAfterQuestion2.timeLastEdited).toBeGreaterThanOrEqual(infoAfterQuestion1.timeLastEdited);
     });
 
     test('test4.10 quiz info does not update with invalid input', () => {

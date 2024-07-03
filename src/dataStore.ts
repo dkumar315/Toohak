@@ -7,6 +7,7 @@ let data: Data = {
   quizzes: [],
   sessions: {
     globalCounter: 0,
+    questionCounter: 0,
     sessionIds: [],
   },
 };
@@ -62,14 +63,15 @@ export interface Question {
 }
 
 export interface Answer {
-  answerId: string;
+  answerId: number;
   answer: string;
-  color: string; // randomly generated
+  colour: string; // randomly generated
   correct: boolean;
 }
 
 export interface Sessions {
   globalCounter: number;
+  questionCounter: number;
   sessionIds: Session[];
 }
 
