@@ -2,6 +2,7 @@
 import {
   requestAuthRegister, requestQuizCreate,
   requestQuizInfo, requestQuizQuestionCreate,
+  requestAuthLogout, requestQuizRemove,
   requestClear
 } from './functionRequest';
 
@@ -233,6 +234,13 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
+
+      test('test2.1.5 token invalid, user log out', () => {
+        requestAuthLogout(token);
+        result = requestQuizQuestionCreate(token, quizId, questionBody);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
+      });
     });
 
     describe('test2.2 invalid quizId', () => {
@@ -250,6 +258,13 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
 
         const quizId2 = requestQuizCreate(token2, 'quiz2', 'coming soon...').quizId;
         result = requestQuizQuestionCreate(token, quizId2, questionBody);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(FORBIDDEN);
+      });
+
+      test('test2.2.3 invalid quizId, user does not own the quiz', () => {
+        requestQuizRemove(token, quizId);
+        result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
