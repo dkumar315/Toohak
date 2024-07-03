@@ -12,6 +12,7 @@ let data: Data = {
 };
 
 // define constants
+export const INVALID = -1;
 const OK = 200;
 const BAD_REQUEST = 400;
 const UNAUTHORIZED = 401;
@@ -20,9 +21,12 @@ export { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN };
 export const COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'brown', 'orange'];
 
 // interfaces
+export type EmptyObject = Record<string, never>;
+export type ErrorObject = { error: string };
+
 export interface Data {
   users: User[];
-  quizzes: object[];
+  quizzes: Quiz[];
   sessions: Sessions;
 }
 
@@ -35,7 +39,6 @@ export interface User {
   numSuccessfulLogins: number;
   numFailedPasswordsSinceLastLogin: number;
   passwordHistory?: string[];
-  duration: number;
 }
 
 export interface Quiz {
@@ -74,9 +77,6 @@ export interface Session {
   userId: number;
   token: string;
 }
-
-export type EmptyObject = Record<string, never>;
-export type ErrorObject = { error: string };
 
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY
 

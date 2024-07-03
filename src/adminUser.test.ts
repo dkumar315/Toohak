@@ -1,18 +1,12 @@
-import { OK, BAD_REQUEST, UNAUTHORIZED, EmptyObject, ErrorObject } from './dataStore';
+import { OK, BAD_REQUEST, UNAUTHORIZED, EmptyObject } from './dataStore';
 import { UserDetails, UserDetailReturn } from './auth';
 
 import {
   requestAuthRegister, requestAuthLogin,
   requestUserDetails, requestUserDetailsUpdate,
-  requestUserPasswordUpdate, requestClear
+  requestUserPasswordUpdate, requestClear,
+  VALID_EMPTY_RETURN, ERROR, ResError
 } from './functionRequest';
-
-const VALID_UPDATE_RETURN: EmptyObject = {};
-const ERROR: ErrorObject = { error: expect.any(String) };
-interface ResError {
-  status: typeof BAD_REQUEST | typeof UNAUTHORIZED;
-  error: string;
-}
 
 let email: string, password: string, nameFirst: string, nameLast: string;
 let token: string;
@@ -27,7 +21,7 @@ beforeEach(() => {
 });
 afterAll(() => requestClear());
 
-describe('testing adminUserDetails', () => {
+describe('testing adminUserDetails (GET /v1/admin/user/details)', () => {
   describe('test1: no registered user', () => {
     test('test1.0: invalid token (test with clear())', () => {
       requestClear();
@@ -206,7 +200,7 @@ describe('testing adminUserDetails', () => {
   });
 });
 
-describe('testing adminUserDetailsUpdate', () => {
+describe('testing adminUserDetailsUpdate (PUT /v1/admin/user/details)', () => {
   let result: EmptyObject | ResError;
 
   // valid results
@@ -215,13 +209,13 @@ describe('testing adminUserDetailsUpdate', () => {
       test('test1.1: valid inputs of single user', () => {
         result = requestUserDetailsUpdate(token, 'new' + email, 'new' + nameFirst, 'new' + nameLast);
         expect(result.status).toStrictEqual(OK);
-        expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result).toMatchObject(VALID_EMPTY_RETURN);
       });
 
       test('test1.2: valid inputs of single user, nothing update', () => {
         result = requestUserDetailsUpdate(token, email, nameFirst, nameLast);
         expect(result.status).toStrictEqual(OK);
-        expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result).toMatchObject(VALID_EMPTY_RETURN);
       });
 
       test('test1.3: valid tokens of mutiple users', () => {
@@ -232,7 +226,7 @@ describe('testing adminUserDetailsUpdate', () => {
         const token2: string = requestAuthRegister(email2, psw2, nameFirst2, nameLast2).token;
 
         result = requestUserDetailsUpdate(token2, email2, nameFirst2, nameLast2);
-        expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result).toMatchObject(VALID_EMPTY_RETURN);
       });
 
       test('test1.4: mutiple tokens of single user', () => {
@@ -264,14 +258,14 @@ describe('testing adminUserDetailsUpdate', () => {
       test('test1.2.1: update email is the same as current user email', () => {
         email = 'haydensmith@gmail.com';
         result = requestUserDetailsUpdate(token, email, nameFirst, nameLast);
-        expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result).toMatchObject(VALID_EMPTY_RETURN);
       });
 
       const emails = ['hay.s2@gmail.com', 'hayd@icloud.com', 'nameFirst@gmail.com',
         'z5411789@ad.unsw.edu.au', 'h_s@protonmail.com', 'hayden@au@yahoo.com'];
       test.each(emails)('test1.2.2: valid email = \'%s\'', (validEmail) => {
         result = requestUserDetailsUpdate(token, validEmail, nameFirst, nameLast);
-        expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result).toMatchObject(VALID_EMPTY_RETURN);
       });
     });
 
@@ -282,14 +276,14 @@ describe('testing adminUserDetailsUpdate', () => {
       describe('test1.3.1: valid nameFirst', () => {
         test.each(names)('valid nameFirst = \'%s\'', (validNameFirst) => {
           result = requestUserDetailsUpdate(token, email, validNameFirst, nameLast);
-          expect(result).toMatchObject(VALID_UPDATE_RETURN);
+          expect(result).toMatchObject(VALID_EMPTY_RETURN);
         });
       });
 
       describe('test1.3.2: valid nameLast', () => {
         test.each(names)('valid nameLast = \'%s\'', (validNameLast) => {
           result = requestUserDetailsUpdate(token, email, nameFirst, validNameLast);
-          expect(result).toMatchObject(VALID_UPDATE_RETURN);
+          expect(result).toMatchObject(VALID_EMPTY_RETURN);
         });
       });
     });
@@ -405,7 +399,7 @@ describe('testing adminUserDetailsUpdate', () => {
   });
 });
 
-describe('testing requestUserPasswordUpdate', () => {
+describe('testing requestUserPasswordUpdate (PUT /v1/admin/user/details)', () => {
   let newPasswords: string[] = [];
   let password: string, newPassword: string;
   let result: EmptyObject | ResError;
@@ -430,7 +424,7 @@ describe('testing requestUserPasswordUpdate', () => {
       newPasswords = ['haydensnewpassword0', 'haydenSmith123', 'h1ydensmithabc'];
       test.each(newPasswords)('valid newPassword = \'%s\'', (validId) => {
         result = requestUserPasswordUpdate(token, password, validId);
-        expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result).toMatchObject(VALID_EMPTY_RETURN);
         expect(result.status).toStrictEqual(OK);
       });
     });
@@ -439,7 +433,7 @@ describe('testing requestUserPasswordUpdate', () => {
       newPasswords = ['abcd1234', 'abcd123456', 'abcd12345'];
       test.each(newPasswords)('valid newPassword = \'%s\'', (validId) => {
         result = requestUserPasswordUpdate(token, password, validId);
-        expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result).toMatchObject(VALID_EMPTY_RETURN);
         expect(result.status).toStrictEqual(OK);
       });
     });
@@ -448,7 +442,7 @@ describe('testing requestUserPasswordUpdate', () => {
       newPasswords = Array.from({ length: 8 }, (_, i) => 'haydensnewPassword' + i);
       test.each(newPasswords)('valid newPassword = \'%s\'', (validPassword) => {
         result = requestUserPasswordUpdate(token, password, validPassword);
-        expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result).toMatchObject(VALID_EMPTY_RETURN);
         expect(result.status).toStrictEqual(OK);
       });
     });
@@ -457,7 +451,7 @@ describe('testing requestUserPasswordUpdate', () => {
       newPasswords = ['this8Len', 'only1number', '11111l11', 'C8PTICAL'];
       test.each(newPasswords)('valid newPassword = \'%s\'', (validPassword) => {
         result = requestUserPasswordUpdate(token, password, validPassword);
-        expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result).toMatchObject(VALID_EMPTY_RETURN);
         expect(result.status).toStrictEqual(OK);
       });
     });
@@ -467,7 +461,7 @@ describe('testing requestUserPasswordUpdate', () => {
         'cats on keyboard 55Len !@#$%^&*()_+=[]{}\\|;:\'",.<>?/-'];
       test.each(newPasswords)('valid newPassword = \'%s\'', (validPassword) => {
         result = requestUserPasswordUpdate(token, password, validPassword);
-        expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result).toMatchObject(VALID_EMPTY_RETURN);
         expect(result.status).toStrictEqual(OK);
       });
     });
@@ -480,11 +474,11 @@ describe('testing requestUserPasswordUpdate', () => {
 
       test('token with 2 users', () => {
         result = requestUserPasswordUpdate(token, password, password2);
-        expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result).toMatchObject(VALID_EMPTY_RETURN);
         expect(result.status).toStrictEqual(OK);
 
         result = requestUserPasswordUpdate(token2, password2, password);
-        expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result).toMatchObject(VALID_EMPTY_RETURN);
         expect(result.status).toStrictEqual(OK);
       });
 
@@ -497,7 +491,7 @@ describe('testing requestUserPasswordUpdate', () => {
         const token3: string = requestAuthRegister(email3, password3, nameFirst3, nameLast3).token;
 
         result = requestUserPasswordUpdate(token3, password3, password);
-        expect(result).toMatchObject(VALID_UPDATE_RETURN);
+        expect(result).toMatchObject(VALID_EMPTY_RETURN);
         expect(result.status).toStrictEqual(OK);
       });
     });
@@ -566,7 +560,7 @@ describe('testing requestUserPasswordUpdate', () => {
 
         test.each(newPasswords)('test2.3.3: newPassword = last changed = \'%s\'', (newPassword) => {
           result = requestUserPasswordUpdate(token, password, newPassword);
-          expect(result).toMatchObject(VALID_UPDATE_RETURN);
+          expect(result).toMatchObject(VALID_EMPTY_RETURN);
           expect(result.status).toStrictEqual(OK);
           // newPassword as last changed
           result = requestUserPasswordUpdate(token, newPassword, password);
@@ -685,7 +679,7 @@ describe('testing adminUser', () => {
     // (update detail, check detail) and update password
     const newPassword = 'haydensnewpassword0';
     userResult = requestUserPasswordUpdate(token1, password1, newPassword);
-    expect(userResult).toMatchObject(VALID_UPDATE_RETURN);
+    expect(userResult).toMatchObject(VALID_EMPTY_RETURN);
     password1 = newPassword;
 
     // (update password) and update detail
@@ -710,7 +704,7 @@ describe('testing adminUser', () => {
     // update password
     const newPassword = 'haydensnewpassword0';
     updateResult = requestUserPasswordUpdate(token1, password1, newPassword);
-    expect(updateResult).toMatchObject(VALID_UPDATE_RETURN);
+    expect(updateResult).toMatchObject(VALID_EMPTY_RETURN);
   });
 
   test('test1.2: fail to change details', () => {
@@ -735,7 +729,7 @@ describe('testing adminUser', () => {
     // update password
     const newPassword = 'ABc20240610!';
     updateResult = requestUserPasswordUpdate(token2, password2, newPassword);
-    expect(updateResult).toMatchObject(VALID_UPDATE_RETURN);
+    expect(updateResult).toMatchObject(VALID_EMPTY_RETURN);
 
     // fail to update detail
     const invalidnameLast2 = 'a';

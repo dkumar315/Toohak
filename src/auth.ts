@@ -2,9 +2,8 @@ import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
 
 // interfeces
-import { Data, User, Session, ErrorObject, EmptyObject } from './dataStore';
+import { Data, User, Session, INVALID, ErrorObject, EmptyObject } from './dataStore';
 
-const INVALID: number = -1;
 const NAME_MIN_LEN: number = 2;
 const NAME_MAX_LEN: number = 20;
 const PASSWORD_MIN_LEN: number = 8;
@@ -265,7 +264,7 @@ function addSession(authUserId: number, token: string): void {
  *
  * @return {number} corresonding userId
  */
-function findUserId(token: string): number {
+export function findUserId(token: string): number {
   const data: Data = getData();
   const session: Session = data.sessions.sessionIds.find(session =>
     session.token === token

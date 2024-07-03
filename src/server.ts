@@ -34,8 +34,15 @@ import {
   adminUserDetails, adminUserDetailsUpdate,
   adminUserPasswordUpdate
 } from './auth';
+import {
+  adminQuizQuestionCreate
+} from './quizQuestion';
 import { clear } from './other';
 
+// Routes
+// Errors are thrown in the following order: 
+// 401 (UNAUTHORIZED), then 403 (FORBIDDEN), then 400 (BAD_REQUEST)
+//
 // Example get request
 app.get('/echo', (req: Request, res: Response) => {
   const result = echo(req.query.echo as string);
@@ -100,6 +107,39 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   }
   return res.json(result);
 });
+// adminQuiz
+
+// adminQuizQuestion
+// Create quiz question
+app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
+  const quizid = parseInt(req.params.quizid as string);
+  const { token, questionBody } = req.body;
+
+  const result = adminQuizQuestionCreate(token, quizid, questionBody);
+  if ('error' in result) {
+    if (result.error.includes('token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else if (result.error.includes('quizId')) {
+      return res.status(FORBIDDEN).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
+
+  return res.json(result);
+});
+
+// Update quiz question
+// app.post /v1/admin/quiz/{quizid}/question/{questionid}
+
+// Delete quiz question
+// app.delete /v1/admin/quiz/{quizid}/question/{questionid}
+
+// Move quiz question
+// app.put /v1/admin/quiz/{quizid}/question/{questionid}/move
+
+// Duplicate quiz question
+// app.post /v1/admin/quiz/{quizid}/question/{questionid}/duplicate
 
 // other
 app.delete('/v1/clear', (req: Request, res: Response) => {

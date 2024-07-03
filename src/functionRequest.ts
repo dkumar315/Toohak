@@ -2,7 +2,17 @@ import request, { HttpVerb } from 'sync-request-curl';
 const config = require('./config.json');
 const SERVER_URL = `${config.url}:${config.port}`;
 
-// ============== helper function ====================================================
+// ============== interfaces ===================================================
+import { UNAUTHORIZED, BAD_REQUEST, FORBIDDEN, EmptyObject, ErrorObject } from './dataStore';
+import { QuestionBody } from './quizQuestion';
+export const VALID_EMPTY_RETURN: EmptyObject = {};
+export const ERROR: ErrorObject = { error: expect.any(String) };
+export interface ResError {
+  status: typeof UNAUTHORIZED | typeof FORBIDDEN | typeof BAD_REQUEST;
+  error: string;
+}
+
+// ============== helper function ==============================================
 function requestHelper(method: HttpVerb, path: string, payload: object) {
   let res;
   if (['GET', 'DELETE'].includes(method)) {
@@ -39,6 +49,11 @@ export function requestUserDetailsUpdate(token: string, email: string, nameFirst
 
 export function requestUserPasswordUpdate(token: string, oldPassword: string, newPassword: string) {
   return requestHelper('PUT', '/v1/admin/user/password', { token, oldPassword, newPassword });
+}
+
+// ============== adminQuizQuestion ============================================
+export function requestQuizQuestionCreate(token: string, quizid: number, questionBody: QuestionBody) {
+  return requestHelper('POST', `/v1/admin/quiz/${quizid}/question`, { token, questionBody });
 }
 
 // ============== other ========================================================
