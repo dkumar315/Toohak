@@ -52,6 +52,7 @@ export interface Quiz {
   numQuestions: number;
   questions: Question[];
   duration: number; // in seconds
+
 }
 
 export interface Question {
@@ -65,7 +66,7 @@ export interface Question {
 export interface Answer {
   answerId: number;
   answer: string;
-  colour: string; // randomly generated
+  colour: string;
   correct: boolean;
 }
 

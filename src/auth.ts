@@ -321,7 +321,6 @@ function isValidName(name: string): boolean {
 /**
  * Given a password string, return false if its length is smaller than 8, or
  * not contain at least a letter and at least a number, otherwise return true
- * potential upgrade: return the strength of password, return -1 if invalid
  *
  * @param {string} password - nameFirst or nameLast of a user
  *
