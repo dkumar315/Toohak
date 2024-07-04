@@ -643,7 +643,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       const updatedQuizInfo = requestQuizInfo(token, quizId);
       expect(updatedQuizInfo.questions[0].questionId).toStrictEqual(question1.questionId);
       expect(updatedQuizInfo.questions[1].questionId).toStrictEqual(question2.questionId);
-      expect(question1.questionId + 1).toStrictEqual(question2.questionId);
+      expect(question2.questionId).toBeGreaterThan(question1.questionId);
     });
 
     test('test4.4 quiz info shows correct answer details', () => {

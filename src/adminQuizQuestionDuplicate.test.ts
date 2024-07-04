@@ -7,7 +7,7 @@ import {
 } from './functionRequest';
 
 import {
-  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Quiz, Colours
+  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Quiz, Colours, Question
 } from './dataStore';
 
 import {
@@ -79,17 +79,15 @@ describe('testing adminQuizQuestionDuplicate' +
       expect(result.status).toStrictEqual(OK);
     });
 
-    test('test1.3 duplicates of duplicate', () => {
+    test('test1.4 duplicates of duplicate', () => {
       result = requestQuizQuestionDuplicate(token, quizId, questionId);
       expect(result).toMatchObject(expectValidReturn);
       expect(result.status).toStrictEqual(OK);
 
-      // newQuestionId = result.newQuestionId as ResNewQuestionId;
       result = requestQuizQuestionDuplicate(token, quizId, result.newQuestionId);
       expect(result).toMatchObject(expectValidReturn);
       expect(result.status).toStrictEqual(OK);
 
-      // newQuestionId = result.newQuestionId as ResNewQuestionId;
       result = requestQuizQuestionDuplicate(token, quizId, result.newQuestionId);
       expect(result).toMatchObject(expectValidReturn);
       expect(result.status).toStrictEqual(OK);
@@ -187,6 +185,35 @@ describe('testing adminQuizQuestionDuplicate' +
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
+
+      test('test2.3.4 questionId in other quiz', () => {
+        const quizName: string = 'every girl has a princess ptentail';
+        const quizDescription: string = 'what about every boy';
+        const quizId2: number = requestQuizCreate(token, quizName, quizDescription).quizId;
+        const questionBody2: QuestionBody = {
+          question: 'I want the fancier crown',
+          duration: 10,
+          points: 10,
+          answers: [
+            {
+              answer: 'boys as well',
+              correct: true
+            },
+            {
+              answer: 'always do your best',
+              correct: true
+            }
+          ]
+        }
+        const questionId2 = requestQuizQuestionCreate(token, quizId2, questionBody2);
+        result = requestQuizQuestionDuplicate(token, quizId, questionId2);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
+
+        result = requestQuizQuestionDuplicate(token, quizId2, questionId);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
+      });
     });
   });
 
@@ -216,6 +243,91 @@ describe('testing adminQuizQuestionDuplicate' +
       result = requestQuizQuestionDuplicate(invalidToken, invalidQuizId, invalidQuestionId);
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(UNAUTHORIZED);
+    });
+  });
+
+  describe('test4.0 duplication specifics', () => {
+    let originalQuestionId: number;
+    let duplicatedQuestionId: number;
+
+    beforeEach(() => {
+      const quizInfo: Quiz = requestQuizInfo(token, quizId);
+      originalQuestionId = quizInfo.questions[0].questionId;
+      const result = requestQuizQuestionDuplicate(token, quizId, originalQuestionId);
+      duplicatedQuestionId = result.newQuestionId;
+    });
+
+    test('test4.1 duplicated question is placed immediately after the source question', () => {
+      const quizInfo: Quiz = requestQuizInfo(token, quizId);
+      const questionIds: number[] = quizInfo.questions.map((q: Question) => q.questionId);
+      const originalIndex = questionIds.indexOf(originalQuestionId);
+      const duplicatedIndex = questionIds.indexOf(duplicatedQuestionId);
+      expect(duplicatedIndex).toBe(originalIndex + 1);
+    });
+
+    test('test4.2 timeLastEdited is updated after duplication', () => {
+      const quizInfoBefore: Quiz = requestQuizInfo(token, quizId);
+      const timeLastEditedBefore: number = quizInfoBefore.timeLastEdited;
+
+      return new Promise(resolve => setTimeout(resolve, 1000))
+        .then(() => {
+          requestQuizQuestionDuplicate(token, quizId, originalQuestionId);
+          const quizInfoAfter = requestQuizInfo(token, quizId);
+          expect(quizInfoAfter.timeLastEdited).toBeGreaterThan(timeLastEditedBefore);
+        });
+    });
+
+    test('test4.3 duplicated question has the same content as the original', () => {
+      const quizInfo: Quiz = requestQuizInfo(token, quizId);
+      const originalQuestion: Question = quizInfo.questions[0];
+      const duplicatedQuestion = quizInfo.questions[1];
+
+      expect(duplicatedQuestion.questionId).toBeGreaterThan(originalQuestion.questionId);
+      expect(duplicatedQuestion.question).toStrictEqual(originalQuestion.question);
+      expect(duplicatedQuestion.duration).toStrictEqual(originalQuestion.duration);
+      expect(duplicatedQuestion.points).toStrictEqual(originalQuestion.points);
+      expect(duplicatedQuestion.answers).toStrictEqual(originalQuestion.answers);
+    });
+
+    test('test4.3.2 duplicated question has the same content as the original', () => {
+      requestQuizQuestionCreate(token, quizId, questionBody);
+      const quizInfo1: Quiz = requestQuizInfo(token, quizId);
+      requestClear();
+
+      requestQuizQuestionCreate(token, quizId, questionBody);
+      requestQuizQuestionDuplicate(token, quizId, originalQuestionId);
+    });
+
+    test('test4.4 duplicated question has a new unique questionId', () => {
+      const quizInfo = requestQuizInfo(token, quizId);
+      const questionIds = quizInfo.questions.map((q: Question) => q.questionId);
+      expect(questionIds.filter((id: number) => id === duplicatedQuestionId).length).toStrictEqual(1);
+      expect(duplicatedQuestionId).not.toStrictEqual(originalQuestionId);
+    });
+
+    test('test4.5 quiz numQuestions is incremented after duplication', () => {
+      const quizInfoBefore = requestQuizInfo(token, quizId);
+      const numQuestionsBefore = quizInfoBefore.numQuestions;
+      
+      requestQuizQuestionDuplicate(token, quizId, originalQuestionId);
+      
+      const quizInfoAfter = requestQuizInfo(token, quizId);
+      expect(quizInfoAfter.numQuestions).toBe(numQuestionsBefore + 1);
+    });
+
+    test('test4.6 quiz duration is updated after duplication', () => {
+      const quizInfoBefore = requestQuizInfo(token, quizId);
+      const durationBefore = quizInfoBefore.duration;
+      const questionDuration = quizInfoBefore.questions[0].duration;
+      
+      requestQuizQuestionDuplicate(token, quizId, originalQuestionId);
+
+      const quizInfoAfter = requestQuizInfo(token, quizId);
+      expect(quizInfoAfter.duration).toBe(durationBefore + questionDuration);
+    });
+
+    test('test4.6 sum of quiz duration is passed 3 minutes', () => {
+      // undefined behaviour?
     });
   });
 });
