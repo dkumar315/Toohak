@@ -1,4 +1,3 @@
-// request functions
 import {
   requestAuthRegister, requestAuthLogout,
   requestQuizCreate, requestQuizInfo, requestQuizRemove,
@@ -14,7 +13,7 @@ import {
   QuestionLimit, AnswersLimit, DurationLimit, PointsLimit, MAX_DURATIONS_SECS
 } from './quizQuestion';
 
-interface QuestionIdRes {
+interface ResQuestionId {
   status: typeof OK;
   questionId: number;
 }
@@ -57,7 +56,7 @@ const falseAnswer3: AnswerInput = {
 };
 
 let token: string, quizId: number, questionBody: QuestionBody;
-let result: QuestionIdRes | ResError;
+let result: ResQuestionId | ResError;
 beforeEach(() => {
   requestClear();
   token = requestAuthRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;

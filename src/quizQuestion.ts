@@ -53,6 +53,10 @@ export interface QuestionIdReturn {
   questionId: number;
 }
 
+export interface NewQuestionIdReturn {
+  newQuestionId: number;
+}
+
 /**
  * Create a new stub question for a particular quiz,
  * the timeLastEdited of quiz is set as the same as the question created time,
@@ -109,6 +113,31 @@ export function adminQuizQuestionUpdate(token: string, quizId: number,
 }
 
 /**
+ * A particular question gets duplicated to immediately 
+ * after where the source question is
+ * the last edited time of quiz is also updated,
+ *
+ * @param {string} token - a unique identifier for a login user
+ * @param {number} quizId - a unique identifier for a valid quiz
+ * @param {number} questionId - a unique identifier for a valid question
+ *
+ * @return {object} empty object - inputs valid, successfully update question
+ * @return {object} error - token, quizId, or questionId invalid
+ */
+export function adminQuizQuestionDuplicate(token: string, quizId: number,
+  questionId: number): NewQuestionIdReturn | ErrorObject {
+  // const isUpdate = false;
+
+  // const isValidObj: IsValid = isValidIds(token, quizId, questionId, ?, isUpdate);
+  // if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
+
+  // const { quizIndex, questionIndex } = isValidObj;
+  // const question = data.quizzes[quizIndex].questions[questionId];
+  // const questionId: number = setQuestion(question, quizIndex, questionIndex, isUpdate);
+  return { newQuestionId: 1 };
+}
+
+/**
  * Check if a given quizId is exist and own by the current authorized User
  *
  * @param {number} quizId - a unique identifier for a valid quiz
@@ -147,6 +176,7 @@ function isValidIds(token: string, quizId: number, questionId: number,
 
   // check questionBody
   return isValidQuestionBody(questionBody, duration, isValidObj);
+  // return isValidObj;
 }
 
 /**

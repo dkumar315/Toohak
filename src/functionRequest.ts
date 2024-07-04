@@ -77,6 +77,10 @@ export function requestQuizQuestionUpdate(token: string, quizId: number, questio
   return requestHelper('PUT', `/v1/admin/quiz/${quizId}/question/${questionId}`, { token, questionBody });
 }
 
+export function requestQuizQuestionDuplicate(token: string, quizId: number, questionId: number) {
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/question/${questionId}/duplicate`, { token });
+}
+
 // ============== other ========================================================
 export function requestClear() {
   return requestHelper('DELETE', '/v1/clear', {});

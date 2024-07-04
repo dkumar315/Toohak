@@ -1,4 +1,3 @@
-// request functions
 import {
   requestAuthRegister, requestAuthLogout,
   requestQuizCreate, requestQuizInfo, requestQuizRemove,
@@ -6,19 +5,15 @@ import {
   requestClear,
   ERROR, ResError, VALID_EMPTY_RETURN
 } from './functionRequest';
+
 import {
-  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Quiz, Colours
+  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Quiz, Colours, EmptyObject
 } from './dataStore';
 
 import {
   QuestionBody, AnswerInput,
   QuestionLimit, AnswersLimit, DurationLimit, PointsLimit, MAX_DURATIONS_SECS
 } from './quizQuestion';
-
-interface QuestionIdRes {
-  status: typeof OK;
-  questionId: number;
-}
 
 const initQuestionBody: QuestionBody = {
   question: 'who\'s the fairest of them all?',
@@ -58,7 +53,7 @@ const falseAnswer3: AnswerInput = {
 };
 
 let token: string, quizId: number, questionId: number, questionBody: QuestionBody;
-let result: QuestionIdRes | ResError;
+let result: EmptyObject | ResError;
 beforeEach(() => {
   requestClear();
   token = requestAuthRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
@@ -72,7 +67,7 @@ beforeEach(() => {
 afterAll(() => requestClear());
 
 describe('testing adminQuizQuestionUpdate' +
-  '(PUT /v1/admin/quiz/{quizid}/question)/{questionid}', () => {
+  '(PUT /v1/admin/quiz/{quizid}/question/{questionid}', () => {
   describe('test1.0 valid returns' +
     '(implies valid token, quizId and questionId)', () => {
     describe('test1.1 general valid cases, mutiple types of answers', () => {
@@ -232,7 +227,7 @@ describe('testing adminQuizQuestionUpdate' +
 
   describe('test2.0 invalid returns', () => {
     describe('test2.1 invalid Token', () => {
-      test('test2.1.1 invalid Token, token is empty', () => {
+      test('test2.1.1 token is empty', () => {
         result = requestQuizQuestionUpdate('', quizId, questionId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(UNAUTHORIZED);
