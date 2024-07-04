@@ -3,16 +3,15 @@ import {
   requestAuthRegister, requestAuthLogout,
   requestQuizCreate, requestQuizInfo, requestQuizRemove,
   requestQuizQuestionCreate,
-  requestClear
+  requestClear,
+  ERROR, ResError
 } from './functionRequest';
-
-// interfaces and constants
-import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Quiz, COLORS } from './dataStore';
-import { ERROR, ResError } from './functionRequest'; // VALID_EMPTY_RETURN
+import {
+  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Quiz, Colours
+} from './dataStore';
 import {
   QuestionBody, AnswerInput,
-  MIN_QUESTION_LEN, MAX_QUESTION_LEN, MAX_DURATIONS_SECS,
-  MIN_POINTS_AWARD, MAX_POINTS_AWARD, MAX_ANSWER_STRING_LEN
+  QuestionLimit, AnswersLimit, DurationLimit, PointsLimit, MAX_DURATIONS_SECS
 } from './quizQuestion';
 
 interface QuestionIdRes {
@@ -27,7 +26,6 @@ const initQuestionBody: QuestionBody = {
   answers: [],
 };
 
-// // length answer length in [1, 30]
 const trueAnswer1: AnswerInput = {
   answer: 'Victoria',
   correct: true
@@ -95,7 +93,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
 
     describe('test1.4 just meet requiremnets', () => {
       test('test 1.4.1 question string have 5 characters in length', () => {
-        questionBody.question = 'q'.repeat(MIN_QUESTION_LEN);
+        questionBody.question = 'q'.repeat(QuestionLimit.MIN_LEN);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
@@ -109,7 +107,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
 
       test('test1.4.2 question string have 50 characters in length', () => {
-        questionBody.question = 'q'.repeat(MAX_QUESTION_LEN);
+        questionBody.question = 'q'.repeat(QuestionLimit.MAX_LEN);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
@@ -160,14 +158,14 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
 
       test('test1.4.6 point awarded for the question is 1', () => {
-        questionBody.points = MIN_POINTS_AWARD;
+        questionBody.points = PointsLimit.MIN;
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
       });
 
       test('test1.4.7 points awarded for the question are 10', () => {
-        questionBody.points = MAX_POINTS_AWARD;
+        questionBody.points = PointsLimit.MAX;
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
@@ -279,14 +277,14 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
 
       test('test2.3.2 string is 4 characters in length', () => {
-        questionBody.question = 'q'.repeat(MIN_QUESTION_LEN - 1);
+        questionBody.question = 'q'.repeat(QuestionLimit.MIN_LEN - 1);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
       test('test2.3.3 string is greater than 50 characters in length', () => {
-        questionBody.question = 'q'.repeat(MAX_QUESTION_LEN + 1);
+        questionBody.question = 'q'.repeat(QuestionLimit.MAX_LEN + 1);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
@@ -329,6 +327,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
 
     describe('test2.5 invalid question durations', () => {
       test('test2.5.1 question durations is 0', () => {
+        questionBody.duration = DurationLimit.MIN_SINGLE - 1;
         questionBody.answers.push(trueAnswer1);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
@@ -336,7 +335,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
 
       test('test2.5.2 question durations is negative', () => {
-        questionBody.duration = MAX_DURATIONS_SECS + 1;
+        questionBody.duration = -1;
         questionBody.answers.push(trueAnswer1, falseAnswer1);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
@@ -401,7 +400,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
 
       test('test2.7.3 points awarded is more than 10', () => {
-        questionBody.points = MAX_POINTS_AWARD + 1;
+        questionBody.points = PointsLimit.MAX + 1;
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
@@ -414,7 +413,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
         correct: false,
       };
       const tooLongAnswer = {
-        answer: 'ans'.repeat(MAX_ANSWER_STRING_LEN),
+        answer: 'ans'.repeat(AnswersLimit.MAX_STRING_LEN),
         correct: false,
       };
 
@@ -522,10 +521,10 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
     test('test3.5 valid token and quizId, multiple invalid question properties', () => {
       questionBody.question = 'q'.repeat(51);
       questionBody.duration = 0;
-      questionBody.points = MAX_POINTS_AWARD + 1;
+      questionBody.points = PointsLimit.MAX + 1;
       questionBody.answers = [
         { answer: '', correct: false },
-        { answer: 'a'.repeat(MAX_ANSWER_STRING_LEN + 1), correct: false },
+        { answer: 'a'.repeat(AnswersLimit.MAX_STRING_LEN + 1), correct: false },
         { answer: 'validAnsStr', correct: false }];
       result = requestQuizQuestionCreate(token, quizId, questionBody);
       expect(result).toMatchObject(ERROR);
@@ -643,7 +642,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
         expect(answer.correct).toStrictEqual(questionBody.answers[index].correct);
         expect(answer.answerId).toStrictEqual(expect.any(Number));
         expect(answer).toHaveProperty('colour');
-        expect(COLORS).toContain(answer.colour);
+        expect(Object.values(Colours)).toContain(answer.colour);
       });
     });
 

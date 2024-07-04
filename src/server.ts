@@ -179,9 +179,6 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Respo
   return res.json(result);
 });
 
-// Update quiz question
-// app.post /v1/admin/quiz/{quizid}/question/{questionid}
-
 // Delete quiz question
 // app.delete /v1/admin/quiz/{quizid}/question/{questionid}
 

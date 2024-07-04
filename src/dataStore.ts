@@ -19,7 +19,15 @@ const BAD_REQUEST = 400;
 const UNAUTHORIZED = 401;
 const FORBIDDEN = 403;
 export { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN };
-export const COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'brown', 'orange'];
+export enum Colours {
+  Red = 'red',
+  Blue = 'blue',
+  Green = 'green',
+  Yellow = 'yellow',
+  Purple = 'purple',
+  Brown = 'brown',
+  Orange = 'orange'
+}
 
 // interfaces
 export type EmptyObject = Record<string, never>;
@@ -66,7 +74,7 @@ export interface Question {
 export interface Answer {
   answerId: number;
   answer: string;
-  colour: string;
+  colour: Colours;
   correct: boolean;
 }
 
