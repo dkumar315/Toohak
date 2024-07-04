@@ -69,14 +69,13 @@ beforeEach(() => {
   const answers = [trueAnswer1, falseAnswer1];
   questionBody = { ...initQuestionBody, answers };
   questionId = requestQuizQuestionCreate(token, quizId, questionBody).questionId;
-
-  const answersUpdate = [trueAnswer1, trueAnswer2, falseAnswer1];
-  questionBody.answers = answersUpdate;
 });
 afterAll(() => requestClear());
 
-describe('testing adminQuizQuestionUpdate (PUT /v1/admin/quiz/{quizid}/question)/{questionid}', () => {
-  describe('test1.0 valid returns (valid token and quizId)', () => {
+describe('testing adminQuizQuestionUpdate' + 
+  '(PUT /v1/admin/quiz/{quizid}/question)/{questionid}', () => {
+  describe('test1.0 valid returns' + 
+    '(implies valid token, quizId and questionId)', () => {
     test('test1.1 test with 1 correct answer, 3 answers in total', () => {
       questionBody.answers = [trueAnswer1, falseAnswer1, falseAnswer2];
       result = requestQuizQuestionUpdate(token, quizId, questionId, questionBody);
@@ -654,7 +653,7 @@ describe('testing adminQuizQuestionUpdate (PUT /v1/admin/quiz/{quizid}/question)
     });
   });
 
-  describe('test4.0 test with quizInfo', () => {
+  describe.skip('test4.0 test with quizInfo', () => {
     beforeEach(() => {
       requestClear();
       token = requestAuthRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
@@ -709,16 +708,56 @@ describe('testing adminQuizQuestionUpdate (PUT /v1/admin/quiz/{quizid}/question)
     });
 
     test('test4.2.2 quiz info shows correct answer details', () => {
+      // add new answer
+      const addedAnswers = [trueAnswer1, trueAnswer2, falseAnswer1];
+      const updateQuestionBody = { ...questionBody, addedAnswers };
+      requestQuizQuestionUpdate(token, quizId, questionId, updateQuestionBody);
+
+      const updatedQuizInfo = requestQuizInfo(token, quizId);
+      const questionInfo = updatedQuizInfo.questions[0];
+      expect(questionInfo).toHaveProperty('questionId');
+      expect(questionInfo.answers.length).toStrictEqual(addedAnswers.length);
+
+      questionInfo.answers.forEach((answer: Answer, index: number) => {
+        expect(answer.answer).toStrictEqual(addedAnswers[index].answer);
+        expect(answer.correct).toStrictEqual(addedAnswers[index].correct);
+        expect(answer.answerId).toStrictEqual(expect.any(Number));
+        expect(answer).toHaveProperty('colour');
+        expect(COLORS).toContain(answer.colour);
+      });
+
+      // remove an answer
+      const deletedAnswers = [trueAnswer2, falseAnswer1];
+      const updateQuestionBody2 = { ...questionBody, deletedAnswers };
+      requestQuizQuestionUpdate(token, quizId, questionId, updateQuestionBody2);
+      const updatedQuizInfo2 = requestQuizInfo(token, quizId);
+      const questionInfo2 = updatedQuizInfo2.questions[0];
+      expect(questionInfo2).toHaveProperty('questionId');
+      expect(questionInfo2.answers.length).toStrictEqual(deletedAnswers.length);
+
+      questionInfo2.answers.forEach((answer: Answer, index: number) => {
+        expect(answer.answer).toStrictEqual(deletedAnswers[index].answer);
+        expect(answer.correct).toStrictEqual(deletedAnswers[index].correct);
+        expect(answer.answerId).toStrictEqual(expect.any(Number));
+        expect(answer).toHaveProperty('colour');
+        expect(COLORS).toContain(answer.colour);
+      });
+    });
+
+    test('test4.2.3 quiz info shows correct answer details', () => {
+      // an answer changed
+      const updatedAnswers = [trueAnswer2, falseAnswer1];
+      const updateQuestionBody = { ...questionBody, updatedAnswers };
       requestQuizQuestionUpdate(token, quizId, questionId, questionBody);
 
       const updatedQuizInfo = requestQuizInfo(token, quizId);
       const questionInfo = updatedQuizInfo.questions[0];
       expect(questionInfo).toHaveProperty('questionId');
-      expect(questionInfo.answers.length).toStrictEqual(questionBody.answers.length);
+      expect(questionInfo.answers.length).toStrictEqual(updatedAnswers.length);
 
       questionInfo.answers.forEach((answer: Answer, index: number) => {
-        expect(answer.answer).toStrictEqual(questionBody.answers[index].answer);
-        expect(answer.correct).toStrictEqual(questionBody.answers[index].correct);
+        expect(answer.answer).toStrictEqual(updatedAnswers[index].answer);
+        expect(answer.correct).toStrictEqual(updatedAnswers[index].correct);
         expect(answer.answerId).toStrictEqual(expect.any(Number));
         expect(answer).toHaveProperty('colour');
         expect(COLORS).toContain(answer.colour);

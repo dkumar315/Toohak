@@ -30,7 +30,7 @@ export {
 
 interface Validate {
   isValid: boolean;
-  quizIndex?: number;
+  index?: number;
   errorMsg?: ErrorObject;
 }
 
@@ -70,12 +70,12 @@ export function adminQuizQuestionCreate(token: string, quizId: number,
     return { error: `Invalid token string: ${token} not exist.` };
   }
 
-  // check userId
-  const isvalidObj: Validate = isValidQuizId(quizId, userId);
-  if (!isvalidObj.isValid) return isvalidObj.errorMsg;
+  // check quizId
+  const isValidQuizIdObj: Validate = findQuizIndex(quizId, userId);
+  if (!isValidQuizIdObj.isValid) return isValidQuizIdObj.errorMsg;
 
   const data: Data = getData();
-  const quiz: Quiz = data.quizzes[isvalidObj.quizIndex];
+  const quiz: Quiz = data.quizzes[isValidQuizIdObj.index];
 
   // check questionBody
   const isValidQuestion: Validate = isValidQuestionBody(questionBody, quiz.duration);
@@ -83,12 +83,37 @@ export function adminQuizQuestionCreate(token: string, quizId: number,
 
   // if all valid
   const questionId: number = setQuestion(
-    questionBody, isvalidObj.quizIndex, quiz.questions.length, true);
+    questionBody, isValidQuizIdObj.index, quiz.questions.length, true);
   return { questionId: questionId };
 }
 
 export function adminQuizQuestionUpdate(token: string, quizId: number, 
   questionId: number, questionBody: QuestionBody): EmptyObject | ErrorObject {
+  // check token
+  const userId: number = findUserId(token);
+  if (userId === INVALID) {
+    return { error: `Invalid token string: ${token} not exist.` };
+  }
+
+  // check quizId
+  const isValidQuizIdObj: Validate = findQuizIndex(quizId, userId);
+  if (!isValidQuizIdObj.isValid) return isValidQuizIdObj.errorMsg;
+
+  const data: Data = getData();
+  const quiz: Quiz = data.quizzes[isValidQuizIdObj.index];
+
+  // check questionId
+  const isValidQuestionIdObj: Validate = findQuestionIndex(quiz, questionId);
+  if (!isValidQuestionIdObj.isValid) return isValidQuestionIdObj.errorMsg;
+  const questionIndex = isValidQuestionIdObj.index;
+
+  // check questionBody
+  const duration = quiz.duration - quiz.questions[questionIndex].duration;
+  const isValidQuestion: Validate = isValidQuestionBody(questionBody, duration);
+  if (!isValidQuestion.isValid) return isValidQuestion.errorMsg;
+
+  // if all inputs valid, update the question
+  setQuestion(questionBody, isValidQuizIdObj.index, questionIndex, false);
   return {};
 }
 
@@ -101,11 +126,11 @@ export function adminQuizQuestionUpdate(token: string, quizId: number,
  * @return {object} quizId - unique identifier for a quiz of a user
  * @return {object} error - if quizId not found, or not own by current user
  */
-function isValidQuizId(quizId: number, authUserId: number): Validate {
+function findQuizIndex(quizId: number, authUserId: number): Validate {
   const data: Data = getData();
   const quizIndex: number = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
 
-  const isValidId: Validate = { isValid: false, quizIndex: quizIndex };
+  const isValidId: Validate = { isValid: false, index: quizIndex };
 
   // userId not exist
   if (quizIndex === INVALID) {
@@ -121,6 +146,19 @@ function isValidQuizId(quizId: number, authUserId: number): Validate {
 
   isValidId.isValid = true;
   return isValidId;
+}
+
+function findQuestionIndex(quiz: Quiz, questionId: number): Validate {
+  const questionIndex = quiz.questions.findIndex(quiz => 
+    quiz.questionId === questionId
+  );
+
+  if (questionIndex === INVALID) return { 
+    isValid: false,
+    errorMsg: { error: `Invalid questionId number: ${questionId} not exists.` } 
+  }
+
+  return { isValid: true, index: questionIndex };
 }
 
 /**
