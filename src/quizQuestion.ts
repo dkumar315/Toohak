@@ -1,7 +1,7 @@
 import {
   setData, getData,
   INVALID, COLORS,
-  Data, Question, Answer, ErrorObject, EmptyObject
+  Data, Quiz, Question, Answer, ErrorObject, EmptyObject
 } from './dataStore';
 import { findUserId } from './auth';
 
@@ -62,42 +62,33 @@ export interface QuestionIdReturn {
  * @return {object} quizId - unique identifier for a qiz of a user
  * @return {object} error - if email, password, nameFirst, nameLast invalid
  */
-export function adminQuizQuestionCreate(token: string, quizId: number, questionBody: QuestionBody): QuestionIdReturn | ErrorObject {
+export function adminQuizQuestionCreate(token: string, quizId: number, 
+  questionBody: QuestionBody): QuestionIdReturn | ErrorObject {
   // check token
   const userId: number = findUserId(token);
-  if (userId === INVALID) return { error: `Invalid token string: ${token} not exist.` };
+  if (userId === INVALID) {
+    return { error: `Invalid token string: ${token} not exist.` };
+  }
 
   // check userId
   const isvalidObj: Validate = isValidQuizId(quizId, userId);
   if (!isvalidObj.isValid) return isvalidObj.errorMsg;
 
   const data: Data = getData();
-  const quizIndex = isvalidObj.quizIndex;
-  const quiz = data.quizzes[quizIndex];
+  const quiz: Quiz = data.quizzes[isvalidObj.quizIndex];
 
   // check questionBody
   const isValidQuestion: Validate = isValidQuestionBody(questionBody, quiz.duration);
   if (!isValidQuestion.isValid) return isValidQuestion.errorMsg;
 
   // if all valid
-  const { answers, ...question } = questionBody;
-  const answersArray: Answer[] = questionBody.answers.map(({ answer, correct }, index) =>
-    ({ answerId: index + 1, answer, colour: generateRandomColor(), correct }));
-
-  data.sessions.questionCounter += 1;
-  const questionId: number = data.sessions.questionCounter;
-  const newQuestion: Question = { questionId, ...question, answers: answersArray };
-
-  quiz.timeLastEdited = timeStamp();
-  quiz.numQuestions += 1;
-  quiz.questions.push(newQuestion);
-  quiz.duration += questionBody.duration;
-
-  setData(data);
+  const questionId: number = setQuestion(
+    questionBody, isvalidObj.quizIndex, quiz.questions.length, true);
   return { questionId: questionId };
 }
 
-export function adminQuizQuestionUpdate(token: string, quizId: number, questionId: number, questionBody: QuestionBody): EmptyObject | ErrorObject {
+export function adminQuizQuestionUpdate(token: string, quizId: number, 
+  questionId: number, questionBody: QuestionBody): EmptyObject | ErrorObject {
   return {};
 }
 
@@ -195,7 +186,7 @@ function isValidQuestionBody(questionBody: QuestionBody, quizDuration: number): 
 /**
  * check if answers have correct answers, and !isDuplicateAnswer
  *
- * @param {array} answer - an array of answer string of questionBody
+ * @param {array} answers - an array of answer string of questionBody
  *
  * @return {boolean} true - if no answer strings are duplicates of another
  */
@@ -226,6 +217,53 @@ function generateRandomColor(): string {
 /**
  * generate a timeStamp for a quiz when a question is created or updated
  *
- * @return {string} timeStamp - a name of a random color
+ * @return {string} questionId - a name of a random color
  */
 const timeStamp = (): number => Math.floor(Date.now() / 1000);
+
+/**
+ * set data to corresponding location, if isCreateNew is true, a new question 
+ * wil be create, otherwise, it will replace the question in questionIndex
+ * 
+ * @param {object} questionBody - an object contains all info, expect valid
+ * @param {number} quizIndex - the index of quiz the question locate
+ * @param {number} questionIndex - the index of question in the quiz
+ * @param {boolean} isCreateNew - true if add a new question, otherwise update
+ *
+ * @return {string} questionId - a global unique identifier of question
+ */
+function setQuestion(questionBody: QuestionBody, 
+  quizIndex: number, questionIndex: number, isCreateNew: boolean): number {
+  const { answers, ...question } = questionBody;
+  const answersArray: Answer[] = questionBody.answers.map(
+    ({ answer, correct }, index) =>
+    ({ answerId: index + 1, answer, colour: generateRandomColor(), correct })
+  );
+
+  const data: Data = getData();
+  const quiz: Quiz = data.quizzes[quizIndex];
+
+  let questionId: number;
+  if (isCreateNew) {
+    data.sessions.questionCounter += 1;
+    questionId = data.sessions.questionCounter;
+  } else {
+    questionId = quiz.questions[questionIndex].questionId;
+    quiz.duration -= quiz.questions[questionIndex].duration;
+  }
+
+  const newQuestion: Question = { questionId, ...question, answers: answersArray };
+
+  if (isCreateNew) {
+    quiz.numQuestions += 1;
+    quiz.questions.splice(questionIndex, 0, newQuestion);
+  } else {
+    quiz.questions[questionIndex] = newQuestion;
+  }
+  quiz.timeLastEdited = timeStamp();
+  quiz.duration += questionBody.duration;
+
+  setData(data);
+
+  return questionId;
+}
