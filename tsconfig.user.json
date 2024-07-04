@@ -7,7 +7,9 @@
     "src/adminUser.test.ts",
     "src/functionRequest.ts",
     "src/adminAuthLogout.test.ts",
-    "src/adminQuizQuestion.test.ts"
+    "src/adminQuizQuestionCreate.test.ts",
+    "src/adminQuizQuestionUpdate.test.ts",
+    "src/adminQuizQuestionDuplicate.test.ts"
   ],
   "exclude": [
     "src/quiz.ts",

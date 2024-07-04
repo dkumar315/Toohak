@@ -67,7 +67,7 @@ export function adminQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): QuestionIdReturn | ErrorObject {
   const isUpdate = false;
   // check token, quizId, no questionId, questionBody
-  let isValidObj: Validate;
+  let isValidObj: Validate = { isValid: false };
   isValidIds(token, quizId, INVALID, questionBody, isUpdate, isValidObj);
   if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
 
@@ -96,7 +96,7 @@ export function adminQuizQuestionUpdate(token: string, quizId: number,
   questionId: number, questionBody: QuestionBody): EmptyObject | ErrorObject {
   const isUpdate = true;
   // check token, quizId, questionId, questionBody
-  let isValidObj: Validate;
+  let isValidObj: Validate = { isValid: false };
   isValidIds(token, quizId, questionId, questionBody, isUpdate, isValidObj);
   if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
 
@@ -119,7 +119,6 @@ export function adminQuizQuestionUpdate(token: string, quizId: number,
  */
 function isValidIds(token: string, quizId: number, questionId: number,
   questionBody: QuestionBody, isUpdate: boolean, isValidObj: Validate): Validate {
-  isValidObj.isValid = false;
   // check token
   const userId: number = findUserId(token);
   if (userId === INVALID) {
