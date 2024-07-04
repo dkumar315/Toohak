@@ -73,6 +73,10 @@ export function requestQuizQuestionCreate(token: string, quizId: number, questio
   return requestHelper('POST', `/v1/admin/quiz/${quizId}/question`, { token, questionBody });
 }
 
+export function requestQuizQuestionUpdate(token: string, quizId: number, questionId: number, questionBody: QuestionBody) {
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/question/${questionId}`, { token, questionBody });
+}
+
 // ============== other ========================================================
 export function requestClear() {
   return requestHelper('DELETE', '/v1/clear', {});

@@ -1,7 +1,7 @@
 import {
   setData, getData,
   INVALID, COLORS,
-  Data, Question, Answer, ErrorObject
+  Data, Question, Answer, ErrorObject, EmptyObject
 } from './dataStore';
 import { findUserId } from './auth';
 
@@ -79,7 +79,7 @@ export function adminQuizQuestionCreate(token: string, quizId: number, questionB
   const isValidQuestion: Validate = isValidQuestionBody(questionBody, quiz.duration);
   if (!isValidQuestion.isValid) return isValidQuestion.errorMsg;
 
-  // 200: create question (+ generateRandomColor), timeLastEdited
+  // if all valid
   const { answers, ...question } = questionBody;
   const answersArray: Answer[] = questionBody.answers.map(({ answer, correct }, index) =>
     ({ answerId: index + 1, answer, colour: generateRandomColor(), correct }));
@@ -95,6 +95,10 @@ export function adminQuizQuestionCreate(token: string, quizId: number, questionB
 
   setData(data);
   return { questionId: questionId };
+}
+
+export function adminQuizQuestionUpdate(token: string, quizId: number, questionId: number, questionBody: QuestionBody): EmptyObject | ErrorObject {
+  return {};
 }
 
 /**
@@ -133,13 +137,9 @@ function isValidQuizId(quizId: number, authUserId: number): Validate {
  *
  * @param {object} questionBody - include question, duration, points and answers
  *
- * @return {boolean} true - if all requirements below are satisfied:
- *  question string length > 5 characters && question string length < 50 characters,
- *  sum of the question durations <= 3 minutes (input duration of question in seconds),
- *  points awarded >= 1 && points awarded <= 10,
- *  answers length > 2 && answer length < 6,
- *  answer strings are not duplicates of one another,
- *  there are at least one correct answer
+ * @return {object} isValidQuestion -
+ * isValid: boolean will set to true if requirements all satisfied
+ * errorMsg?: if isValid is set to false, an errorMsg will be set
  */
 function isValidQuestionBody(questionBody: QuestionBody, quizDuration: number): Validate {
   const isValidQuestion: Validate = { isValid: false };

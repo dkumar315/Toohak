@@ -3,7 +3,7 @@
     "test": "jest",
     "tsc": "tsc --project tsconfig.user.json",
     "auto-tsc": "tsc --watch --noImplicitAny",
-    "lint": "eslint src/adminUser.test.ts src/dataStore.ts src/auth.ts src/functionRequest.ts src/adminAuthLogout.test.ts src/adminQuizQuestion.test.ts src/quizQuestion.ts",
+    "lint": "eslint src/adminUser.test.ts src/dataStore.ts src/auth.ts src/functionRequest.ts src/adminAuthLogout.test.ts src/adminQuizQuestionCreate.test.ts src/adminQuizQuestionUpdate.test.ts src/quizQuestion.ts",
     "lint-all": "eslint 'src/**/*.{ts,js}'",
     "lint-fix": "eslint --fix 'src/**/*.{ts,js}'",
     "start": "ts-node -T src/server.ts",

@@ -39,7 +39,7 @@ import {
   adminQuizRemove, adminQuizInfo
 } from './quiz';
 import {
-  adminQuizQuestionCreate
+  adminQuizQuestionCreate, adminQuizQuestionUpdate
 } from './quizQuestion';
 import { clear } from './other';
 
@@ -146,6 +146,26 @@ app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
   const { token, questionBody } = req.body;
 
   const result = adminQuizQuestionCreate(token, quizId, questionBody);
+  if ('error' in result) {
+    if (result.error.includes('token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else if (result.error.includes('quizId')) {
+      return res.status(FORBIDDEN).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
+
+  return res.json(result);
+});
+
+// Update quiz question
+app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid as string);
+  const questionId = parseInt(req.params.questionid as string);
+  const { token, questionBody } = req.body;
+
+  const result = adminQuizQuestionUpdate(token, quizId, questionId, questionBody);
   if ('error' in result) {
     if (result.error.includes('token')) {
       return res.status(UNAUTHORIZED).json(result);
