@@ -21,9 +21,6 @@ const MAX_POINTS_AWARD = 10;
 const MIN_ANSWER_STRING_LEN = 1;
 const MAX_ANSWER_STRING_LEN = 30;
 
-const TRUE = 1;
-const FALSE = 0;
-
 export {
   MIN_QUESTION_LEN, MAX_QUESTION_LEN,
   MAX_DURATIONS_SECS,
@@ -33,8 +30,9 @@ export {
 
 interface Validate {
   isValid: boolean;
-  index?: number;
-  errorMsg?: ErrorObject;
+  quizIndex?: number;
+  questionIndex?: number;
+  errorMsg?: string;
 }
 
 export interface QuestionBody {
@@ -55,7 +53,7 @@ export interface QuestionIdReturn {
 
 /**
  * Create a new stub question for a particular quiz,
- * the timeLastEdited is set as the same as the created time,
+ * the timeLastEdited of quiz is set as the same as the question created time,
  * and the colours of all answers of that question are randomly generated.
  *
  * @param {string} token - a unique identifier for a login user
@@ -63,60 +61,47 @@ export interface QuestionIdReturn {
  * @param {string} questionBody - user's first name
  *
  * @return {object} quizId - unique identifier for a qiz of a user
- * @return {object} error - if email, password, nameFirst, nameLast invalid
+ * @return {object} error - if token, quizId, questionBody invalid
  */
 export function adminQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): QuestionIdReturn | ErrorObject {
-  // check token
-  const userId: number = findUserId(token);
-  if (userId === INVALID) {
-    return { error: `Invalid token string: ${token} not exists.` };
-  }
-
-  // check quizId
-  const isValidQuizIdObj: Validate = findQuizIndex(quizId, userId);
-  if (!isValidQuizIdObj.isValid) return isValidQuizIdObj.errorMsg;
-
-  const data: Data = getData();
-  const quiz: Quiz = data.quizzes[isValidQuizIdObj.index];
-
-  // check questionBody
-  const isValidQuestion: Validate = isValidQuestionBody(questionBody, quiz.duration);
-  if (!isValidQuestion.isValid) return isValidQuestion.errorMsg;
+  const isUpdate = false;
+  // check token, quizId, no questionId, questionBody
+  let isValidObj: Validate;
+  isValidIds(token, quizId, INVALID, questionBody, isUpdate, isValidObj);
+  if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
 
   // if all valid
+  const data: Data = getData();
+  const position = data.quizzes[isValidObj.quizIndex].questions.length;
   const questionId: number = setQuestion(
-    questionBody, isValidQuizIdObj.index, quiz.questions.length, FALSE);
+    questionBody, isValidObj.quizIndex, position, isUpdate);
   return { questionId: questionId };
 }
 
+/**
+ * Update the relevant details of a particular question within a quiz.
+ * the last edited time of quiz is also updated,
+ * and the colours of all answers of the question are randomly generated.
+ *
+ * @param {string} token - a unique identifier for a login user
+ * @param {number} quizId - a unique identifier for a valid quiz
+ * @param {number} quizId - a unique identifier for a valid quiz
+ * @param {string} questionBody - user's first name
+ *
+ * @return {object} empty object - inputs valid, successfully update question
+ * @return {object} error - if token, quizId, questionId, questionBody invalid
+ */
 export function adminQuizQuestionUpdate(token: string, quizId: number,
   questionId: number, questionBody: QuestionBody): EmptyObject | ErrorObject {
-  // check token
-  const userId: number = findUserId(token);
-  if (userId === INVALID) {
-    return { error: `Invalid token string: ${token} not exists.` };
-  }
-
-  // check quizId
-  const isValidQuizIdObj: Validate = findQuizIndex(quizId, userId);
-  if (!isValidQuizIdObj.isValid) return isValidQuizIdObj.errorMsg;
-
-  const data: Data = getData();
-  const quiz: Quiz = data.quizzes[isValidQuizIdObj.index];
-
-  // check questionId
-  const isValidQuestionIdObj: Validate = findQuestionIndex(quiz, questionId);
-  if (!isValidQuestionIdObj.isValid) return isValidQuestionIdObj.errorMsg;
-  const questionIndex = isValidQuestionIdObj.index;
-
-  // check questionBody
-  const duration = quiz.duration - quiz.questions[questionIndex].duration;
-  const isValidQuestion: Validate = isValidQuestionBody(questionBody, duration);
-  if (!isValidQuestion.isValid) return isValidQuestion.errorMsg;
+  const isUpdate = true;
+  // check token, quizId, questionId, questionBody
+  let isValidObj: Validate;
+  isValidIds(token, quizId, questionId, questionBody, isUpdate, isValidObj);
+  if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
 
   // if all inputs valid, update the question
-  setQuestion(questionBody, isValidQuizIdObj.index, questionIndex, TRUE);
+  setQuestion(questionBody, isValidObj.quizIndex, isValidObj.questionIndex, isUpdate);
   return {};
 }
 
@@ -128,32 +113,75 @@ export function adminQuizQuestionUpdate(token: string, quizId: number,
  *
  * @return {object}
  * isValid: boolean - identify whether the quizId is found and own by the user
- * index: number - if quizId valid, quizIndex, otherwise index === INVALID
- * errorMsg: ErrorObject - if quizId not found, or not own by current user
+ * quizIndex: number - if quizId valid, set isValidObj.quizIndex
+ * questionIndex: number - if questionId valid, set isValidObj.questionIndex
+ * errorMsg: string - if quizId not found, or not own by current user
  */
-function findQuizIndex(quizId: number, authUserId: number): Validate {
+function isValidIds(token: string, quizId: number, questionId: number,
+  questionBody: QuestionBody, isUpdate: boolean, isValidObj: Validate): Validate {
+  isValidObj.isValid = false;
+  // check token
+  const userId: number = findUserId(token);
+  if (userId === INVALID) {
+    isValidObj.errorMsg = `Invalid token string: ${token} not exists.`;
+    return isValidObj;
+  }
+
+  // check quizId
+  findQuizIndex(quizId, userId, isValidObj);
+  if (!isValidObj.isValid) return isValidObj;
+
+  const data: Data = getData();
+  const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
+
+  // check questionId
+  if (isUpdate) {
+    // notice here isValidObj.isValid = true;
+    findQuestionIndex(quiz, questionId, isValidObj);
+    if (!isValidObj.isValid) return isValidObj;
+  }
+
+  // check questionBody
+  isValidObj.isValid = false;
+  let duration: number = quiz.duration;
+  if (isUpdate) duration -= quiz.questions[isValidObj.questionIndex].duration;
+  isValidQuestionBody(questionBody, duration, isValidObj);
+  if (!isValidObj.isValid) return isValidObj;
+
+  return isValidObj;
+}
+
+/**
+ * Check if a given quizId is exist and own by the current authorized User
+ *
+ * @param {number} quizId - a unique identifier for a valid quiz
+ * @param {number} authUserId - a unique identifier for a login user
+ *
+ * @return {object}
+ * isValid: boolean - identify whether the quizId is found and own by the user
+ * quizIndex: number - if quizId valid, quizIndex, otherwise index === INVALID
+ * errorMsg: string - if quizId not found, or not own by current user
+ */
+function findQuizIndex(quizId: number, authUserId: number,
+  isValidObj: Validate): Validate {
   const data: Data = getData();
   const quizIndex: number = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
-  const isValidId: Validate = { isValid: false, index: quizIndex };
 
   // userId not exist
   if (quizIndex === INVALID) {
-    isValidId.errorMsg = {
-      error: `Invalid quizId number: ${quizId} not exists.`
-    };
-    return isValidId;
+    isValidObj.errorMsg = `Invalid quizId number: ${quizId} not exists.`;
+    return isValidObj;
   }
 
   // user does not own the quiz
   if (data.quizzes[quizIndex].creatorId !== authUserId) {
-    isValidId.errorMsg = {
-      error: `Invalid quizId number: ${quizId} access denied.`
-    };
-    return isValidId;
+    isValidObj.errorMsg = `Invalid quizId number: ${quizId} access denied.`;
+    return isValidObj;
   }
 
-  isValidId.isValid = true;
-  return isValidId;
+  isValidObj.isValid = true;
+  isValidObj.quizIndex = quizIndex;
+  return isValidObj;
 }
 
 /**
@@ -164,22 +192,23 @@ function findQuizIndex(quizId: number, authUserId: number): Validate {
  *
  * @return {object} isValidQuestion - includes isValid and (index or errorMsg)
  * isValid: boolean - unique identifier for a quiz of a user
- * index: number - the questionIndex, if questionId is valid
- * errorMsg: ErrorObject - if questionId invalid, i.e. isValid is false
+ * questionIndex: number - set isValidObj.questionId if questionId is valid
+ * errorMsg: string - if questionId invalid, i.e. isValid is false
  */
-function findQuestionIndex(quiz: Quiz, questionId: number): Validate {
+function findQuestionIndex(quiz: Quiz, questionId: number,
+  isValidObj: Validate): Validate {
   const questionIndex = quiz.questions.findIndex(quiz =>
     quiz.questionId === questionId
   );
 
   if (questionIndex === INVALID) {
-    return {
-      isValid: false,
-      errorMsg: { error: `Invalid questionId number: ${questionId} not exists.` }
-    };
+    isValidObj.isValid = false;
+    isValidObj.errorMsg = `Invalid questionId number: ${questionId} not exists.`;
+    return isValidObj;
   }
 
-  return { isValid: true, index: questionIndex };
+  isValidObj.questionIndex = questionIndex;
+  return isValidObj;
 }
 
 /**
@@ -192,56 +221,46 @@ function findQuestionIndex(quiz: Quiz, questionId: number): Validate {
  * errorMsg: ErrorObject - isValid is false, an errorMsg will be set
  */
 function isValidQuestionBody(questionBody: QuestionBody,
-  quizDuration: number): Validate {
-  const isValidQuestion: Validate = { isValid: false };
+  quizDuration: number, isValidObj: Validate): Validate {
+  isValidObj.isValid = false;
 
   // Question string invalid when has less than 5 or greater than 50 characters
   const questionsLen = questionBody.question.length;
   if (questionsLen < MIN_QUESTION_LEN || questionsLen > MAX_QUESTION_LEN) {
-    isValidQuestion.errorMsg = {
-      error: `Invalid question string: ${questionBody.question}, len invalid.`
-    };
-    return isValidQuestion;
+    isValidObj.errorMsg = `Invalid question string Len: ${questionsLen}.`;
+    return isValidObj;
   }
 
   // question invalid when has more than 6 answers or less than 2 answers
   const answersLen = questionBody.answers.length;
   if (answersLen < MIN_ANSWERS_LEN || answersLen > MAX_ANSWERS_LEN) {
-    isValidQuestion.errorMsg = {
-      error: `Invalid answers number: ${questionBody.answers.length}.`
-    };
-    return isValidQuestion;
+    isValidObj.errorMsg = `Invalid answers number: ${answersLen}.`;
+    return isValidObj;
   }
 
   // question duration invalid when it is not a positive number
   // or the sum of the question durations in the quiz exceeds 3 minutes
   if (questionBody.duration <= 0 ||
     quizDuration + questionBody.duration > MAX_DURATIONS_SECS) {
-    isValidQuestion.errorMsg = {
-      error: `Invalid duration(s) number: ${questionBody.duration}.`
-    };
-    return isValidQuestion;
+    isValidObj.errorMsg = `Invalid duration number: ${questionBody.duration}.`;
+    return isValidObj;
   }
 
   // points awarded invalid when points are less than 1 or greater than 10
   if (questionBody.points < MIN_POINTS_AWARD ||
     questionBody.points > MAX_POINTS_AWARD) {
-    isValidQuestion.errorMsg = {
-      error: `Invalid points number: ${questionBody.points}.`
-    };
-    return isValidQuestion;
+    isValidObj.errorMsg = `Invalid points number: ${questionBody.points}.`;
+    return isValidObj;
   }
 
   // answers invalid when answer len invalild, duplicate, or all answers false
   if (!isValidAnswer(questionBody.answers)) {
-    isValidQuestion.errorMsg = {
-      error: `Invalid answers object: ${questionBody.answers}.`
-    };
-    return isValidQuestion;
+    isValidObj.errorMsg = `Invalid answers object: ${questionBody.answers}.`;
+    return isValidObj;
   }
 
-  isValidQuestion.isValid = true;
-  return isValidQuestion;
+  isValidObj.isValid = true;
+  return isValidObj;
 }
 
 /**
@@ -295,7 +314,7 @@ const timeStamp = (): number => Math.floor(Date.now() / 1000);
  * @return {string} questionId - a global unique identifier of question
  */
 function setQuestion(questionBody: QuestionBody,
-  quizIndex: number, questionIndex: number, isUpdate: number): number {
+  quizIndex: number, questionIndex: number, isUpdate: boolean): number {
   const { answers, ...question } = questionBody;
   const answersArray: Answer[] = questionBody.answers.map(
     ({ answer, correct }, index) =>
@@ -305,7 +324,7 @@ function setQuestion(questionBody: QuestionBody,
   const quiz: Quiz = data.quizzes[quizIndex];
   let questionId: number;
 
-  if (isUpdate === FALSE) {
+  if (!isUpdate) {
     data.sessions.questionCounter += 1;
     questionId = data.sessions.questionCounter;
     quiz.numQuestions += 1;
@@ -315,10 +334,10 @@ function setQuestion(questionBody: QuestionBody,
   }
 
   const newQuestion: Question = { questionId, ...question, answers: answersArray };
-  quiz.questions.splice(questionIndex, isUpdate, newQuestion);
+  quiz.questions.splice(questionIndex, isUpdate ? 1 : 0, newQuestion);
   quiz.duration += questionBody.duration;
   quiz.timeLastEdited = timeStamp();
 
-  setData(data); console.log('after setData:' + data.quizzes[quizIndex].questions);
+  setData(data);
   return questionId;
 }
