@@ -72,7 +72,7 @@ export interface NewQuestionIdReturn {
 export function adminQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): QuestionIdReturn | ErrorObject {
   // check token, quizId
-  const isValidObj: IsValid = isValidIds(token, quizId, INVALID, true);
+  const isValidObj: IsValid = isValidIds(token, quizId, INVALID, false);
   if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
 
   // check questionBody
@@ -102,12 +102,12 @@ export function adminQuizQuestionCreate(token: string, quizId: number,
  */
 export function adminQuizQuestionUpdate(token: string, quizId: number,
   questionId: number, questionBody: QuestionBody): EmptyObject | ErrorObject {
-  const isValidObj: IsValid = isValidIds(token, quizId, questionId, false);
+  const isValidObj: IsValid = isValidIds(token, quizId, questionId, true);
   if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
   const { quizIndex, questionIndex } = isValidObj;
 
   const data: Data = getData();
-  let quiz: Quiz = data.quizzes[quizIndex];
+  const quiz: Quiz = data.quizzes[quizIndex];
 
   const duration: number = quiz.duration - quiz.questions[questionIndex].duration;
   isValidQuestionBody(questionBody, duration, isValidObj);
@@ -119,9 +119,10 @@ export function adminQuizQuestionUpdate(token: string, quizId: number,
 }
 
 /**
- * A particular question gets duplicated to immediately 
+ * A particular question gets duplicated to immediately
  * after where the source question is
- * the last edited time of quiz is also updated,
+ * the last edited time of quiz is also updated, if duration excesse 3 mins
+ * it will keep duplicate it but cannot edit or create more questions
  *
  * @param {string} token - a unique identifier for a login user
  * @param {number} quizId - a unique identifier for a valid quiz
@@ -133,7 +134,7 @@ export function adminQuizQuestionUpdate(token: string, quizId: number,
 export function adminQuizQuestionDuplicate(token: string, quizId: number,
   questionId: number): NewQuestionIdReturn | ErrorObject {
   // console.log(JSON.stringify(getData().quizzes, null, 2));
-  const isValidObj: IsValid = isValidIds(token, quizId, questionId, false);
+  const isValidObj: IsValid = isValidIds(token, quizId, questionId, true);
   if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
 
   const data: Data = getData();
@@ -142,7 +143,7 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number,
 
   const questionCopy: Question = JSON.parse(JSON.stringify(question));
 
-  const newQuestionId: number = setQuestion(questionCopy, quizIndex, 
+  const newQuestionId: number = setQuestion(questionCopy, quizIndex,
     questionIndex + 1, true, true);
   return { newQuestionId };
 }
@@ -160,7 +161,7 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number,
  * errorMsg: string - if token, questionId or quizId invalid
  */
 function isValidIds(token: string, quizId: number, questionId: number,
-  isUpdate: boolean): IsValid {
+  isQuestionId: boolean): IsValid {
   // check token
   const userId: number = findUserId(token);
   if (userId === INVALID) {
@@ -173,12 +174,12 @@ function isValidIds(token: string, quizId: number, questionId: number,
   if (!isValidObj.isValid) return isValidObj;
 
   // check questionId
-  if (!isUpdate) {
+  if (isQuestionId) {
     const isValidQuestion: IsValid = findQuestionIndex(isValidObj.quizIndex, questionId);
     if (!isValidQuestion.isValid) return isValidQuestion;
     isValidObj.questionIndex = isValidQuestion.questionIndex;
   }
-  
+
   return isValidObj;
 }
 
@@ -216,7 +217,7 @@ function findQuizIndex(quizId: number, authUserId: number): IsValid {
 /**
  * Check if a given questionId is exist
  *
- * @param {object} quizIndex - where the quiz is located
+ * @param {number} quizIndex - where the quiz is located
  * @param {number} questionId - a unique identifier for an exist question
  *
  * @return {object} isValidQuestion - includes isValid and (index or errorMsg)
@@ -224,7 +225,7 @@ function findQuizIndex(quizId: number, authUserId: number): IsValid {
  * questionIndex: number - set isValidObj.questionId if questionId is valid
  * errorMsg: string - if questionId invalid, i.e. isValid is false
  */
-function findQuestionIndex(quizIndex: Quiz, questionId: number): IsValid {
+function findQuestionIndex(quizIndex: number, questionId: number): IsValid {
   const data: Data = getData();
   const quiz: Quiz = data.quizzes[quizIndex];
   const questionIndex: number = quiz.questions.findIndex(quiz =>
@@ -337,7 +338,7 @@ const timeStamp = (): number => Math.floor(Date.now() / 1000);
  *
  * @return {string} questionId - a global unique identifier of question
  */
-function setQuestion(questionBody: QuestionBody, quizIndex: number, 
+function setQuestion(questionBody: QuestionBody, quizIndex: number,
   questionIndex: number, isCreate: boolean, isDuplicate: boolean): number {
   const data: Data = getData();
   const quiz: Quiz = data.quizzes[quizIndex];
@@ -352,14 +353,14 @@ function setQuestion(questionBody: QuestionBody, quizIndex: number,
     quiz.duration = quiz.duration - quiz.questions[questionIndex].duration;
   }
 
-  let newQuestion: Question = {};
+  let newQuestion: Question;
   if (isDuplicate) {
     newQuestion = questionBody as Question;
     newQuestion.questionId = questionId;
   } else {
     const { answers: answerBody, ...question } = questionBody;
     const answers: Answer[] = answerBody.map(({ answer, correct }, index) =>
-    ({ answerId: index + 1, answer, colour: generateRandomColor(), correct }));
+      ({ answerId: index + 1, answer, colour: generateRandomColor(), correct }));
     newQuestion = { questionId, ...question, answers };
   }
 
