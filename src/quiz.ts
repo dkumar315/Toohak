@@ -1,6 +1,5 @@
-import {
-  getData,
-  setData
+import { 
+  getData, setData, Data, Quiz, INVALID 
 } from './dataStore';
 import { findUserId } from './auth';
 
@@ -9,15 +8,13 @@ const FALSE_INDEX = -1;
 const MIN_NAME_LENGTH = 3;
 const MAX_NAME_LENGTH = 30;
 
-export function validateUserId(authUserId) {
-  const data = getData();
-
-  const user = data.users.find(user => user.userId === authUserId);
-  if (!user) {
-    return { error: `AuthUserId ${authUserId} is not valid` };
+export function validateToken(token: string): number {
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return { error: `Token ${token} is not valid.` };
   }
 
-  return true;
+  return authUserId;
 }
 
 export function validateQuizId(quizId) {
@@ -36,11 +33,11 @@ export function validateOwnership(authUserId, quizId) {
 
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (!quiz) {
-    return { error: `QuizId ${quizId} does not exist` };
+    return { error: `QuizId ${quizId} does not exist.` };
   }
 
   if (quiz.creatorId !== authUserId) {
-    return { error: `UserId ${authUserId} does not own QuizId ${quizId}` };
+    return { error: `UserId ${authUserId} does not own QuizId ${quizId}.` };
   }
 
   return true;
@@ -55,14 +52,12 @@ export function validateOwnership(authUserId, quizId) {
  * @return {object} - Returns the details of the quiz
  */
 export function adminQuizList(token) {
-  const authUserId = findUserId(token);
-  const userValidation = validateUserId(authUserId);
-  if (userValidation !== true) {
-    return userValidation;
-  }
+  const authUserId: number = findUserId(token);
+
 
   const data = getData();
   const quizArray = [];
+  // use filter and map istead as suggest last time
   for (const quiz of data.quizzes) {
     if (quiz.creatorId === authUserId) {
       quizArray.push({ quizId: quiz.quizId, name: quiz.name });
@@ -82,8 +77,7 @@ export function adminQuizList(token) {
  *
  * @return {object} - Returns the details of the quiz
  */
-export function adminQuizCreate(token, name, description) {
-  const authUserId = findUserId(token);
+export function adminQuizCreate(token: string, name: string, description: string) {
   const userValidation = validateUserId(authUserId);
 
   if (userValidation !== true) {

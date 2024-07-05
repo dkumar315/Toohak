@@ -19,6 +19,12 @@ const BAD_REQUEST = 400;
 const UNAUTHORIZED = 401;
 const FORBIDDEN = 403;
 export { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN };
+// enum StatusCode {
+//   OK = 200,
+//   BAD_REQUEST = 400,
+//   UNAUTHORIZED = 401,
+//   FORBIDDEN = 403,
+// }
 export enum Colours {
   Red = 'red',
   Blue = 'blue',

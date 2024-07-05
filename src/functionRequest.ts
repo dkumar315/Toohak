@@ -3,14 +3,19 @@ const config = require('./config.json');
 const SERVER_URL = `${config.url}:${config.port}`;
 
 // ============== interfaces ===================================================
-import { UNAUTHORIZED, BAD_REQUEST, FORBIDDEN, EmptyObject, ErrorObject } from './dataStore';
+import { OK, UNAUTHORIZED, BAD_REQUEST, FORBIDDEN, EmptyObject, ErrorObject } from './dataStore';
+import { TokenReturn, UserDetailReturn } from './auth';
 import { QuestionBody } from './quizQuestion';
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
-export interface ResError {
+export type ResError = {
   status: typeof UNAUTHORIZED | typeof FORBIDDEN | typeof BAD_REQUEST;
   error: string;
 }
+export type ResValid<T> = {
+  status: typeof OK;
+} & T;
+type ResReturn<T> = ResValid<T> | ResError;
 
 // ============== helper function ==============================================
 function requestHelper(method: HttpVerb, path: string, payload: object) {
@@ -26,28 +31,32 @@ function requestHelper(method: HttpVerb, path: string, payload: object) {
 }
 
 // ============== adminAuth ====================================================
-export function requestAuthRegister(email: string, password: string, nameFirst: string, nameLast: string) {
-  return requestHelper('POST', '/v1/admin/auth/register', { email, password, nameFirst, nameLast });
+export function requestAuthRegister(email: string, password: string, 
+  nameFirst: string, nameLast: string): ResReturn<TokenReturn> {
+  return requestHelper('POST', '/v1/admin/auth/register', 
+    { email, password, nameFirst, nameLast });
 }
 
-export function requestAuthLogin(email: string, password: string) {
+export function requestAuthLogin(email: string, password: string): ResReturn<TokenReturn> {
   return requestHelper('POST', '/v1/admin/auth/login', { email, password });
 }
 
-export function requestAuthLogout(token: string) {
+export function requestAuthLogout(token: string): ResReturn<EmptyObject> {
   return requestHelper('POST', '/v1/admin/auth/logout', { token });
 }
 
 // ============== adminUser ====================================================
-export function requestUserDetails(token: string) {
+export function requestUserDetails(token: string): ResReturn<UserDetailReturn> {
   return requestHelper('GET', '/v1/admin/user/details', { token });
 }
 
-export function requestUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string) {
+export function requestUserDetailsUpdate(token: string, email: string, 
+  nameFirst: string, nameLast: string): ResReturn<EmptyObject> {
   return requestHelper('PUT', '/v1/admin/user/details', { token, email, nameFirst, nameLast });
 }
 
-export function requestUserPasswordUpdate(token: string, oldPassword: string, newPassword: string) {
+export function requestUserPasswordUpdate(token: string, 
+  oldPassword: string, newPassword: string): ResReturn<EmptyObject> {
   return requestHelper('PUT', '/v1/admin/user/password', { token, oldPassword, newPassword });
 }
 
