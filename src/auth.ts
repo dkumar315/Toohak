@@ -1,7 +1,5 @@
 import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
-
-// interfeces
 import { Data, User, Session, ErrorObject, EmptyObject } from './dataStore';
 
 const INVALID: number = -1;
@@ -171,7 +169,7 @@ export function adminUserDetails(token: string): UserDetailReturn | ErrorObject 
  * @param {string} nameLast - user's last name
  *
  * @return {object} empty object
- * @return {object} error - if authUserId, email, or names invalid
+ * @return {object} error - if authUserId, email, or names are invalid
  */
 export function adminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string): EmptyObject | ErrorObject {
   const data: Data = getData();
@@ -181,7 +179,7 @@ export function adminUserDetailsUpdate(token: string, email: string, nameFirst: 
   const userIndex: number = findUser(userId);
   const user: User = data.users[userIndex];
 
-  // check email, nameFirst, nameLast whether is valid
+  // check whether email, nameFirst, nameLast are valid
   if (!isValidEmail(email, userIndex)) return { error: `Invalid email ${email}.` };
   if (!isValidName(nameFirst)) return { error: `Invalid nameFirst ${nameFirst}.` };
   if (!isValidName(nameLast)) return { error: `Invalid nameLast ${nameLast}.` };
@@ -207,7 +205,7 @@ export function adminUserDetailsUpdate(token: string, email: string, nameFirst: 
  * @return {object} error - if authUserId or passwords invalid
  */
 export function adminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string) : EmptyObject | ErrorObject {
-  // check the authUserId whether is valid and find its userDetails
+  // check whether token valid
   const userId = findUserId(token);
   if (userId === INVALID) return { error: `Invalid token ${token}.` };
 
@@ -215,10 +213,10 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
   const userIndex: number = findUser(userId);
   const user: User = data.users[userIndex];
 
-  //  check the oldPassword whether is valid and match the user password
+  //  check whether oldPassword matches the user's password
   if (user.password !== oldPassword) return { error: `Invalid oldPassword ${oldPassword}.` };
 
-  // check the newPassword whether is valid and not used before
+  // check newPassword meets requirements or not used before
   user.passwordHistory = user.passwordHistory || [];
   if (oldPassword === newPassword || !isValidPassword(newPassword) ||
     user.passwordHistory.includes(newPassword)) {
@@ -263,7 +261,7 @@ function addSession(authUserId: number, token: string): void {
  *
  * @param {string} token - unique identifier for a user
  *
- * @return {number} corresonding userId
+ * @return {number} userId - corresponding login userId of given token
  */
 function findUserId(token: string): number {
   const data: Data = getData();
@@ -279,7 +277,7 @@ function findUserId(token: string): number {
  *
  * @param {number} authUserId - unique identifier for a user
  *
- * @return {number} corresonding index of a user
+ * @return {number} corresponding index of a user
  */
 function findUser(authUserId: number): number {
   const data: Data = getData();
