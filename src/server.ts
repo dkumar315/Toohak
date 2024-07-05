@@ -46,14 +46,14 @@ app.get('/echo', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-/******************************adminAuth**********************************/
-// register user
+// adminAuth
+// Register a new admin user.
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
   return res.json(adminAuthRegister(email, password, nameFirst, nameLast));
 });
 
-// login user
+// Login an admin user.
 app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   const { email, password } = req.body;
   const result = adminAuthLogin(email, password);
@@ -63,7 +63,7 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-// logout user
+// Logout an admin user.
 app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   const { token } = req.body;
   const result = adminAuthLogout(token);
@@ -73,8 +73,8 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-/*****************************adminUser***********************************/
-// retrive userdetails
+// adminUser
+// Get the details of an admin user.
 app.get('/v1/admin/user/details', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const result = adminUserDetails(token);
@@ -84,7 +84,7 @@ app.get('/v1/admin/user/details', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-// update userdetails
+// Update the details of an admin user (non-password).
 app.put('/v1/admin/user/details', (req: Request, res: Response) => {
   const { token, email, nameFirst, nameLast } = req.body;
   const result = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
@@ -98,7 +98,7 @@ app.put('/v1/admin/user/details', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-// update password
+// Update the password of an admin user.
 app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   const { token, oldPassword, newPassword } = req.body;
   const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
@@ -112,7 +112,7 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-// other
+// Reset the state of the application back to the start.
 app.delete('/v1/clear', (req: Request, res: Response) => {
   return res.json(clear());
 });

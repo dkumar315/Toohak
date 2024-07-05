@@ -33,7 +33,7 @@ export interface TokenReturn {
  * @param {string} nameFirst - user's first name
  * @param {string} nameLast - user's last name
  *
- * @return {number} authUserId - unique identifier for a user
+ * @return {number} token - unique identifier for a user
  * @return {object} error - if email, password, nameFirst, nameLast invalid
  */
 export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string): TokenReturn | ErrorObject {
@@ -84,7 +84,7 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
 * @param {string} email - user's email
 * @param {string} password - user's matching password
 *
-* @return {number} authUserId - unique identifier for a user
+* @return {number} token - unique identifier for a user
 * @return {object} error - if email or password invalid
 */
 export function adminAuthLogin(email: string, password: string): TokenReturn | ErrorObject {
@@ -190,7 +190,6 @@ export function adminUserDetailsUpdate(token: string, email: string, nameFirst: 
   user.email = email;
   user.nameFirst = nameFirst;
   user.nameLast = nameLast;
-
   setData(data);
 
   return {};
@@ -204,7 +203,7 @@ export function adminUserDetailsUpdate(token: string, email: string, nameFirst: 
  * @param {string} newPassword - the replacement password submitted by user
  *
  * @return {object} empty object
- * @return {object} error - if authUserId or passwords invalid
+ * @return {object} error - if token or passwords invalid
  */
 export function adminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string) : EmptyObject | ErrorObject {
   // check the authUserId whether is valid and find its userDetails
@@ -236,7 +235,7 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
 /**
  * Generate a token that is unique
  *
- * @return {string} return a new token
+ * @return {string} token - unique identifier of a login user
  */
 function generateToken(): string {
   const data: Data = getData();
@@ -263,7 +262,7 @@ function addSession(authUserId: number, token: string): void {
  *
  * @param {string} token - unique identifier for a user
  *
- * @return {number} corresonding userId
+ * @return {number} userId - corresponding userId of a token, -1 if token invalid
  */
 function findUserId(token: string): number {
   const data: Data = getData();
@@ -279,7 +278,7 @@ function findUserId(token: string): number {
  *
  * @param {number} authUserId - unique identifier for a user
  *
- * @return {number} corresonding index of a user
+ * @return {number} userIndex - corresponding index of the user with given authUserId
  */
 function findUser(authUserId: number): number {
   const data: Data = getData();
@@ -289,10 +288,10 @@ function findUser(authUserId: number): number {
 /**
  * Given an email, return true if it is not used by the other and it is email
  *
- * @param {number} userIndex - unique identifier for a user,
- * set to -1 if it is new user
  * @param {string} email - user's email, according to
  * https://www.npmjs.com/package/validator
+ * @param {number} userIndex - unique identifier for a user,
+ * set to -1 if it is new user
  *
  * @return {boolean} true if email is valid and not used by others
  */
