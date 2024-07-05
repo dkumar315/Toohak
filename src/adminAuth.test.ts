@@ -15,42 +15,32 @@ describe('adminAuthRegister', () => {
       expect(result).toStrictEqual({ status: OK, token: expect.any(String) });
     });
 
-    test('Test for names containing spaces, hyphens, and apostrophes', () => {
-      const name = 'J a-n\'e';
-      result = requestAuthRegister('test@example.com', 'MyPassw0rd', name, 'Smith');
+    // emails
+    const emails = ['test@example.com', 'sarah@example.com'];
+    test.each(emails)('Test for valid email', (email) => {
+      result = requestAuthRegister(email, 'MyPassw0rd', 'Sarah', 'Smith');
       expect(result).toStrictEqual({ status: OK, token: expect.any(String) });
 
-      result = requestAuthRegister('test2@example.com', 'MyPassw0rd', 'jane', name);
+    });
+
+    // nameFirst
+    const nameFirsts = ['J a-n\'e', 'Ja', 'JJJJJJJJJJJJJJJJJJJJ'];
+    test.each(nameFirsts)('Test for valid nameFirst', (nameFirst) => {
+      result = requestAuthRegister('test@example.com', 'MyPassw0rd', nameFirst, 'Smith');
       expect(result).toStrictEqual({status: OK, token: expect.any(String)});
     });
 
-    test('Test for names just meet require (name length = 2)', () => {
-      const name = 'Ja';
-      result = requestAuthRegister('test@example.com', 'MyPassw0rd', name, 'Smith');
-      expect(result).toStrictEqual({status: OK, token: expect.any(String)});
-
-      result = requestAuthRegister('test2@example.com', 'MyPassw0rd', 'Jane', name);
+    // nameLast
+    const nameLasts = ['S m-i\'th', 'Sm', 'SSSSSSSSSSSSSSSSSSSS'];
+    test.each(nameLasts)('Test for valid nameFirst', (nameLast) => {
+      result = requestAuthRegister('test2@example.com', 'MyPassw0rd', 'Jane', nameLast);
       expect(result).toStrictEqual({status: OK, token: expect.any(String)});
     });
 
-    test('Test for names just meet require (name length = 20)', () => {
-      const name = 'JJJJJJJJJJJJJJJJJJJJ';
-      result = requestAuthRegister('test@example.com', 'MyPassw0rd', name, 'Smith');
-      expect(result).toStrictEqual({status: OK, token: expect.any(String)});
-
-      result = requestAuthRegister('test2@example.com', 'MyPassw0rd', 'Jane', name);
-      expect(result).toStrictEqual({status: OK, token: expect.any(String)});
-    });
-
-    test('Test for password just meet require (length = 8)', () => {
-      const password = 'passw0rd';
-      result = requestAuthRegister('test@example.com', password, 'Jane', 'Smith');
-      expect(result).toStrictEqual({status: OK, token: expect.any(String)});
-    });
-
-    test('Test for password with specail characters', () => {
-      const password = 'passw0rd@#&/?><|';
-      result = requestAuthRegister('test@example.com', password, 'Jane', 'Smith');
+    // password
+    const passwords = ['passw0rd', 'passw0rd@#&/?><|',  ];
+    test.each(passwords)('Test for valid nameFirst', (password) => {
+      result = requestAuthRegister('test2@example.com', password, 'Jane', 'Smith');
       expect(result).toStrictEqual({status: OK, token: expect.any(String)});
     });
 
