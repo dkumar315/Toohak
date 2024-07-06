@@ -1,7 +1,6 @@
 {
   "scripts": {
     "test": "jest",
-    "test-time": "time npm run test",
     "ts-node": "ts-node",
     "ts-node-dev": "ts-node-dev",
     "tsc": "tsc --project tsconfig.json",
