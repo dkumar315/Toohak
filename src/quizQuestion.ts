@@ -379,6 +379,6 @@ function setQuestion(questionBody: QuestionBody | Question, quizIndex: number,
   quiz.duration += newQuestion.duration;
   quiz.timeLastEdited = timeStamp();
 
-  setData(data);console.log(JSON.stringify(getData(), null, 2))
+  setData(data);
   return questionId;
 }

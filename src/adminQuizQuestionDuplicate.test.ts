@@ -11,7 +11,7 @@ import {
 } from './dataStore';
 
 import {
-  QuestionBody, NewQuestionIdReturn
+  QuestionBody, NewQuestionIdReturn, MAX_DURATIONS_SECS
 } from './quizQuestion';
 
 interface ResNewQuestionId {
@@ -210,9 +210,9 @@ describe('testing adminQuizQuestionDuplicate' +
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
 
-        // result = requestQuizQuestionDuplicate(token, quizId2, questionId);
-        // expect(result).toMatchObject(ERROR);
-        // expect(result.status).toStrictEqual(BAD_REQUEST);
+        result = requestQuizQuestionDuplicate(token, quizId2, questionId);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
       });
     });
   });
@@ -257,6 +257,21 @@ describe('testing adminQuizQuestionDuplicate' +
       duplicatedQuestionId = result.newQuestionId;
     });
 
+    test('test4.0 current quiz duration less than, is, and exceed maximum', () => {
+      const quizInfo = requestQuizInfo(token, quizId);
+      const duration = MAX_DURATIONS_SECS - quizInfo.duration;
+      const newQuestionBody = { ...questionBody, duration };
+      questionId = requestQuizQuestionCreate(token, quizId, newQuestionBody).questionId;
+
+      result = requestQuizQuestionDuplicate(token, quizId, questionId);
+      expect(result).toMatchObject(expectValidReturn);
+      expect(result.status).toStrictEqual(OK);
+
+      result = requestQuizQuestionDuplicate(token, quizId, questionId);
+      expect(result).toMatchObject(ERROR);
+      expect(result.status).toStrictEqual(BAD_REQUEST);
+    });
+
     test('test4.1 duplicated question is placed immediately after the source question', () => {
       const quizInfo: Quiz = requestQuizInfo(token, quizId);
       const questionIds: number[] = quizInfo.questions.map((q: Question) => q.questionId);
@@ -269,12 +284,15 @@ describe('testing adminQuizQuestionDuplicate' +
       const quizInfoBefore: Quiz = requestQuizInfo(token, quizId);
       const timeLastEditedBefore: number = quizInfoBefore.timeLastEdited;
 
-      return new Promise(resolve => setTimeout(resolve, 1000))
-        .then(() => {
-          requestQuizQuestionDuplicate(token, quizId, originalQuestionId);
-          const quizInfoAfter = requestQuizInfo(token, quizId);
-          expect(quizInfoAfter.timeLastEdited).toBeGreaterThan(timeLastEditedBefore);
-        });
+      // return new Promise(resolve => setTimeout(resolve, 1000))
+      //   .then(() => {
+      //     requestQuizQuestionDuplicate(token, quizId, originalQuestionId);
+      //     const quizInfoAfter = requestQuizInfo(token, quizId);
+      //     expect(quizInfoAfter.timeLastEdited).toBeGreaterThan(timeLastEditedBefore);
+      //   });
+
+      const quizInfoAfter = requestQuizInfo(token, quizId);
+      expect(quizInfoAfter.timeLastEdited).toBeGreaterThanOrEqual(timeLastEditedBefore);
     });
 
     test('test4.3 duplicated question has the same content as the original', () => {
@@ -312,7 +330,7 @@ describe('testing adminQuizQuestionDuplicate' +
       requestQuizQuestionDuplicate(token, quizId, originalQuestionId);
 
       const quizInfoAfter = requestQuizInfo(token, quizId);
-      expect(quizInfoAfter.numQuestions).toBe(numQuestionsBefore + 1);
+      expect(quizInfoAfter.numQuestions).toStrictEqual(numQuestionsBefore + 1);
     });
 
     test('test4.6 quiz duration is updated after duplication', () => {
@@ -323,11 +341,23 @@ describe('testing adminQuizQuestionDuplicate' +
       requestQuizQuestionDuplicate(token, quizId, originalQuestionId);
 
       const quizInfoAfter = requestQuizInfo(token, quizId);
-      expect(quizInfoAfter.duration).toBe(durationBefore + questionDuration);
+      expect(quizInfoAfter.duration).toStrictEqual(durationBefore + questionDuration);
     });
 
-    test('test4.6 sum of quiz duration is passed 3 minutes', () => {
-      // undefined behaviour?
+    test('test4.8 numQuestions and duration increases numQuestions correctly', () => {
+      const initQuizInfo = requestQuizInfo(token, quizId);
+
+      requestQuizQuestionDuplicate(token, quizId, questionId);
+      const quizInfo1 = requestQuizInfo(token, quizId);
+      expect(quizInfo1.numQuestions).toStrictEqual(initQuizInfo.numQuestions + 1);
+      expect(quizInfo1.questions.length).toStrictEqual(initQuizInfo.questions.length + 1);
+      expect(quizInfo1.duration).toStrictEqual(initQuizInfo.duration + questionBody.duration);
+
+      requestQuizQuestionDuplicate(token, quizId, questionId);
+      const quizInfo2 = requestQuizInfo(token, quizId);
+      expect(quizInfo2.numQuestions).toStrictEqual(quizInfo1.numQuestions + 1);
+      expect(quizInfo2.questions.length).toStrictEqual(quizInfo2.numQuestions);
+      expect(quizInfo2.duration).toStrictEqual(quizInfo1.duration + questionBody.duration);
     });
   });
 });

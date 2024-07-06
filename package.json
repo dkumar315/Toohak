@@ -3,12 +3,13 @@
     "test": "jest",
     "ts-node": "ts-node",
     "ts-node-dev": "ts-node-dev",
-
     "tsc": "tsc --project tsconfig.json",
     "auto-tsc": "tsc --watch --noImplicitAny",
     "lint": "eslint 'src/**/*.{ts,js}'",
     "start": "ts-node -T src/server.ts",
+    "start-dev": "ts-node-dev src/server.ts",
     "cleanup-sync-request": "pkill -f node_modules/sync-rpc/lib/worker.js > /dev/null 2>&1",
+    "coverage": "nyc --reporter=text --reporter=lcov ts-node -T src/server.ts",
     "posttest": "npm run cleanup-sync-request || true"
   },
   "dependencies": {
@@ -33,6 +34,7 @@
     "eslint": "^8.56.0",
     "eslint-plugin-jest": "^27.6.3",
     "jest": "^29.7.0",
+    "nyc": "^17.0.0",
     "swagger-ui-express": "^5.0.1",
     "sync-request-curl": "^3.0.0",
     "ts-jest": "^29.1.2",
