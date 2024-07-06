@@ -16,6 +16,14 @@ export interface QuizCreateReturn {
   quizId: number;
 }
 
+export interface QuizInfoReturn {
+  quizId: number;
+  name: string,
+  timeCreated: number,
+  timeLastEdited: number,
+  description: string,
+}
+
 export function validateQuizId(quizId: number): true | ErrorObject {
   const data: Data = getData();
 
@@ -162,7 +170,7 @@ export function adminQuizRemove(token: string, quizId: number): EmptyObject | Er
  * @return {object} - Returns an empty object
  *
  */
-export function adminQuizInfo(token: string, quizId: number): Quiz | ErrorObject {
+export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | ErrorObject {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     return { error: `Invalid token ${token}.` };
@@ -185,7 +193,13 @@ export function adminQuizInfo(token: string, quizId: number): Quiz | ErrorObject
     return { error: `Quiz with ID ${quizId} not found` };
   }
 
-  return quiz;
+  return {
+    quizId: quiz.quizId,
+    name: quiz.name,
+    timeCreated: quiz.timeCreated,
+    timeLastEdited: quiz.timeLastEdited,
+    description: quiz.description,
+  };
 }
 
 /**

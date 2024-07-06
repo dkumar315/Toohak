@@ -6,7 +6,7 @@ const SERVER_URL: string = `${config.url}:${config.port}`;
 import { StatusCodes } from 'http-status-codes';
 import { EmptyObject, ErrorObject, Quiz } from './dataStore';
 import { TokenReturn, UserDetailReturn } from './auth';
-import { QuizListReturn, QuizCreateReturn } from './quiz';
+import { QuizListReturn, QuizCreateReturn, QuizInfoReturn } from './quiz';
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
 export type ResError = {
@@ -103,4 +103,4 @@ export type ResToken = ResValid<TokenReturn>;
 export type ResUserDetail = ResValid<UserDetailReturn>;
 export type ResQuizList = ResValid<QuizListReturn>;
 export type ResQuizCreate = ResValid<QuizCreateReturn>;
-export type ResQuiz = ResValid<Quiz>;
+export type ResQuizInfo = ResValid<QuizInfoReturn>;
