@@ -297,6 +297,7 @@ function isValidQuestionBody(questionBody: QuestionBody,
 
 /**
  * check if answers have correct answers, and !isDuplicateAnswer
+ * isDuplicateAnswer is CASE SENSITIVE
  *
  * @param {array} answers - an array of answer string of questionBody
  *
@@ -366,10 +367,7 @@ function setQuestion(questionBody: QuestionBody | Question, quizIndex: number,
   // set new question
   let newQuestion: Question;
   if (operation === QuestionOperation.Duplicate) {
-    console.log(questionId)
-    console.log(data.sessions.questionCounter)
     newQuestion = { ...quiz.questions[questionIndex - 1], questionId };
-    console.log(newQuestion)
   } else {
     const { answers: answerBody, ...question } = questionBody;
     const answers: Answer[] = answerBody.map(({ answer, correct }, index) =>

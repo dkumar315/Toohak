@@ -1,4 +1,4 @@
-import request, { HttpVerb } from 'sync-request-curl';
+import request, { HttpVerb, Response } from 'sync-request-curl';
 const config = require('./config.json');
 const SERVER_URL = `${config.url}:${config.port}`;
 
@@ -14,7 +14,7 @@ export interface ResError {
 
 // ============== helper function ==============================================
 function requestHelper(method: HttpVerb, path: string, payload: object) {
-  let res;
+  let res: Response;
   if (['GET', 'DELETE'].includes(method)) {
     res = request(method, SERVER_URL + path, { qs: payload });
   } else { // ['PUT', 'POST']
@@ -51,7 +51,7 @@ export function requestUserPasswordUpdate(token: string, oldPassword: string, ne
   return requestHelper('PUT', '/v1/admin/user/password', { token, oldPassword, newPassword });
 }
 
-// ============== adminQuiz ============================================
+// ============== adminQuiz ====================================================
 export function requestQuizList(token: string) {
   return requestHelper('GET', '/v1/admin/quiz/list', { token });
 }
