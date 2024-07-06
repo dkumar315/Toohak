@@ -1,10 +1,24 @@
-import request, { HttpVerb } from 'sync-request-curl';
+import request, { HttpVerb, Response } from 'sync-request-curl';
 const config = require('./config.json');
 const SERVER_URL = `${config.url}:${config.port}`;
 
-// ============== helper function ====================================================
-function requestHelper(method: HttpVerb, path: string, payload: object) {
-  let res;
+// ============== interfaces ===================================================
+import { StatusCodes } from 'http-status-codes';
+import { EmptyObject, ErrorObject } from './dataStore';
+import { TokenReturn, UserDetailReturn } from './auth';
+export const VALID_EMPTY_RETURN: EmptyObject = {};
+export const ERROR: ErrorObject = { error: expect.any(String) };
+export type ResError = { status: StatusCodes; error: string; }
+export type ResValid<T> = { status: StatusCodes; } & T;
+type ResReturn<T> = ResValid<T> | ResError;
+type ApiResponse = {
+  status: StatusCodes;
+  [key: string]: EmptyObject | TokenReturn | UserDetailReturn;
+};
+
+// ============== helper function ==============================================
+function requestHelper(method: HttpVerb, path: string, payload: object): any {
+  let res: Response;
   if (['GET', 'DELETE'].includes(method)) {
     res = request(method, SERVER_URL + path, { qs: payload });
   } else { // ['PUT', 'POST']
@@ -16,29 +30,54 @@ function requestHelper(method: HttpVerb, path: string, payload: object) {
 }
 
 // ============== adminAuth ====================================================
-export function requestAuthRegister(email: string, password: string, nameFirst: string, nameLast: string) {
-  return requestHelper('POST', '/v1/admin/auth/register', { email, password, nameFirst, nameLast });
+export function requestAuthRegister(email: string, password: string, 
+  nameFirst: string, nameLast: string): ResReturn<TokenReturn> {
+  return requestHelper('POST', '/v1/admin/auth/register', 
+    { email, password, nameFirst, nameLast });
 }
 
-export function requestAuthLogin(email: string, password: string) {
+export function requestAuthLogin(email: string, 
+  password: string): ResReturn<TokenReturn> {
   return requestHelper('POST', '/v1/admin/auth/login', { email, password });
 }
 
-export function requestAuthLogout(token: string) {
+export function requestAuthLogout(token: string): ResReturn<EmptyObject> {
   return requestHelper('POST', '/v1/admin/auth/logout', { token });
 }
 
 // ============== adminUser ====================================================
-export function requestUserDetails(token: string) {
+export function requestUserDetails(token: string): ResReturn<UserDetailReturn> {
   return requestHelper('GET', '/v1/admin/user/details', { token });
 }
 
-export function requestUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string) {
-  return requestHelper('PUT', '/v1/admin/user/details', { token, email, nameFirst, nameLast });
+export function requestUserDetailsUpdate(token: string, email: string, 
+  nameFirst: string, nameLast: string): ResReturn<EmptyObject> {
+  return requestHelper('PUT', '/v1/admin/user/details', 
+    { token, email, nameFirst, nameLast });
 }
 
-export function requestUserPasswordUpdate(token: string, oldPassword: string, newPassword: string) {
-  return requestHelper('PUT', '/v1/admin/user/password', { token, oldPassword, newPassword });
+export function requestUserPasswordUpdate(token: string, 
+  oldPassword: string, newPassword: string): ResReturn<EmptyObject> {
+  return requestHelper('PUT', '/v1/admin/user/password', 
+    { token, oldPassword, newPassword });
+}
+
+// ============== adminQuiz ====================================================
+export function requestQuizList(token: string) {
+  return requestHelper('GET', '/v1/admin/quiz/list', { token });
+}
+
+export function requestQuizCreate(token: string, name: string, 
+  description: string) {
+  return requestHelper('POST', '/v1/admin/quiz', { token, name, description });
+}
+
+export function requestQuizRemove(token: string, quizId: number) {
+  return requestHelper('DELETE', `/v1/admin/quiz/${quizId}`, { token });
+}
+
+export function requestQuizInfo(token: string, quizId: number) {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}`, { token });
 }
 
 // ============== other ========================================================
