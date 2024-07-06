@@ -110,7 +110,7 @@ export function adminQuizQuestionUpdate(token: string, quizId: number,
   if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
 
   // if all inputs valid, update the question
-  setQuestion(questionBody, isValidObj.quizIndex, isValidObj.questionIndex, 
+  setQuestion(questionBody, isValidObj.quizIndex, isValidObj.questionIndex,
     QuestionOperation.Update);
   return {};
 }
@@ -137,11 +137,13 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number,
 
   const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
   if (quiz.duration > MAX_DURATIONS_SECS) {
-    return { error: `Invalid current quiz durations number: ${ quiz.duration }
-    exceeds ${DurationLimit.MIN_SUM_MINS} minutes.` };
+    return {
+      error: `Invalid current quiz durations number: ${quiz.duration}
+    exceeds ${DurationLimit.MIN_SUM_MINS} minutes.`
+    };
   }
 
-  const newQuestionId: number = setQuestion(quiz.questions[questionIndex], 
+  const newQuestionId: number = setQuestion(quiz.questions[questionIndex],
     quizIndex, questionIndex + 1, QuestionOperation.Duplicate);
   return { newQuestionId };
 }
@@ -158,7 +160,7 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number,
  * questionIndex: number - when isValid is true, corresponding index in the quiz
  * errorMsg: string - if token, questionId or quizId invalid
  */
-function isValidIds(token: string, quizId: number, questionId: number | null, 
+function isValidIds(token: string, quizId: number, questionId: number | null,
   questionBody: QuestionBody | null): IsValid {
   // check token
   const userId: number = findUserId(token);
@@ -351,8 +353,8 @@ function setQuestion(questionBody: QuestionBody | Question, quizIndex: number,
   questionIndex: number, operation: QuestionOperation): number {
   const data: Data = getData();
   const quiz: Quiz = data.quizzes[quizIndex];
-  const isCreate: boolean = (operation === QuestionOperation.Create 
-    || operation === QuestionOperation.Duplicate);
+  const isCreate: boolean = (operation === QuestionOperation.Create ||
+    operation === QuestionOperation.Duplicate);
 
   let questionId: number;
   if (isCreate) {

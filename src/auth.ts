@@ -35,7 +35,7 @@ export interface TokenReturn {
  * @return {number} authUserId - unique identifier for a user
  * @return {object} error - if email, password, nameFirst, nameLast invalid
  */
-export function adminAuthRegister(email: string, password: string, 
+export function adminAuthRegister(email: string, password: string,
   nameFirst: string, nameLast: string): TokenReturn | ErrorObject {
   // Check if email is valid or already exists
   if (!isValidEmail(email, INVALID)) {
@@ -173,7 +173,7 @@ export function adminUserDetails(token: string): UserDetailReturn | ErrorObject 
  * @return {object} empty object - if user details update successfully
  * @return {object} error - if authUserId, email, or names are invalid
  */
-export function adminUserDetailsUpdate(token: string, email: string, 
+export function adminUserDetailsUpdate(token: string, email: string,
   nameFirst: string, nameLast: string): EmptyObject | ErrorObject {
   const data: Data = getData();
   const userId: number = findUserId(token);

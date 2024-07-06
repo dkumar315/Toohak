@@ -1,4 +1,4 @@
-import { OK, BAD_REQUEST, UNAUTHORIZED, EmptyObject, ErrorObject } from './dataStore';
+import { OK, BAD_REQUEST, UNAUTHORIZED, EmptyObject } from './dataStore';
 import { UserDetails, UserDetailReturn } from './auth';
 
 import {
