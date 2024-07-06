@@ -1,23 +1,24 @@
 import request, { HttpVerb, Response } from 'sync-request-curl';
 const config = require('./config.json');
-const SERVER_URL = `${config.url}:${config.port}`;
+const SERVER_URL: string = `${config.url}:${config.port}`;
 
 // ============== interfaces ===================================================
 import { StatusCodes } from 'http-status-codes';
-import { EmptyObject, ErrorObject } from './dataStore';
+import { EmptyObject, ErrorObject, Quiz } from './dataStore';
 import { TokenReturn, UserDetailReturn } from './auth';
+import { QuizListReturn, QuizCreateReturn } from './quiz';
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
-export type ResError = { status: StatusCodes; error: string; }
-export type ResValid<T> = { status: StatusCodes; } & T;
-type ResReturn<T> = ResValid<T> | ResError;
-type ApiResponse = {
+export type ResError = {
   status: StatusCodes;
-  [key: string]: EmptyObject | TokenReturn | UserDetailReturn;
-};
+} & ErrorObject;
+type ResValid<T> = {
+  status: StatusCodes;
+} & T;
+type ApiResponse<T> = ResValid<T> | ResError;
 
 // ============== helper function ==============================================
-function requestHelper(method: HttpVerb, path: string, payload: object): any {
+function requestHelper<T>(method: HttpVerb, path: string, payload: object): ApiResponse<T> {
   let res: Response;
   if (['GET', 'DELETE'].includes(method)) {
     res = request(method, SERVER_URL + path, { qs: payload });
@@ -30,57 +31,76 @@ function requestHelper(method: HttpVerb, path: string, payload: object): any {
 }
 
 // ============== adminAuth ====================================================
-export function requestAuthRegister(email: string, password: string, 
-  nameFirst: string, nameLast: string): ResReturn<TokenReturn> {
-  return requestHelper('POST', '/v1/admin/auth/register', 
+export function requestAuthRegister(email: string, password: string,
+  nameFirst: string, nameLast: string): ApiResponse<TokenReturn> {
+  return requestHelper('POST', '/v1/admin/auth/register',
     { email, password, nameFirst, nameLast });
 }
 
-export function requestAuthLogin(email: string, 
-  password: string): ResReturn<TokenReturn> {
+export function requestAuthLogin(email: string,
+  password: string): ApiResponse<TokenReturn> {
   return requestHelper('POST', '/v1/admin/auth/login', { email, password });
 }
 
-export function requestAuthLogout(token: string): ResReturn<EmptyObject> {
+export function requestAuthLogout(token: string): ApiResponse<EmptyObject> {
   return requestHelper('POST', '/v1/admin/auth/logout', { token });
 }
 
 // ============== adminUser ====================================================
-export function requestUserDetails(token: string): ResReturn<UserDetailReturn> {
+export function requestUserDetails(token: string): ApiResponse<UserDetailReturn> {
   return requestHelper('GET', '/v1/admin/user/details', { token });
 }
 
-export function requestUserDetailsUpdate(token: string, email: string, 
-  nameFirst: string, nameLast: string): ResReturn<EmptyObject> {
-  return requestHelper('PUT', '/v1/admin/user/details', 
+export function requestUserDetailsUpdate(token: string, email: string,
+  nameFirst: string, nameLast: string): ApiResponse<EmptyObject> {
+  return requestHelper('PUT', '/v1/admin/user/details',
     { token, email, nameFirst, nameLast });
 }
 
-export function requestUserPasswordUpdate(token: string, 
-  oldPassword: string, newPassword: string): ResReturn<EmptyObject> {
-  return requestHelper('PUT', '/v1/admin/user/password', 
+export function requestUserPasswordUpdate(token: string,
+  oldPassword: string, newPassword: string): ApiResponse<EmptyObject> {
+  return requestHelper('PUT', '/v1/admin/user/password',
     { token, oldPassword, newPassword });
 }
 
 // ============== adminQuiz ====================================================
-export function requestQuizList(token: string) {
+export function requestQuizList(token: string): ApiResponse<QuizListReturn> {
   return requestHelper('GET', '/v1/admin/quiz/list', { token });
 }
 
-export function requestQuizCreate(token: string, name: string, 
-  description: string) {
-  return requestHelper('POST', '/v1/admin/quiz', { token, name, description });
+export function requestQuizCreate(token: string, name: string,
+  description: string): ApiResponse<QuizCreateReturn> {
+  return requestHelper('POST', '/v1/admin/quiz',
+    { token, name, description });
 }
 
-export function requestQuizRemove(token: string, quizId: number) {
+export function requestQuizRemove(token: string,
+  quizId: number): ApiResponse<EmptyObject> {
   return requestHelper('DELETE', `/v1/admin/quiz/${quizId}`, { token });
 }
 
-export function requestQuizInfo(token: string, quizId: number) {
+export function requestQuizInfo(token: string, quizId: number): ApiResponse<Quiz> {
   return requestHelper('GET', `/v1/admin/quiz/${quizId}`, { token });
 }
 
+export function requestQuizNameUpdate(token: string, quizId: number,
+  name: string): ApiResponse<EmptyObject> {
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/name`, { token, name });
+}
+
+export function requestQuizDescriptionUpdate(token: string, quizId: number,
+  description: string): ApiResponse<EmptyObject> {
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/description`, { token, description });
+}
+
 // ============== other ========================================================
-export function requestClear() {
+export function requestClear(): ApiResponse<EmptyObject> {
   return requestHelper('DELETE', '/v1/clear', {});
 }
+
+export type ResEmpty = ResValid<EmptyObject>;
+export type ResToken = ResValid<TokenReturn>;
+export type ResUserDetail = ResValid<UserDetailReturn>;
+export type ResQuizList = ResValid<QuizListReturn>;
+export type ResQuizCreate = ResValid<QuizCreateReturn>;
+export type ResQuiz = ResValid<Quiz>;

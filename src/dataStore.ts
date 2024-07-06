@@ -15,10 +15,10 @@ let data: Data = {
 
 // define constants
 export const INVALID = -1;
-export const OK = StatusCodes.OK;
-export const BAD_REQUEST = StatusCodes.BAD_REQUEST;
-export const UNAUTHORIZED = StatusCodes.UNAUTHORIZED;
-export const FORBIDDEN = StatusCodes.FORBIDDEN;
+export const OK = StatusCodes.OK; // 200
+export const BAD_REQUEST = StatusCodes.BAD_REQUEST; // 400
+export const UNAUTHORIZED = StatusCodes.UNAUTHORIZED; // 401
+export const FORBIDDEN = StatusCodes.FORBIDDEN; // 403
 
 export enum Colours {
   Red = 'red',
