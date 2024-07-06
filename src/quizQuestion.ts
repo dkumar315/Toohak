@@ -57,6 +57,14 @@ export interface NewQuestionIdReturn {
   newQuestionId: number;
 }
 
+enum QuestionOperation {
+  Create,
+  Update,
+  Duplicate,
+  Move,
+  Delete
+}
+
 /**
  * Create a new stub question for a particular quiz,
  * the timeLastEdited of quiz is set as the same as the question created time,
@@ -71,19 +79,15 @@ export interface NewQuestionIdReturn {
  */
 export function adminQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): QuestionIdReturn | ErrorObject {
-  // check token, quizId
-  const isValidObj: IsValid = isValidIds(token, quizId, INVALID, false);
-  if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
-
-  // check questionBody
-  const data: Data = getData();
-  const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
-  isValidQuestionBody(questionBody, quiz.duration, isValidObj);
+  // check token, quizId, no questionId, questionBody
+  const isValidObj: IsValid = isValidIds(token, quizId, null, questionBody);
   if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
 
   // if all valid
-  const questionId: number = setQuestion(questionBody, isValidObj.quizIndex,
-    quiz.questions.length, true, false);
+  const data: Data = getData();
+  const quizIndex : number = isValidObj.quizIndex;
+  const questionId: number = setQuestion(questionBody, quizIndex,
+    data.quizzes[quizIndex].questions.length, QuestionOperation.Create);
   return { questionId: questionId };
 }
 
@@ -102,27 +106,18 @@ export function adminQuizQuestionCreate(token: string, quizId: number,
  */
 export function adminQuizQuestionUpdate(token: string, quizId: number,
   questionId: number, questionBody: QuestionBody): EmptyObject | ErrorObject {
-  const isValidObj: IsValid = isValidIds(token, quizId, questionId, true);
-  if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
-  const { quizIndex, questionIndex } = isValidObj;
-
-  const data: Data = getData();
-  const quiz: Quiz = data.quizzes[quizIndex];
-
-  const duration: number = quiz.duration - quiz.questions[questionIndex].duration;
-  isValidQuestionBody(questionBody, duration, isValidObj);
+  const isValidObj: IsValid = isValidIds(token, quizId, questionId, questionBody);
   if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
 
   // if all inputs valid, update the question
-  setQuestion(questionBody, quizIndex, questionIndex, false, false);
+  setQuestion(questionBody, isValidObj.quizIndex, isValidObj.questionIndex, 
+    QuestionOperation.Update);
   return {};
 }
 
 /**
- * A particular question gets duplicated to immediately
- * after where the source question is
- * the last edited time of quiz is also updated, if duration excesse 3 mins
- * it will keep duplicate it but cannot edit or create more questions
+ * Duplicate a question after where the source question is
+ * if current quiz duration exceeds 3 mins, return error (BAD_REQUEST)
  *
  * @param {string} token - a unique identifier for a login user
  * @param {number} quizId - a unique identifier for a valid quiz
@@ -133,18 +128,21 @@ export function adminQuizQuestionUpdate(token: string, quizId: number,
  */
 export function adminQuizQuestionDuplicate(token: string, quizId: number,
   questionId: number): NewQuestionIdReturn | ErrorObject {
-  // console.log(JSON.stringify(getData().quizzes, null, 2));
-  const isValidObj: IsValid = isValidIds(token, quizId, questionId, true);
+  const isValidObj: IsValid = isValidIds(token, quizId, questionId, null);
   if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
 
+  // new question is add after the source question
   const data: Data = getData();
-  const { quizIndex, questionIndex } = isValidObj;
-  const question: Question = data.quizzes[quizIndex].questions[questionIndex];
+  const { quizIndex, questionIndex } = isValidObj as { quizIndex: number; questionIndex: number };
 
-  const questionCopy: Question = JSON.parse(JSON.stringify(question));
+  const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
+  if (quiz.duration > MAX_DURATIONS_SECS) {
+    return { error: `Invalid current quiz durations number: ${ quiz.duration }
+    exceeds ${DurationLimit.MIN_SUM_MINS} minutes.` };
+  }
 
-  const newQuestionId: number = setQuestion(questionCopy, quizIndex,
-    questionIndex + 1, true, true);
+  const newQuestionId: number = setQuestion(quiz.questions[questionIndex], 
+    quizIndex, questionIndex + 1, QuestionOperation.Duplicate);
   return { newQuestionId };
 }
 
@@ -160,8 +158,8 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number,
  * questionIndex: number - when isValid is true, corresponding index in the quiz
  * errorMsg: string - if token, questionId or quizId invalid
  */
-function isValidIds(token: string, quizId: number, questionId: number,
-  isQuestionId: boolean): IsValid {
+function isValidIds(token: string, quizId: number, questionId: number | null, 
+  questionBody: QuestionBody | null): IsValid {
   // check token
   const userId: number = findUserId(token);
   if (userId === INVALID) {
@@ -173,11 +171,21 @@ function isValidIds(token: string, quizId: number, questionId: number,
   const isValidObj: IsValid = findQuizIndex(quizId, userId);
   if (!isValidObj.isValid) return isValidObj;
 
+  const data: Data = getData();
+  const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
+
   // check questionId
-  if (isQuestionId) {
-    const isValidQuestion: IsValid = findQuestionIndex(isValidObj.quizIndex, questionId);
+  if (questionId !== null) {
+    const isValidQuestionId: IsValid = findQuestionIndex(isValidObj.quizIndex, questionId);
+    if (!isValidQuestionId.isValid) return isValidQuestionId;
+    isValidObj.questionIndex = isValidQuestionId.questionIndex;
+  }
+
+  if (questionBody !== null) {
+    let duration = quiz.duration;
+    if (questionId !== null) duration -= quiz.questions[isValidObj.questionIndex].duration;
+    const isValidQuestion: IsValid = isValidQuestionBody(questionBody, duration);
     if (!isValidQuestion.isValid) return isValidQuestion;
-    isValidObj.questionIndex = isValidQuestion.questionIndex;
   }
 
   return isValidObj;
@@ -246,7 +254,7 @@ function findQuestionIndex(quizIndex: number, questionId: number): IsValid {
  * errorMsg: ErrorObject - isValid is false, an errorMsg will be set
  */
 function isValidQuestionBody(questionBody: QuestionBody,
-  quizDuration: number, isValidObj: IsValid): IsValid {
+  quizDuration: number): IsValid {
   const { question, duration, points, answers } = questionBody;
   const isValid: boolean = false;
   let errorMsg: string;
@@ -284,7 +292,7 @@ function isValidQuestionBody(questionBody: QuestionBody,
     return { isValid, errorMsg };
   }
 
-  return { isValid: true, ...isValidObj };
+  return { isValid: true };
 }
 
 /**
@@ -295,14 +303,14 @@ function isValidQuestionBody(questionBody: QuestionBody,
  * @return {boolean} true - if no answer strings are duplicates of another
  */
 function isValidAnswer(answers: AnswerInput[]): boolean {
-  const invalidAnswerLen = answers.some(ans =>
-    ans.answer.length < AnswersLimit.MIN_STRING_LEN ||
-    ans.answer.length > AnswersLimit.MAX_STRING_LEN);
+  const invalidAnswerLen: boolean = answers.some((answerBody: AnswerInput) =>
+    answerBody.answer.length < AnswersLimit.MIN_STRING_LEN ||
+    answerBody.answer.length > AnswersLimit.MAX_STRING_LEN);
 
-  const uniqueAnswers: Set<string> = new Set(answers.map(ans => ans.answer));
+  const uniqueAnswers: Set<string> = new Set(answers.map((answerBody: AnswerInput) => answerBody.answer));
   const hasDuplicateAnswer: boolean = uniqueAnswers.size !== answers.length;
 
-  const hasCorrectAnswer = answers.some(answer => answer.correct);
+  const hasCorrectAnswer = answers.some((answerBody: AnswerInput) => answerBody.correct);
 
   return !invalidAnswerLen && !hasDuplicateAnswer && hasCorrectAnswer;
 }
@@ -338,25 +346,30 @@ const timeStamp = (): number => Math.floor(Date.now() / 1000);
  *
  * @return {string} questionId - a global unique identifier of question
  */
-function setQuestion(questionBody: QuestionBody, quizIndex: number,
-  questionIndex: number, isCreate: boolean, isDuplicate: boolean): number {
+function setQuestion(questionBody: QuestionBody | Question, quizIndex: number,
+  questionIndex: number, operation: QuestionOperation): number {
   const data: Data = getData();
   const quiz: Quiz = data.quizzes[quizIndex];
-  let questionId: number;
+  const isCreate: boolean = (operation === QuestionOperation.Create 
+    || operation === QuestionOperation.Duplicate);
 
-  if (isCreate) { // duplicate is also create question
+  let questionId: number;
+  if (isCreate) {
     data.sessions.questionCounter += 1;
     questionId = data.sessions.questionCounter;
     quiz.numQuestions += 1;
   } else {
     questionId = quiz.questions[questionIndex].questionId;
-    quiz.duration = quiz.duration - quiz.questions[questionIndex].duration;
+    quiz.duration -= quiz.questions[questionIndex].duration;
   }
 
+  // set new question
   let newQuestion: Question;
-  if (isDuplicate) {
-    newQuestion = questionBody as Question;
-    newQuestion.questionId = questionId;
+  if (operation === QuestionOperation.Duplicate) {
+    console.log(questionId)
+    console.log(data.sessions.questionCounter)
+    newQuestion = { ...quiz.questions[questionIndex - 1], questionId };
+    console.log(newQuestion)
   } else {
     const { answers: answerBody, ...question } = questionBody;
     const answers: Answer[] = answerBody.map(({ answer, correct }, index) =>
@@ -365,9 +378,9 @@ function setQuestion(questionBody: QuestionBody, quizIndex: number,
   }
 
   quiz.questions.splice(questionIndex, isCreate ? 0 : 1, newQuestion);
-  quiz.duration += questionBody.duration;
+  quiz.duration += newQuestion.duration;
   quiz.timeLastEdited = timeStamp();
 
-  setData(data);
+  setData(data);console.log(JSON.stringify(getData(), null, 2))
   return questionId;
 }
