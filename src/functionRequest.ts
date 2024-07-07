@@ -97,7 +97,14 @@ export function requestQuizDescriptionUpdate(token: string, quizId: number,
 // ============== adminQuizQuestion ============================================
 export function requestQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): ApiResponse<QuestionIdReturn> {
-  return requestHelper('POST', `/v1/admin/quiz/${quizId}/question`, { token, questionBody });
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/question`, 
+    { token, questionBody });
+}
+
+export function requestQuizQuestionUpdate(token: string, quizId: number, 
+  questionId: number, questionBody: QuestionBody): ApiResponse<EmptyObject> {
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/question/${questionId}`, 
+    { token, questionBody });
 }
 
 // ============== other ========================================================
@@ -126,6 +133,6 @@ export const validQuizInfo = (token: string, quizId: number): ResQuizInfo =>
 export const questionCreate = (token: string, quizId: number,
   questionBody: QuestionBody): ResQuestionId => {
   const result = requestQuizQuestionCreate(token, quizId, questionBody) as ResQuestionId;
-  if ('error' in result) throw new Error('Fail to create question, type ResError.');
+  if ('error' in result) throw new Error(`Fail to create question: ${result.error}`);
   return result;
 };

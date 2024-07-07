@@ -231,7 +231,7 @@ function isValidQuestionBody(questionBody: QuestionBody,
 
   if (duration < DurationLimit.MinQuestionSecs ||
     quizDuration + duration > MAX_DURATIONS_SECS) {
-    // question duration <== 0 or the sum of question durations in quiz > 3 mins
+    // question duration <= 0 or the sum of question durations in quiz > 3 mins
     errorMsg = `Invalid duration number: ${duration}.`;
     return { isValid, errorMsg };
   }
