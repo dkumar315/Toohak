@@ -39,6 +39,9 @@ import {
   adminQuizInfo, adminQuizNameUpdate,
   adminQuizDescriptionUpdate
 } from './quiz';
+import {
+  adminQuizQuestionCreate
+} from './quizQuestion';
 import { clear } from './other';
 
 // Example get request
@@ -212,6 +215,26 @@ app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
       return res.status(BAD_REQUEST).json(result);
     }
   }
+  return res.json(result);
+});
+
+// adminQuizQuestion
+// Create quiz question
+app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid as string);
+  const { token, questionBody } = req.body;
+
+  const result = adminQuizQuestionCreate(token, quizId, questionBody);
+  if ('error' in result) {
+    if (result.error.includes('token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else if (result.error.includes('quizId')) {
+      return res.status(FORBIDDEN).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
+
   return res.json(result);
 });
 

@@ -1,8 +1,7 @@
 import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
-import { Data, User, Session, ErrorObject, EmptyObject } from './dataStore';
+import { Data, User, Session, INVALID, ErrorObject, EmptyObject } from './dataStore';
 
-const INVALID: number = -1;
 const NAME_MIN_LEN: number = 2;
 const NAME_MAX_LEN: number = 20;
 const PASSWORD_MIN_LEN: number = 8;
@@ -234,7 +233,7 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
 /**
  * Generate a token that is globally unique
  *
- * @return {string} token - a new token stores in sessions
+ * @return {string} token - a new globally unique token stores in sessions
  */
 function generateToken(): string {
   const data: Data = getData();

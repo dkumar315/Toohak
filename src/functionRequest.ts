@@ -7,6 +7,8 @@ import { StatusCodes } from 'http-status-codes';
 import { EmptyObject, ErrorObject } from './dataStore';
 import { TokenReturn, UserDetailReturn } from './auth';
 import { QuizListReturn, QuizCreateReturn, QuizInfoReturn } from './quiz';
+import { QuestionBody, QuestionIdReturn } from './quizQuestion';
+
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
 export type ResError = {
@@ -79,7 +81,8 @@ export function requestQuizRemove(token: string,
   return requestHelper('DELETE', `/v1/admin/quiz/${quizId}`, { token });
 }
 
-export function requestQuizInfo(token: string, quizId: number): ApiResponse<QuizInfoReturn> {
+export function requestQuizInfo(token: string, quizId: number):
+ApiResponse<QuizInfoReturn> {
   return requestHelper('GET', `/v1/admin/quiz/${quizId}`, { token });
 }
 
@@ -93,6 +96,12 @@ export function requestQuizDescriptionUpdate(token: string, quizId: number,
   return requestHelper('PUT', `/v1/admin/quiz/${quizId}/description`, { token, description });
 }
 
+// ============== adminQuizQuestion ============================================
+export function requestQuizQuestionCreate(token: string, quizId: number,
+  questionBody: QuestionBody): ApiResponse<QuestionIdReturn> {
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/question`, { token, questionBody });
+}
+
 // ============== other ========================================================
 export function requestClear(): ApiResponse<EmptyObject> {
   return requestHelper('DELETE', '/v1/clear', {});
@@ -104,6 +113,7 @@ export type ResUserDetail = ResValid<UserDetailReturn>;
 export type ResQuizList = ResValid<QuizListReturn>;
 export type ResQuizId = ResValid<QuizCreateReturn>;
 export type ResQuizInfo = ResValid<QuizInfoReturn>;
+export type ResQuestionId = ResValid<QuestionIdReturn>
 
 export const authRegister = (email: string, password: string,
   nameFirst: string, nameLast: string): ResToken =>
@@ -114,3 +124,10 @@ export const quizCreate = (token: string, name: string, description: string): Re
 
 export const validQuizInfo = (token: string, quizId: number): ResQuizInfo =>
   requestQuizInfo(token, quizId) as ResQuizInfo;
+
+export const questionCreate = (token: string, quizId: number,
+  questionBody: QuestionBody): ResQuestionId => {
+  const result = requestQuizQuestionCreate(token, quizId, questionBody) as ResQuestionId;
+  if ('error' in result) throw new Error('Fail to create question, type ResError.');
+  return result;
+};
