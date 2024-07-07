@@ -41,9 +41,14 @@ import {
 } from './quiz';
 import {
   adminQuizQuestionCreate, adminQuizQuestionUpdate,
+  adminQuizQuestionDuplicate
 } from './quizQuestion';
 import { clear } from './other';
 
+// Routes
+// Errors are thrown in the following order:
+// 401 (UNAUTHORIZED), then 403 (FORBIDDEN), then 400 (BAD_REQUEST)
+//
 // Example get request
 app.get('/echo', (req: Request, res: Response) => {
   const result = echo(req.query.echo as string);
@@ -54,7 +59,7 @@ app.get('/echo', (req: Request, res: Response) => {
 });
 
 // adminAuth
-// Register a new admin user
+// Login an admin user
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
   const result = adminAuthRegister(email, password, nameFirst, nameLast);
@@ -258,8 +263,33 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Respo
   return res.json(result);
 });
 
+// Delete quiz question
+// app.delete /v1/admin/quiz/{quizid}/question/{questionid}
+
+// Move quiz question
+// app.put /v1/admin/quiz/{quizid}/question/{questionid}/move
+
+// Duplicate quiz question
+app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid as string);
+  const questionId = parseInt(req.params.questionid as string);
+  const token = req.body.token;
+
+  const result = adminQuizQuestionDuplicate(token, quizId, questionId);
+  if ('error' in result) {
+    if (result.error.includes('token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else if (result.error.includes('quizId')) {
+      return res.status(FORBIDDEN).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
+
+  return res.json(result);
+});
+
 // other
-// Reset the stats of the application back to teh start
 app.delete('/v1/clear', (req: Request, res: Response) => {
   return res.json(clear());
 });

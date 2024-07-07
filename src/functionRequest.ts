@@ -7,8 +7,7 @@ import { StatusCodes } from 'http-status-codes';
 import { EmptyObject, ErrorObject } from './dataStore';
 import { TokenReturn, UserDetailReturn } from './auth';
 import { QuizListReturn, QuizCreateReturn, QuizInfoReturn } from './quiz';
-import { QuestionBody, QuestionIdReturn } from './quizQuestion';
-
+import { QuestionBody, QuestionIdReturn, NewQuestionIdReturn } from './quizQuestion';
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
 export type ResError = {
@@ -93,7 +92,8 @@ export function requestQuizNameUpdate(token: string, quizId: number,
 
 export function requestQuizDescriptionUpdate(token: string, quizId: number,
   description: string): ApiResponse<EmptyObject> {
-  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/description`, { token, description });
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/description`,
+    { token, description });
 }
 
 // ============== adminQuizQuestion ============================================
@@ -109,6 +109,12 @@ export function requestQuizQuestionUpdate(token: string, quizId: number,
     { token, questionBody });
 }
 
+export function requestQuizQuestionDuplicate(token: string, quizId: number,
+  questionId: number): ApiResponse<NewQuestionIdReturn> {
+  return requestHelper('POST',
+    `/v1/admin/quiz/${quizId}/question/${questionId}/duplicate`, { token });
+}
+
 // ============== other ========================================================
 export function requestClear(): ApiResponse<EmptyObject> {
   return requestHelper('DELETE', '/v1/clear', {});
@@ -120,7 +126,8 @@ export type ResUserDetail = ResValid<UserDetailReturn>;
 export type ResQuizList = ResValid<QuizListReturn>;
 export type ResQuizId = ResValid<QuizCreateReturn>;
 export type ResQuizInfo = ResValid<QuizInfoReturn>;
-export type ResQuestionId = ResValid<QuestionIdReturn>
+export type ResQuestionId = ResValid<QuestionIdReturn>;
+export type ResNewQuestionId = ResValid<NewQuestionIdReturn>;
 
 export const authRegister = (email: string, password: string,
   nameFirst: string, nameLast: string): ResToken =>
