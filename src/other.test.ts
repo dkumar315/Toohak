@@ -1,62 +1,55 @@
-test('delete it', () => {
-  expect(1 + 1).toBe(2);
-});
-
-/* import {
-  clear,
-} from './other.js';
-
+import { UNAUTHORIZED } from './dataStore';
 import {
-  adminAuthRegister,
-  adminAuthLogin,
-  adminUserDetails
-} from './auth.js';
+  requestAuthRegister, requestAuthLogin,
+  requestUserDetails,
+  requestQuizList, requestQuizCreate, requestQuizInfo,
+  requestClear, ResToken, ResUserDetail,
+  ResQuizList, ResQuizCreate, ResQuizInfo, ResError
+} from './functionRequest';
 
-import {
-  adminQuizCreate,
-  adminQuizList,
-  adminQuizInfo,
-} from './quiz.js';
-
-let user;
-let quiz;
+let user: ResToken;
+let quiz: ResQuizCreate;
 
 beforeEach(() => {
-  user = adminAuthRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar');
-  adminAuthLogin('devk@gmail.com', 'DevaanshK01');
-  quiz = adminQuizCreate(user.authUserId, 'My Quiz1', 'Quiz on Testing');
+  user = requestAuthRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar') as ResToken;
+  requestAuthLogin('devk@gmail.com', 'DevaanshK01');
+  quiz = requestQuizCreate(user.token, 'My Quiz1', 'Quiz on Testing') as ResQuizCreate;
 });
 
 describe('clear test', () => {
   test('clears all the user details', () => {
-    expect(adminUserDetails(user.authUserId).user).toStrictEqual({
-      userId: user.authUserId,
+    expect((requestUserDetails(user.token) as ResUserDetail).user).toStrictEqual({
+      userId: expect.any(Number),
       name: 'Devaansh Kumar',
       email: 'devk@gmail.com',
       numSuccessfulLogins: 2,
       numFailedPasswordsSinceLastLogin: 0
     });
-    clear();
-    expect(adminUserDetails(user.authUserId)).toStrictEqual({ error: expect.any(String) });
+    requestClear();
+    expect(requestUserDetails(user.token) as ResError).toStrictEqual({ status: UNAUTHORIZED, error: expect.any(String) });
   });
 
   test('clears all the quizzes', () => {
-    expect(adminQuizList(user.authUserId, quiz.quizId).quizzes).toStrictEqual([
+    expect((requestQuizList(user.token) as ResQuizList).quizzes).toStrictEqual([
       { quizId: quiz.quizId, name: 'My Quiz1' }
     ]);
-    clear();
-    expect(adminQuizList(user.authUserId, quiz.quizId)).toStrictEqual({ error: expect.any(String) });
+    requestClear();
+    expect(requestQuizList(user.token) as ResError).toStrictEqual({ status: UNAUTHORIZED, error: expect.any(String) });
   });
 
   test('clears all the information in the quizzes', () => {
-    expect(adminQuizInfo(user.authUserId, quiz.quizId)).toStrictEqual({
+    expect(requestQuizInfo(user.token, quiz.quizId) as ResQuizInfo).toStrictEqual({
       quizId: quiz.quizId,
       name: 'My Quiz1',
       timeCreated: expect.any(Number),
       timeLastEdited: expect.any(Number),
       description: 'Quiz on Testing',
+      numQuestions: 0,
+      questions: [],
+      duration: 0,
+      status: 200
     });
-    clear();
-    expect(adminQuizInfo(user.authUserId, quiz.quizId)).toStrictEqual({ error: expect.any(String) });
+    requestClear();
+    expect(requestQuizInfo(user.token, quiz.quizId) as ResQuizInfo).toStrictEqual({ status: UNAUTHORIZED, error: expect.any(String) });
   });
-}); */
+});
