@@ -4,28 +4,30 @@ import {
 } from './dataStore';
 import { findUserId } from './auth';
 
-const MIN_QUESTION_LEN = 5;
-const MAX_QUESTION_LEN = 50;
+export enum QuestionLimit {
+  MinLen = 5,
+  MaxLen = 50
+}
 
-const MIN_ANSWERS_LEN = 2;
-const MAX_ANSWERS_LEN = 6;
+export enum AnswersLimit {
+  MinCount = 2,
+  MaxCount = 6,
+  MinStrLen = 1,
+  MaxStrLen = 30
+}
 
-const MAX_DURATIONS_MINS = 3;
-const MINS_TO_SECS = 60;
-const MAX_DURATIONS_SECS = MAX_DURATIONS_MINS * MINS_TO_SECS;
+export enum DurationLimit {
+  MinQuestionSecs = 1,
+  MinQuizSumMins = 3,
+  MinsToSecs = 60,
+}
+export const MAX_DURATIONS_SECS =
+  DurationLimit.MinQuizSumMins * DurationLimit.MinsToSecs;
 
-const MIN_POINTS_AWARD = 1;
-const MAX_POINTS_AWARD = 10;
-
-const MIN_ANSWER_STRING_LEN = 1;
-const MAX_ANSWER_STRING_LEN = 30;
-
-export {
-  MIN_QUESTION_LEN, MAX_QUESTION_LEN,
-  MAX_DURATIONS_SECS,
-  MIN_POINTS_AWARD, MAX_POINTS_AWARD,
-  MAX_ANSWER_STRING_LEN
-};
+export enum PointsLimit {
+  MinNum = 1,
+  MaxNum = 10,
+}
 
 interface Validate {
   isValid: boolean;
@@ -146,7 +148,7 @@ function isValidQuestionBody(questionBody: QuestionBody, quizDuration: number): 
 
   // Question string invalid when has less than 5 or greater than 50 characters
   const questionsLen = questionBody.question.length;
-  if (questionsLen < MIN_QUESTION_LEN || questionsLen > MAX_QUESTION_LEN) {
+  if (questionsLen < QuestionLimit.MinLen || questionsLen > QuestionLimit.MaxLen) {
     isValidQuestion.errorMsg = {
       error: `Invalid question string: ${questionBody.question}, len invalid.`
     };
@@ -155,7 +157,7 @@ function isValidQuestionBody(questionBody: QuestionBody, quizDuration: number): 
 
   // question invalid when has more than 6 answers or less than 2 answers
   const answersLen = questionBody.answers.length;
-  if (answersLen < MIN_ANSWERS_LEN || answersLen > MAX_ANSWERS_LEN) {
+  if (answersLen < AnswersLimit.MinCount || answersLen > AnswersLimit.MaxCount) {
     isValidQuestion.errorMsg = {
       error: `Invalid answers number: ${questionBody.answers.length}.`
     };
@@ -164,7 +166,7 @@ function isValidQuestionBody(questionBody: QuestionBody, quizDuration: number): 
 
   // question duration invalid when it is not a positive number
   // or the sum of the question durations in the quiz exceeds 3 minutes
-  if (questionBody.duration <= 0 ||
+  if (questionBody.duration < DurationLimit.MinQuestionSecs ||
     quizDuration + questionBody.duration > MAX_DURATIONS_SECS) {
     isValidQuestion.errorMsg = {
       error: `Invalid duration(s) number: ${questionBody.duration}.`
@@ -173,8 +175,8 @@ function isValidQuestionBody(questionBody: QuestionBody, quizDuration: number): 
   }
 
   // points awarded invalid when points are less than 1 or greater than 10
-  if (questionBody.points < MIN_POINTS_AWARD ||
-    questionBody.points > MAX_POINTS_AWARD) {
+  if (questionBody.points < PointsLimit.MinNum ||
+    questionBody.points > PointsLimit.MinNum) {
     isValidQuestion.errorMsg = {
       error: `Invalid points number: ${questionBody.points}.`
     };
@@ -201,8 +203,8 @@ function isValidQuestionBody(questionBody: QuestionBody, quizDuration: number): 
  */
 function isValidAnswer(answers: AnswerInput[]): boolean {
   const invalidAnswerLen = answers.some(ans =>
-    ans.answer.length < MIN_ANSWER_STRING_LEN ||
-    ans.answer.length > MAX_ANSWER_STRING_LEN);
+    ans.answer.length < AnswersLimit.MinStrLen ||
+    ans.answer.length > AnswersLimit.MaxStrLen);
 
   const uniqueAnswers: Set<string> = new Set(answers.map(ans => ans.answer));
   const hasDuplicateAnswer: boolean = uniqueAnswers.size !== answers.length;
