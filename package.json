@@ -3,19 +3,20 @@
     "test": "jest",
     "ts-node": "ts-node",
     "ts-node-dev": "ts-node-dev",
-
-    "tsc": "tsc --project tsconfig.user.json",
+    "tsc": "tsc --project tsconfig.json",
     "auto-tsc": "tsc --watch --noImplicitAny",
-    "lint": "eslint src/adminUser.test.ts src/dataStore.ts src/auth.ts src/functionRequest.ts src/adminAuthLogout.test.ts src/adminQuizQuestion.test.ts src/quizQuestion.ts",
-    "lint-all": "eslint 'src/**/*.{ts,js}'",
+    "lint": "eslint 'src/**/*.{ts,js}'",
     "lint-fix": "eslint --fix 'src/**/*.{ts,js}'",
     "start": "ts-node -T src/server.ts",
+    "start-dev": "ts-node-dev src/server.ts",
     "cleanup-sync-request": "pkill -f node_modules/sync-rpc/lib/worker.js > /dev/null 2>&1",
+    "coverage": "nyc --reporter=text --reporter=lcov ts-node -T src/server.ts",
     "posttest": "npm run cleanup-sync-request || true"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "http-status-codes": "^2.3.0",
     "morgan": "^1.10.0",
     "ts-node": "^10.9.2",
     "validator": "^13.12.0"
@@ -35,6 +36,7 @@
     "eslint": "^8.56.0",
     "eslint-plugin-jest": "^27.6.3",
     "jest": "^29.7.0",
+    "nyc": "^17.0.0",
     "swagger-ui-express": "^5.0.1",
     "sync-request-curl": "^3.0.0",
     "ts-jest": "^29.1.2",

@@ -1,11 +1,11 @@
 import { OK, BAD_REQUEST, UNAUTHORIZED, EmptyObject } from './dataStore';
-import { UserDetails, UserDetailReturn } from './auth';
-
+import { TokenReturn, UserDetails } from './auth';
 import {
-  requestAuthRegister, requestAuthLogin,
+  requestAuthRegister, requestAuthLogin, requestAuthLogout,
   requestUserDetails, requestUserDetailsUpdate,
   requestUserPasswordUpdate, requestClear,
-  VALID_EMPTY_RETURN, ERROR, ResError
+  VALID_EMPTY_RETURN, ERROR,
+  ResError, ResEmpty, ResUserDetail
 } from './functionRequest';
 
 let email: string, password: string, nameFirst: string, nameLast: string;
@@ -17,7 +17,7 @@ beforeEach(() => {
   password = 'haydensmith123';
   nameFirst = 'Hayden';
   nameLast = 'Smith';
-  token = requestAuthRegister(email, password, nameFirst, nameLast).token;
+  token = (requestAuthRegister(email, password, nameFirst, nameLast) as TokenReturn).token;
 });
 afterAll(() => requestClear());
 
@@ -25,7 +25,7 @@ describe('testing adminUserDetails (GET /v1/admin/user/details)', () => {
   describe('test1: no registered user', () => {
     test('test1.0: invalid token (test with clear())', () => {
       requestClear();
-      const result = requestUserDetails(token);
+      const result = requestUserDetails(token) as ResError;
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(UNAUTHORIZED);
     });
@@ -40,7 +40,7 @@ describe('testing adminUserDetails (GET /v1/admin/user/details)', () => {
         numSuccessfulLogins: 1,
         numFailedPasswordsSinceLastLogin: 0,
       };
-      const result = requestUserDetails(token);
+      const result = requestUserDetails(token) as ResUserDetail;
       expect(result.status).toStrictEqual(OK);
       expect(result.user).toMatchObject(expectRes);
     });
@@ -48,19 +48,26 @@ describe('testing adminUserDetails (GET /v1/admin/user/details)', () => {
     test('test2.2: invalid tokens (non-existence)', () => {
       requestClear();
       const token1 = (parseInt(token) - 1).toString();
-      const result1 = requestUserDetails(token1);
+      const result1 = requestUserDetails(token1) as ResError;
       expect(result1).toMatchObject(ERROR);
       expect(result1.status).toStrictEqual(UNAUTHORIZED);
 
       const token2 = (parseInt(token) + 1).toString();
-      const result2 = requestUserDetails(token2);
+      const result2 = requestUserDetails(token2) as ResError;
       expect(result2).toMatchObject(ERROR);
       expect(result2.status).toStrictEqual(UNAUTHORIZED);
 
       const token3 = 'invalidToken';
-      const result3 = requestUserDetails(token3);
+      const result3 = requestUserDetails(token3) as ResError;
       expect(result3).toMatchObject(ERROR);
       expect(result3.status).toStrictEqual(UNAUTHORIZED);
+    });
+
+    test('test2.3: invalid tokens (user Logout)', () => {
+      requestAuthLogout(token);
+      const result = requestUserDetails(token) as ResError;
+      expect(result).toMatchObject(ERROR);
+      expect(result.status).toStrictEqual(UNAUTHORIZED);
     });
   });
 
@@ -85,8 +92,10 @@ describe('testing adminUserDetails (GET /v1/admin/user/details)', () => {
       nameLast2 = 'Smith';
 
       // user tokens
-      token1 = requestAuthRegister(email1, password1, nameFirst1, nameLast1).token;
-      token2 = requestAuthRegister(email2, password2, nameFirst2, nameLast2).token;
+      const user1 = requestAuthRegister(email1, password1, nameFirst1, nameLast1);
+      token1 = (user1 as TokenReturn).token;
+      const user2 = requestAuthRegister(email2, password2, nameFirst2, nameLast2);
+      token2 = (user2 as TokenReturn).token;
 
       expectUser1 = {
         userId: expect.any(Number),
@@ -106,21 +115,23 @@ describe('testing adminUserDetails (GET /v1/admin/user/details)', () => {
     });
 
     test('test3.1: with valid tokens', () => {
-      const result1 = requestUserDetails(token1);
+      const result1 = requestUserDetails(token1) as ResUserDetail;
       expect(result1.user).toMatchObject(expectUser1);
+      expect(result1.status).toStrictEqual(OK);
 
-      const result2 = requestUserDetails(token2);
+      const result2 = requestUserDetails(token2) as ResUserDetail;
       expect(result2.user).toMatchObject(expectUser2);
+      expect(result1.status).toStrictEqual(OK);
     });
 
     test('test3.2: with invalid tokens', () => {
       token = (parseInt(token1) - 1).toString();
-      const result1 = requestUserDetails(token);
+      const result1 = requestUserDetails(token) as ResError;
       expect(result1).toMatchObject(ERROR);
       expect(result1.status).toStrictEqual(UNAUTHORIZED);
 
       token = (parseInt(token2) + 1).toString();
-      const result2 = requestUserDetails(token);
+      const result2 = requestUserDetails(token) as ResError;
       expect(result2).toMatchObject(ERROR);
       expect(result2.status).toStrictEqual(UNAUTHORIZED);
     });
@@ -131,7 +142,8 @@ describe('testing adminUserDetails (GET /v1/admin/user/details)', () => {
       const password3: string = 'email1234';
       const nameFirst3: string = 'Hello';
       const nameLast3: string = 'World';
-      const token3: string = requestAuthRegister(email3, password3, nameFirst3, nameLast3).token;
+      const user3 = requestAuthRegister(email3, password3, nameFirst3, nameLast3);
+      const token3: string = (user3 as TokenReturn).token;
 
       const expectUser3 = {
         userId: expect.any(Number),
@@ -141,20 +153,20 @@ describe('testing adminUserDetails (GET /v1/admin/user/details)', () => {
         numFailedPasswordsSinceLastLogin: 0,
       };
 
-      const result1 = requestUserDetails(token3);
+      const result1 = requestUserDetails(token3) as ResUserDetail;
       expect(result1.user).toMatchObject(expectUser3);
 
-      const result2 = requestUserDetails((parseInt(token3) + 1).toString());
+      const invalidToken = (parseInt(token3) + 1).toString();
+      const result2 = requestUserDetails(invalidToken) as ResError;
       expect(result2).toMatchObject(ERROR);
       expect(result2.status).toStrictEqual(UNAUTHORIZED);
     });
   });
 
-  describe('test4: test with authadminLogin', () => {
-    let result;
-
+  describe('test4: test with authlogin and authLogout', () => {
+    let result: UserDetails | ResError;
     test('test4.0: initial before authadminLogin', () => {
-      result = requestUserDetails(token).user;
+      result = (requestUserDetails(token) as ResUserDetail).user;
       expect(result.numSuccessfulLogins).toStrictEqual(1);
       expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
     });
@@ -163,7 +175,7 @@ describe('testing adminUserDetails (GET /v1/admin/user/details)', () => {
       requestAuthLogin(email, password + 'invalid');
       requestAuthLogin(email, password + 'invalid');
 
-      result = requestUserDetails(token).user;
+      result = (requestUserDetails(token) as ResUserDetail).user;
       expect(result.numSuccessfulLogins).toStrictEqual(1);
       expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(2);
     });
@@ -173,7 +185,7 @@ describe('testing adminUserDetails (GET /v1/admin/user/details)', () => {
       requestAuthLogin(email, password);
       requestAuthLogin(email, password + 'invalid');
 
-      result = requestUserDetails(token).user;
+      result = (requestUserDetails(token) as ResUserDetail).user;
       expect(result.numSuccessfulLogins).toStrictEqual(3);
       expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
     });
@@ -181,19 +193,19 @@ describe('testing adminUserDetails (GET /v1/admin/user/details)', () => {
     test('test4.3: successful, fail the successful to login', () => {
       // successfully login
       requestAuthLogin(email, password);
-      result = requestUserDetails(token).user;
+      result = (requestUserDetails(token) as ResUserDetail).user;
       expect(result.numSuccessfulLogins).toStrictEqual(2);
       expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
 
       // then fail to login
       requestAuthLogin(email, password + 'invalid');
-      result = requestUserDetails(token).user;
+      result = (requestUserDetails(token) as ResUserDetail).user;
       expect(result.numSuccessfulLogins).toStrictEqual(2);
       expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
 
       // then successfully login
       requestAuthLogin(email, password);
-      result = requestUserDetails(token).user;
+      result = (requestUserDetails(token) as ResUserDetail).user;
       expect(result.numSuccessfulLogins).toStrictEqual(3);
       expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
     });
@@ -202,8 +214,6 @@ describe('testing adminUserDetails (GET /v1/admin/user/details)', () => {
 
 describe('testing adminUserDetailsUpdate (PUT /v1/admin/user/details)', () => {
   let result: EmptyObject | ResError;
-
-  // valid results
   describe('test1: valid results', () => {
     describe('test1.1: valid token(s)', () => {
       test('test1.1: valid inputs of single user', () => {
@@ -223,7 +233,8 @@ describe('testing adminUserDetailsUpdate (PUT /v1/admin/user/details)', () => {
         const psw2: string = 'haydensmith2123';
         const nameFirst2: string = 'HaydenTwo';
         const nameLast2: string = 'SmithTwo';
-        const token2: string = requestAuthRegister(email2, psw2, nameFirst2, nameLast2).token;
+        const user2 = requestAuthRegister(email2, psw2, nameFirst2, nameLast2);
+        const token2: string = (user2 as TokenReturn).token;
 
         result = requestUserDetailsUpdate(token2, email2, nameFirst2, nameLast2);
         expect(result).toMatchObject(VALID_EMPTY_RETURN);
@@ -234,19 +245,20 @@ describe('testing adminUserDetailsUpdate (PUT /v1/admin/user/details)', () => {
         const newName = 'newName';
         requestUserDetailsUpdate(token, newEmail, nameFirst, nameLast);
 
-        const token2 = requestAuthLogin(newEmail, password).token;
+        const token2 = (requestAuthLogin(newEmail, password) as TokenReturn).token;
         requestUserDetailsUpdate(token2, email, newName, nameLast);
 
-        const token3 = requestAuthLogin(email, password).token;
+        const token3 = (requestAuthLogin(email, password) as TokenReturn).token;
         requestUserDetailsUpdate(token3, newEmail, nameFirst, newName);
 
-        const result2 = requestUserDetails(token3);
+        const result2 = requestUserDetails(token3) as ResUserDetail;
         expect(result2.user.email).toStrictEqual(newEmail);
         expect(result2.user.name).toStrictEqual(nameFirst + ' ' + newName);
         expect(result2.user.numSuccessfulLogins).toStrictEqual(3);
         expect(result2.user.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
 
-        const result3 = requestUserDetails(requestAuthLogin(newEmail, password).token);
+        const token4 = (requestAuthLogin(newEmail, password) as TokenReturn).token;
+        const result3 = requestUserDetails(token4) as ResUserDetail;
         expect(result3.user.email).toStrictEqual(newEmail);
         expect(result3.user.name).toStrictEqual(result2.user.name);
         expect(result3.user.numSuccessfulLogins).toStrictEqual(4);
@@ -328,7 +340,8 @@ describe('testing adminUserDetailsUpdate (PUT /v1/admin/user/details)', () => {
         const psw2: string = 'vict078999';
         const nameFirst2: string = 'myName';
         const nameLast2: string = 'vict';
-        const token2: string = requestAuthRegister(email2, psw2, nameFirst2, nameLast2).token;
+        const user2 = requestAuthRegister(email2, psw2, nameFirst2, nameLast2);
+        const token2: string = (user2 as TokenReturn).token;
 
         result = requestUserDetailsUpdate(token, email2, nameFirst, nameLast);
         expect(result).toMatchObject(ERROR);
@@ -410,7 +423,7 @@ describe('testing requestUserPasswordUpdate (PUT /v1/admin/user/details)', () =>
     newPasswords = [];
     password = 'haydensmith123';
     newPassword = '321haydensmith';
-    token = requestAuthRegister(email, password, nameFirst, nameLast).token;
+    token = (requestAuthRegister(email, password, nameFirst, nameLast) as TokenReturn).token;
   });
 
   // user2
@@ -469,7 +482,7 @@ describe('testing requestUserPasswordUpdate (PUT /v1/admin/user/details)', () =>
     describe('test1.2.4: valid token with mutiple users', () => {
       let token2: string;
       beforeEach(() => {
-        token2 = requestAuthRegister(email2, password2, nameFirst2, nameLast2).token;
+        token2 = (requestAuthRegister(email2, password2, nameFirst2, nameLast2) as TokenReturn).token;
       });
 
       test('token with 2 users', () => {
@@ -488,7 +501,7 @@ describe('testing requestUserPasswordUpdate (PUT /v1/admin/user/details)', () =>
         const email3: string = '07899@gmail.com';
         const nameFirst3: string = 'name';
         const nameLast3: string = 'vict';
-        const token3: string = requestAuthRegister(email3, password3, nameFirst3, nameLast3).token;
+        const token3: string = (requestAuthRegister(email3, password3, nameFirst3, nameLast3) as TokenReturn).token;
 
         result = requestUserPasswordUpdate(token3, password3, password);
         expect(result).toMatchObject(VALID_EMPTY_RETURN);
@@ -637,7 +650,7 @@ describe('testing adminUser', () => {
   let email1: string, password1: string, nameFirst1: string, nameLast1: string;
   let email2: string, password2: string, nameFirst2: string, nameLast2: string;
   let token1: string, token2: string;
-  let userResult: UserDetailReturn, updateResult: EmptyObject, errorResult: ResError;
+  let userResult: ResUserDetail, updateResult: ResEmpty, errorResult: ResError;
 
   beforeEach(() => {
     requestClear();
@@ -646,14 +659,14 @@ describe('testing adminUser', () => {
     password1 = 'haydensmith123';
     nameFirst1 = 'Hayden';
     nameLast1 = 'Smith';
-    token1 = requestAuthRegister(email1, password1, nameFirst1, nameLast1).token;
+    token1 = (requestAuthRegister(email1, password1, nameFirst1, nameLast1) as TokenReturn).token;
 
     // user2
     password2 = 'vict078999';
     email2 = '0789@gmail.com';
     nameFirst2 = 'name';
     nameLast2 = 'vict';
-    token2 = requestAuthRegister(email2, password2, nameFirst2, nameLast2).token;
+    token2 = (requestAuthRegister(email2, password2, nameFirst2, nameLast2) as TokenReturn).token;
   });
 
   afterAll(() => {
@@ -662,7 +675,7 @@ describe('testing adminUser', () => {
 
   test('test1.0: check details, and then update details and password', () => {
     // check detail and update detail
-    userResult = requestUserDetails(token1);
+    userResult = requestUserDetails(token1) as ResUserDetail;
     expect(userResult.user.email).toStrictEqual(email1);
     expect(userResult.user.name).toStrictEqual(nameFirst1 + ' ' + nameLast1);
 
@@ -672,13 +685,13 @@ describe('testing adminUser', () => {
     requestUserDetailsUpdate(token1, email1, nameFirst1, nameLast1);
 
     // (update detail) and check detail
-    userResult = requestUserDetails(token1);
+    userResult = requestUserDetails(token1) as ResUserDetail;
     expect(userResult.user.email).toStrictEqual(email1);
     expect(userResult.user.name).toStrictEqual(nameFirst1 + ' ' + nameLast1);
 
     // (update detail, check detail) and update password
     const newPassword = 'haydensnewpassword0';
-    userResult = requestUserPasswordUpdate(token1, password1, newPassword);
+    updateResult = requestUserPasswordUpdate(token1, password1, newPassword) as ResEmpty;
     expect(userResult).toMatchObject(VALID_EMPTY_RETURN);
     password1 = newPassword;
 
@@ -686,10 +699,10 @@ describe('testing adminUser', () => {
     email1 = 'haydensmith3@ad.unsw.edu.au';
     nameFirst1 = 'Hayden-new-new';
     nameLast1 = 'Smith-new-new';
-    userResult = requestUserDetailsUpdate(token1, email1, nameFirst1, nameLast1);
+    requestUserDetailsUpdate(token1, email1, nameFirst1, nameLast1);
 
     // (update password, update detail) and check detail
-    userResult = requestUserDetails(token1);
+    userResult = requestUserDetails(token1) as ResUserDetail;
     expect(userResult.user.email).toStrictEqual(email1);
     expect(userResult.user.name).toStrictEqual(nameFirst1 + ' ' + nameLast1);
   });
@@ -697,30 +710,30 @@ describe('testing adminUser', () => {
   test('test1.1: failed on changing password and rechanging', () => {
     // update password
     const invalidnewPassword = 'abc';
-    errorResult = requestUserPasswordUpdate(token1, password1, invalidnewPassword);
+    errorResult = requestUserPasswordUpdate(token1, password1, invalidnewPassword) as ResError;
     expect(errorResult).toMatchObject(ERROR);
     expect(errorResult.status).toStrictEqual(BAD_REQUEST);
 
     // update password
     const newPassword = 'haydensnewpassword0';
-    updateResult = requestUserPasswordUpdate(token1, password1, newPassword);
-    expect(updateResult).toMatchObject(VALID_EMPTY_RETURN);
+    updateResult = requestUserPasswordUpdate(token1, password1, newPassword) as ResEmpty;
+    expect(updateResult as ResEmpty).toMatchObject(VALID_EMPTY_RETURN);
   });
 
   test('test1.2: fail to change details', () => {
     // check deatil
-    userResult = requestUserDetails(token2);
+    userResult = requestUserDetails(token2) as ResUserDetail;
     expect(userResult.user.email).toStrictEqual(email2);
     expect(userResult.user.name).toStrictEqual(nameFirst2 + ' ' + nameLast2);
 
     // fail to update details with invalid nameFirst
     const nameFirst = 'a';
-    errorResult = requestUserDetailsUpdate(token2, email2, nameFirst, nameLast2);
+    errorResult = requestUserDetailsUpdate(token2, email2, nameFirst, nameLast2) as ResError;
     expect(errorResult).toMatchObject(ERROR);
     expect(errorResult.status).toStrictEqual(BAD_REQUEST);
 
     // check deatil
-    userResult = requestUserDetails(token2);
+    userResult = requestUserDetails(token2) as ResUserDetail;
     expect(userResult.user.email).toStrictEqual(email2);
     expect(userResult.user.name).toStrictEqual(nameFirst2 + ' ' + nameLast2);
   });
@@ -728,35 +741,35 @@ describe('testing adminUser', () => {
   test('test1.3: changed password, fail to change details', () => {
     // update password
     const newPassword = 'ABc20240610!';
-    updateResult = requestUserPasswordUpdate(token2, password2, newPassword);
+    updateResult = requestUserPasswordUpdate(token2, password2, newPassword) as ResEmpty;
     expect(updateResult).toMatchObject(VALID_EMPTY_RETURN);
 
     // fail to update detail
     const invalidnameLast2 = 'a';
-    errorResult = requestUserDetailsUpdate(token2, email2, nameFirst2, invalidnameLast2);
+    errorResult = requestUserDetailsUpdate(token2, email2, nameFirst2, invalidnameLast2) as ResError;
     expect(errorResult).toMatchObject(ERROR);
     expect(errorResult.status).toStrictEqual(BAD_REQUEST);
   });
 
   test('test1.4: tokens for a user', () => {
     // user1: token1, token2, token3; user2
-    token2 = requestAuthLogin(email1, password1).token;
+    token2 = (requestAuthLogin(email1, password1) as TokenReturn).token;
     const emailnew = 'newEmail@qq.com';
     const newPassword = 'new Passw0rd';
 
     // use token1 to update details, and use new email to login
     requestUserDetailsUpdate(token1, emailnew, nameFirst1 + 'new', nameLast1);
-    const token3 = requestAuthLogin(emailnew, password1).token;
+    const token3 = (requestAuthLogin(emailnew, password1) as TokenReturn).token;
 
     // use token2 to update password, and use new password to login
     requestUserPasswordUpdate(token2, password1, newPassword);
-    const token4 = requestAuthLogin(emailnew, newPassword).token;
+    const token4 = (requestAuthLogin(emailnew, newPassword) as TokenReturn).token;
 
     // use token 1, 2, 3 to check
-    const userResult1 = requestUserDetails(token1);
-    const userResult2 = requestUserDetails(token2);
-    const userResult3 = requestUserDetails(token3);
-    const userResult4 = requestUserDetails(token4);
+    const userResult1 = requestUserDetails(token1) as ResUserDetail;
+    const userResult2 = requestUserDetails(token2) as ResUserDetail;
+    const userResult3 = requestUserDetails(token3) as ResUserDetail;
+    const userResult4 = requestUserDetails(token4) as ResUserDetail;
 
     expect(userResult1.user.email).toStrictEqual(emailnew);
     expect(userResult1.user.name).toStrictEqual(nameFirst1 + 'new' + ' ' + nameLast1);

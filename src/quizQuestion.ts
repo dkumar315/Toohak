@@ -1,7 +1,6 @@
 import {
-  setData, getData,
-  INVALID, COLORS,
-  Data, Question, Answer, ErrorObject
+  setData, getData, INVALID, Colours,
+  Data, Quiz, Question, Answer, ErrorObject
 } from './dataStore';
 import { findUserId } from './auth';
 
@@ -62,7 +61,8 @@ export interface QuestionIdReturn {
  * @return {object} quizId - unique identifier for a qiz of a user
  * @return {object} error - if email, password, nameFirst, nameLast invalid
  */
-export function adminQuizQuestionCreate(token: string, quizId: number, questionBody: QuestionBody): QuestionIdReturn | ErrorObject {
+export function adminQuizQuestionCreate(token: string, quizId: number,
+  questionBody: QuestionBody): QuestionIdReturn | ErrorObject {
   // check token
   const userId: number = findUserId(token);
   if (userId === INVALID) return { error: `Invalid token string: ${token} not exist.` };
@@ -72,8 +72,8 @@ export function adminQuizQuestionCreate(token: string, quizId: number, questionB
   if (!isvalidObj.isValid) return isvalidObj.errorMsg;
 
   const data: Data = getData();
-  const quizIndex = isvalidObj.quizIndex;
-  const quiz = data.quizzes[quizIndex];
+  const quizIndex: number = isvalidObj.quizIndex;
+  const quiz: Quiz = data.quizzes[quizIndex];
 
   // check questionBody
   const isValidQuestion: Validate = isValidQuestionBody(questionBody, quiz.duration);
@@ -218,9 +218,10 @@ function isValidAnswer(answers: AnswerInput[]): boolean {
  *
  * @return {string} color - a name of a random color
  */
-function generateRandomColor(): string {
-  const index: number = Math.floor(Math.random() * COLORS.length);
-  return COLORS[index];
+function generateRandomColor(): Colours {
+  const colours = Object.values(Colours);
+  const randomIndex: number = Math.floor(Math.random() * colours.length);
+  return colours[randomIndex];
 }
 
 /**
