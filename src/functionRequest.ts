@@ -8,6 +8,7 @@ import { EmptyObject, ErrorObject } from './dataStore';
 import { TokenReturn, UserDetailReturn } from './auth';
 import { QuizListReturn, QuizCreateReturn, QuizInfoReturn } from './quiz';
 import { QuestionBody, QuestionIdReturn } from './quizQuestion';
+
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
 export type ResError = {
@@ -98,7 +99,6 @@ export function requestQuizDescriptionUpdate(token: string, quizId: number,
 export function requestQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): ApiResponse<QuestionIdReturn> {
   return requestHelper('POST', `/v1/admin/quiz/${quizId}/question`, { token, questionBody });
-}
 
 // ============== other ========================================================
 export function requestClear(): ApiResponse<EmptyObject> {
@@ -129,3 +129,4 @@ export const questionCreate = (token: string, quizId: number,
   if ('error' in result) throw new Error('Fail to create question, type ResError.');
   return result;
 };
+
