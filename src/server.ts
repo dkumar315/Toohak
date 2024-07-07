@@ -35,8 +35,9 @@ import {
   adminUserPasswordUpdate
 } from './auth';
 import {
-  adminQuizList, adminQuizCreate,
-  adminQuizRemove, adminQuizInfo
+  adminQuizList, adminQuizCreate, adminQuizRemove,
+  adminQuizInfo, adminQuizNameUpdate,
+  adminQuizDescriptionUpdate
 } from './quiz';
 import {
   adminQuizQuestionCreate, adminQuizQuestionUpdate,
@@ -58,7 +59,7 @@ app.get('/echo', (req: Request, res: Response) => {
 });
 
 // adminAuth
-// register
+// Login an admin user
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
   const result = adminAuthRegister(email, password, nameFirst, nameLast);
@@ -70,12 +71,13 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
 });
 
 // login (todo)
+// Login an admin user
 app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   const { email, password } = req.body;
   return res.json(adminAuthLogin(email, password));
 });
 
-// logout
+// Logs out an admin user who has active user session
 app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   const { token } = req.body;
   const result = adminAuthLogout(token);
@@ -86,6 +88,7 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
 });
 
 // adminUser
+// Get the details of an admin user
 app.get('/v1/admin/user/details', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const result = adminUserDetails(token);
@@ -95,6 +98,7 @@ app.get('/v1/admin/user/details', (req: Request, res: Response) => {
   return res.json(result);
 });
 
+// Update the details of an admin user (non-password)
 app.put('/v1/admin/user/details', (req: Request, res: Response) => {
   const { token, email, nameFirst, nameLast } = req.body;
   const result = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
@@ -108,6 +112,7 @@ app.put('/v1/admin/user/details', (req: Request, res: Response) => {
   return res.json(result);
 });
 
+// Update the password of this admin user
 app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   const { token, oldPassword, newPassword } = req.body;
   const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
@@ -122,29 +127,99 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
 });
 
 // adminQuiz
+// List all user's quizzes
 app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const result = adminQuizList(token);
+  if ('error' in result) {
+    if (result.error.includes('token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
   return res.json(result);
 });
 
+// Create a new quiz
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   const { token, name, description } = req.body;
   const result = adminQuizCreate(token, name, description);
+  if ('error' in result) {
+    if (result.error.includes('token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
   return res.json(result);
 });
 
+// Send a quiz to trash
 app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const token = req.query.token as string;
-  const quizId = parseInt(req.params.quizid as string);
+  const quizId = parseInt(req.params.quizid);
   const result = adminQuizRemove(token, quizId);
+  if ('error' in result) {
+    if (result.error.includes('token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else if (result.error.includes('owner')) {
+      return res.status(FORBIDDEN).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
   return res.json(result);
 });
 
+// Get info about current quiz
 app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const token = req.query.token as string;
-  const quizId = parseInt(req.params.quizid as string);
+  const quizId = parseInt(req.params.quizid);
   const result = adminQuizInfo(token, quizId);
+  if ('error' in result) {
+    if (result.error.includes('token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else if (result.error.includes('owner')) {
+      return res.status(FORBIDDEN).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
+  return res.json(result);
+});
+
+// update quiz name
+app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
+  const { token, name } = req.body;
+  const quizId = parseInt(req.params.quizid);
+  const result = adminQuizNameUpdate(token, quizId, name);
+  if ('error' in result) {
+    if (result.error.includes('token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else if (result.error.includes('owner')) {
+      return res.status(FORBIDDEN).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
+  return res.json(result);
+});
+
+// Get info about crrent quiz
+app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
+  const { token, description } = req.body;
+  const quizId = parseInt(req.params.quizid);
+  const result = adminQuizDescriptionUpdate(token, quizId, description);
+  if ('error' in result) {
+    if (result.error.includes('token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else if (result.error.includes('owner')) {
+      return res.status(FORBIDDEN).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
   return res.json(result);
 });
 

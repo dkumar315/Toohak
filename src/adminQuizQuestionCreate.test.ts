@@ -1,22 +1,15 @@
+import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Colours } from './dataStore';
 import {
-  requestAuthRegister, requestAuthLogout,
-  requestQuizCreate, requestQuizInfo, requestQuizRemove,
-  requestQuizQuestionCreate,
-  requestClear,
-  ERROR, ResError
+  ERROR, ResError, ResQuestionId, ResQuizInfo,
+  authRegister, quizCreate, questionCreate,
+  validQuizInfo, requestQuizQuestionCreate,
+  requestAuthLogout, requestQuizRemove,
+  requestClear
 } from './functionRequest';
 import {
-  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Quiz, Colours
-} from './dataStore';
-import {
-  QuestionBody, AnswerInput,
-  QuestionLimit, AnswersLimit, DurationLimit, PointsLimit, MAX_DURATIONS_SECS
+  QuestionBody, AnswerInput, MAX_DURATIONS_SECS,
+  QuestionLimit, AnswersLimit, PointsLimit
 } from './quizQuestion';
-
-interface ResQuestionId {
-  status: typeof OK;
-  questionId: number;
-}
 
 const initQuestionBody: QuestionBody = {
   question: 'who\'s the fairest of them all?',
@@ -59,15 +52,15 @@ let token: string, quizId: number, questionBody: QuestionBody;
 let result: ResQuestionId | ResError;
 beforeEach(() => {
   requestClear();
-  token = requestAuthRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
-  quizId = requestQuizCreate(token, 'Mirror Mirror on the wall', 'I love disney cartons').quizId;
+  token = authRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
+  quizId = quizCreate(token, 'Mirror Mirror on the wall', 'I love disney cartons').quizId;
   questionBody = JSON.parse(JSON.stringify(initQuestionBody));
-  const answers = [trueAnswer1, falseAnswer1];
+  const answers: AnswerInput[] = [trueAnswer1, falseAnswer1];
   questionBody = { ...initQuestionBody, answers };
 });
 afterAll(() => requestClear());
 
-describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question)', () => {
+describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question', () => {
   describe('test1.0 valid returns (valid token and quizId)', () => {
     describe('test1.1 general valid cases, mutiple types of answers', () => {
       test('test1.1.1 test with 1 correct answer, 3 answers in total', () => {
@@ -93,14 +86,14 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
     });
 
     describe('test1.2 question string - len and specail characters', () => {
-      test('test1.2.1 question string have 5 characters in length', () => {
-        questionBody.question = 'q'.repeat(QuestionLimit.MIN_LEN);
+      test('test 1.2.1 question string have 5 characters in length', () => {
+        questionBody.question = 'q'.repeat(QuestionLimit.MinLen);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
       });
 
-      test('test1.2.2 question string have special characters', () => {
+      test('test 1.2.2 question string have special characters', () => {
         questionBody.question = '~!@#$%^&*()_+ {}|:"<>?';
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
@@ -108,7 +101,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
 
       test('test1.2.3 question string have 50 characters in length', () => {
-        questionBody.question = 'q'.repeat(QuestionLimit.MAX_LEN);
+        questionBody.question = 'q'.repeat(QuestionLimit.MaxLen);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
@@ -140,7 +133,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
     });
 
     describe('test1.4 duration - of single and mutiple questions', () => {
-      test('test1.4.1 quiz with only one question has 3 minutes duration', () => {
+      test('test1.4.1 quiz has one question with 3 minutes duration', () => {
         questionBody.duration = MAX_DURATIONS_SECS;
         questionBody.answers = [trueAnswer1, trueAnswer2, trueAnswer3];
         result = requestQuizQuestionCreate(token, quizId, questionBody);
@@ -150,7 +143,6 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
 
       test('test1.4.2 quiz with two quiz with 3 minutes duration in total', () => {
         questionBody.duration = Math.floor(MAX_DURATIONS_SECS / 2);
-
         // question 1
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
@@ -165,14 +157,14 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
 
     describe('test1.5 points - different number', () => {
       test('test1.5.1 point awarded for the question is 1', () => {
-        questionBody.points = PointsLimit.MIN;
+        questionBody.points = PointsLimit.MinNum;
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
       });
 
       test('test1.5.2 points awarded for the question are 10', () => {
-        questionBody.points = PointsLimit.MAX;
+        questionBody.points = PointsLimit.MaxNum;
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
@@ -180,7 +172,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
     });
 
     describe('test1.6 answer - different len, all correct', () => {
-      test('test1.6.1 the length of any answer is 1 character long', () => {
+      test('test1.6.1 the length of answer is 1 (special) character long', () => {
         const ShortAnswer: AnswerInput = {
           answer: ' ',
           correct: false
@@ -192,9 +184,8 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
 
       test('test1.6.2 the length of any answer is 30 characters long', () => {
-        const answer = 'iseveryone'.repeat(3);
         const LongAnswer: AnswerInput = {
-          answer: answer,
+          answer: 'iseveryone'.repeat(3),
           correct: true
         };
         questionBody.answers = [LongAnswer, falseAnswer1];
@@ -225,7 +216,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
 
   describe('test2.0 invalid returns', () => {
     describe('test2.1.0 invalid Token', () => {
-      test('test2.1.1 invalid Token, token is empty', () => {
+      test('test2.1.1 token is empty', () => {
         result = requestQuizQuestionCreate('', quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(UNAUTHORIZED);
@@ -249,7 +240,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
         expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
 
-      test('test2.1.5 token invalid, user log out', () => {
+      test('test2.1.5 user already log out', () => {
         requestAuthLogout(token);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
@@ -265,18 +256,18 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
 
       test('test2.2.2 user does not own the quiz', () => {
-        const token2 = requestAuthRegister('email2@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
+        const token2: string = authRegister('email2@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
         result = requestQuizQuestionCreate(token2, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
 
-        const quizId2 = requestQuizCreate(token2, 'quiz2', 'coming soon...').quizId;
+        const quizId2: number = quizCreate(token2, 'quiz2', 'coming soon...').quizId;
         result = requestQuizQuestionCreate(token, quizId2, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
 
-      test('test2.2.3 quiz is removed', () => {
+      test('test2.2.3 user does not own the quiz', () => {
         requestQuizRemove(token, quizId);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
@@ -293,14 +284,14 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
 
       test('test2.3.2 string is 4 characters in length', () => {
-        questionBody.question = 'q'.repeat(QuestionLimit.MIN_LEN - 1);
+        questionBody.question = 'q'.repeat(QuestionLimit.MinLen - 1);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
       test('test2.3.3 string is greater than 50 characters in length', () => {
-        questionBody.question = 'q'.repeat(QuestionLimit.MAX_LEN + 1);
+        questionBody.question = 'q'.repeat(QuestionLimit.MaxLen + 1);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
@@ -308,7 +299,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
     });
 
     describe('test2.4 invalid answers length', () => {
-      test('test2.4.1 question have 0 answer', () => {
+      test('test2.4.1 question does not have answer', () => {
         questionBody.answers = [];
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
@@ -328,8 +319,8 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test('test2.4.4 question have too much answers (more than 6)', () => {
-        const extraAnswer = {
+      test('test2.4.4 invalid answers, question have only 7 answers', () => {
+        const extraAnswer: AnswerInput = {
           answer: 'N/A',
           correct: false,
         };
@@ -341,9 +332,8 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
     });
 
-    describe('test2.5 invalid question durations - not positive value', () => {
+    describe('test2.5 invalid question durations', () => {
       test('test2.5.1 question durations is 0', () => {
-        questionBody.duration = DurationLimit.MIN_SINGLE - 1;
         questionBody.answers.push(trueAnswer1);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
@@ -368,9 +358,8 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test('test2.6.2 question created with max duration, create new question', () => {
+      test('test2.6.2 one question has max duration, create new question', () => {
         questionBody.duration = MAX_DURATIONS_SECS;
-
         // question 1
         questionBody.answers.push(trueAnswer1, falseAnswer1);
         requestQuizQuestionCreate(token, quizId, questionBody);
@@ -384,7 +373,6 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
 
       test('test2.6.3 sum of 2 questions has max duration, create new question', () => {
         questionBody.duration = Math.floor(MAX_DURATIONS_SECS / 2);
-
         // question 1
         questionBody.answers.push(trueAnswer1, falseAnswer1);
         requestQuizQuestionCreate(token, quizId, questionBody);
@@ -400,7 +388,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
     });
 
-    describe('test2.7 invalid points awarded - not in [1, 10]', () => {
+    describe('test2.7 invalid points awarded', () => {
       test('test2.7.1 points awarded is negative value', () => {
         questionBody.points = -1;
         result = requestQuizQuestionCreate(token, quizId, questionBody);
@@ -416,7 +404,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
 
       test('test2.7.3 points awarded is more than 10', () => {
-        questionBody.points = PointsLimit.MAX + 1;
+        questionBody.points = PointsLimit.MaxNum + 1;
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
@@ -424,12 +412,12 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
     });
 
     describe('test2.8 invalid length of answer string', () => {
-      const tooShortAnswer = {
+      const tooShortAnswer: AnswerInput = {
         answer: '',
         correct: false,
       };
-      const tooLongAnswer = {
-        answer: 'ans'.repeat(AnswersLimit.MAX_STRING_LEN),
+      const tooLongAnswer: AnswerInput = {
+        answer: 'ans'.repeat(AnswersLimit.MaxStrLen),
         correct: false,
       };
 
@@ -502,31 +490,29 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
   });
 
   describe('test3.0 mutilple invalid returns', () => {
-    test('test3.1.1 invalid token and invalid quizId', () => {
-      const invalidToken = 'invalidToken';
-      const invalidQuizId = quizId + 1;
+    const invalidToken: string = 'invalidToken';
+    const invalidQuizId: number = quizId + 1;
+    test('test3.1 invalid token and invalid quizId', () => {
       result = requestQuizQuestionCreate(invalidToken, invalidQuizId, questionBody);
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(UNAUTHORIZED);
     });
 
-    test('test3.1.2 invalid token and invalid question string', () => {
-      const invalidToken = 'invalidToken';
+    test('test3.2 invalid token and invalid question string', () => {
       questionBody.question = 'qs';
       result = requestQuizQuestionCreate(invalidToken, quizId, questionBody);
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(UNAUTHORIZED);
     });
 
-    test('test3.2.1 valid token, invalid quizId, and invalid answers', () => {
-      const invalidQuizId = quizId + 1;
+    test('test3.3 valid token, invalid quizId, and invalid answers', () => {
       questionBody.answers = [trueAnswer1];
       result = requestQuizQuestionCreate(token, invalidQuizId, questionBody);
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(FORBIDDEN);
     });
 
-    test('test3.2.2 valid token, valid quizId, invalid question string and duration', () => {
+    test('test3.4 valid token, valid quizId, invalid question string and duration', () => {
       questionBody.question = 'qs';
       questionBody.duration = MAX_DURATIONS_SECS + 1;
       result = requestQuizQuestionCreate(token, quizId, questionBody);
@@ -534,22 +520,20 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       expect(result.status).toStrictEqual(BAD_REQUEST);
     });
 
-    test('test3.3.0 valid token and quizId, multiple invalid question properties', () => {
+    test('test3.5 valid token and quizId, multiple invalid question properties', () => {
       questionBody.question = 'q'.repeat(51);
       questionBody.duration = 0;
-      questionBody.points = PointsLimit.MAX + 1;
+      questionBody.points = PointsLimit.MaxNum + 1;
       questionBody.answers = [
         { answer: '', correct: false },
-        { answer: 'a'.repeat(AnswersLimit.MAX_STRING_LEN + 1), correct: false },
+        { answer: 'a'.repeat(AnswersLimit.MaxStrLen + 1), correct: false },
         { answer: 'validAnsStr', correct: false }];
       result = requestQuizQuestionCreate(token, quizId, questionBody);
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(BAD_REQUEST);
     });
 
-    test('test3.4.0 invalid token, invalid quizId, and invalid question properties', () => {
-      const invalidToken = 'invalidToken';
-      const invalidQuizId = quizId + 1;
+    test('test3.6 invalid token, invalid quizId, and invalid question properties', () => {
       questionBody.question = 'a'.repeat(51);
       questionBody.duration = -1;
       questionBody.points = 0;
@@ -558,15 +542,15 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       expect(result.status).toStrictEqual(UNAUTHORIZED);
     });
 
-    test('test3.5.0 valid token, non-existent quizId, and duplicate answers', () => {
-      const nonExistentQuizId = 9999;
+    test('test3.7 valid token, non-existent quizId, and duplicate answers', () => {
+      const nonExistentQuizId: number = 9999;
       questionBody.answers = [trueAnswer1, trueAnswer1, falseAnswer1, falseAnswer1];
       result = requestQuizQuestionCreate(token, nonExistentQuizId, questionBody);
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(FORBIDDEN);
     });
 
-    test('test3.6.0 valid token and quizId, invalid duration and answer count', () => {
+    test('test3.8 valid token and quizId, invalid duration and answer count', () => {
       questionBody.duration = MAX_DURATIONS_SECS + 1;
       questionBody.answers = [trueAnswer1];
       result = requestQuizQuestionCreate(token, quizId, questionBody);
@@ -574,8 +558,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       expect(result.status).toStrictEqual(BAD_REQUEST);
     });
 
-    test('test3.7.0 invalid token, valid quizId, and too many answers', () => {
-      const invalidToken = 'invalidToken';
+    test('test3.9 invalid token, valid quizId, and too many answers', () => {
       questionBody.answers = [
         trueAnswer1, trueAnswer2, trueAnswer3,
         falseAnswer1, falseAnswer2, falseAnswer3,
@@ -586,9 +569,9 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       expect(result.status).toStrictEqual(UNAUTHORIZED);
     });
 
-    test('test3.8.0 valid token, quiz owned by another user, and invalid points', () => {
-      const token2 = requestAuthRegister('another@email.com', 'password123', 'Another', 'User').token;
-      const quizId2 = requestQuizCreate(token2, 'Another Quiz', 'Description').quizId;
+    test('test3.9 valid token, quiz owned by another user, and invalid points', () => {
+      const token2: string = authRegister('another@email.com', 'password123', 'Another', 'User').token;
+      const quizId2: number = quizCreate(token2, 'Another Quiz', 'Description').quizId;
       questionBody.points = -5;
       result = requestQuizQuestionCreate(token, quizId2, questionBody);
       expect(result).toMatchObject(ERROR);
@@ -599,21 +582,21 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
   describe('test4.0 test with quizInfo', () => {
     beforeEach(() => {
       requestClear();
-      token = requestAuthRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
-      quizId = requestQuizCreate(token, 'Mirror Mirror on the wall', 'I love disney cartons').quizId;
+      token = authRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
+      quizId = quizCreate(token, 'Mirror Mirror on the wall', 'I love disney cartons').quizId;
       questionBody = initQuestionBody;
       questionBody.answers = [trueAnswer1, falseAnswer1];
     });
 
     // time changes is too small and one way is change function to
-    // timeStamp = (): number => Date.now() to have milliseconds pr
+    // timeStamp = (): number => Date.now() to have milliseconds,
     // toBeGreaterThanOrEqual is not representing changes
     test('test4.1 quiz info updates after adding one question', () => {
-      const quizInfo: Quiz = requestQuizInfo(token, quizId);
+      const initQuizInfo: ResQuizInfo = validQuizInfo(token, quizId);
       result = requestQuizQuestionCreate(token, quizId, questionBody);
-      expect(result).toMatchObject({ questionId: expect.any(Number) });
+      expect(result).toStrictEqual({ questionId: expect.any(Number), status: OK });
 
-      const updatedQuizInfo = requestQuizInfo(token, quizId);
+      const updatedQuizInfo = validQuizInfo(token, quizId);
       expect(updatedQuizInfo.numQuestions).toStrictEqual(1);
       expect(updatedQuizInfo.questions.length).toStrictEqual(1);
       expect(updatedQuizInfo.questions[0].question).toStrictEqual(questionBody.question);
@@ -621,15 +604,15 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       expect(updatedQuizInfo.questions[0].points).toStrictEqual(questionBody.points);
       expect(updatedQuizInfo.questions[0].answers.length).toStrictEqual(questionBody.answers.length);
       expect(updatedQuizInfo.duration).toStrictEqual(questionBody.duration);
-      expect(updatedQuizInfo.timeLastEdited).toBeGreaterThanOrEqual(quizInfo.timeLastEdited);
+      expect(updatedQuizInfo.timeLastEdited).toBeGreaterThanOrEqual(initQuizInfo.timeLastEdited);
     });
 
     test('test4.2 quiz info updates after adding multiple questions', () => {
-      const quizInfo: Quiz = requestQuizInfo(token, quizId);
+      const quizInfo: ResQuizInfo = validQuizInfo(token, quizId);
       requestQuizQuestionCreate(token, quizId, questionBody);
       requestQuizQuestionCreate(token, quizId, questionBody);
 
-      const updatedQuizInfo = requestQuizInfo(token, quizId);
+      const updatedQuizInfo: ResQuizInfo = validQuizInfo(token, quizId);
       expect(updatedQuizInfo.numQuestions).toStrictEqual(2);
       expect(updatedQuizInfo.questions.length).toStrictEqual(2);
       expect(updatedQuizInfo.duration).toStrictEqual(questionBody.duration * 2);
@@ -637,22 +620,23 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
     });
 
     test('test4.3 quiz info reflects correct questionId', () => {
-      const question1 = requestQuizQuestionCreate(token, quizId, questionBody);
-      const question2 = requestQuizQuestionCreate(token, quizId, questionBody);
+      const question1: ResQuestionId = questionCreate(token, quizId, questionBody);
+      const question2: ResQuestionId = questionCreate(token, quizId, questionBody);
 
-      const updatedQuizInfo = requestQuizInfo(token, quizId);
+      const updatedQuizInfo: ResQuizInfo = validQuizInfo(token, quizId);
       expect(updatedQuizInfo.questions[0].questionId).toStrictEqual(question1.questionId);
       expect(updatedQuizInfo.questions[1].questionId).toStrictEqual(question2.questionId);
-      expect(question2.questionId).toBeGreaterThan(question1.questionId);
+      expect(question1.questionId + 1).toStrictEqual(question2.questionId);
     });
 
     test('test4.4 quiz info shows correct answer details', () => {
       requestQuizQuestionCreate(token, quizId, questionBody);
-
-      const updatedQuizInfo = requestQuizInfo(token, quizId);
+      const updatedQuizInfo: ResQuizInfo = validQuizInfo(token, quizId);
       const questionInfo = updatedQuizInfo.questions[0];
+
       expect(questionInfo).toHaveProperty('questionId');
       expect(questionInfo.answers.length).toStrictEqual(questionBody.answers.length);
+
       questionInfo.answers.forEach((answer: Answer, index: number) => {
         expect(answer.answer).toStrictEqual(questionBody.answers[index].answer);
         expect(answer.correct).toStrictEqual(questionBody.answers[index].correct);
@@ -663,35 +647,35 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
     });
 
     test('test4.5 quiz info preserves original quiz details', () => {
-      const quizInfo: Quiz = requestQuizInfo(token, quizId);
+      const initQuizinfo: ResQuizInfo = validQuizInfo(token, quizId);
       requestQuizQuestionCreate(token, quizId, questionBody);
+      const updatedQuizInfo: ResQuizInfo = validQuizInfo(token, quizId);
 
-      const updatedQuizInfo = requestQuizInfo(token, quizId);
-      expect(updatedQuizInfo.quizId).toStrictEqual(quizInfo.quizId);
-      expect(updatedQuizInfo.name).toStrictEqual(quizInfo.name);
-      expect(updatedQuizInfo.description).toStrictEqual(quizInfo.description);
-      expect(updatedQuizInfo.timeCreated).toStrictEqual(quizInfo.timeCreated);
+      expect(updatedQuizInfo.quizId).toStrictEqual(initQuizinfo.quizId);
+      expect(updatedQuizInfo.name).toStrictEqual(initQuizinfo.name);
+      expect(updatedQuizInfo.description).toStrictEqual(initQuizinfo.description);
+      expect(updatedQuizInfo.timeCreated).toStrictEqual(initQuizinfo.timeCreated);
     });
 
     test('test4.6 quiz info shows correct total duration', () => {
-      const initQuizinfo = requestQuizInfo(token, quizId);
+      const initQuizinfo: ResQuizInfo = validQuizInfo(token, quizId);
       expect(initQuizinfo.duration).toStrictEqual(0);
-      let durationSum = initQuizinfo.duration;
+      let durationSum: number = initQuizinfo.duration;
 
       questionBody.duration = 7;
       durationSum += questionBody.duration;
       requestQuizQuestionCreate(token, quizId, questionBody);
-      expect(requestQuizInfo(token, quizId).duration).toStrictEqual(durationSum);
+      expect(validQuizInfo(token, quizId).duration).toStrictEqual(durationSum);
 
       questionBody.duration = 8;
       durationSum += questionBody.duration;
       requestQuizQuestionCreate(token, quizId, questionBody);
-      expect(requestQuizInfo(token, quizId).duration).toStrictEqual(durationSum);
+      expect(validQuizInfo(token, quizId).duration).toStrictEqual(durationSum);
 
       questionBody.duration = 9;
       durationSum += questionBody.duration;
       requestQuizQuestionCreate(token, quizId, questionBody);
-      expect(requestQuizInfo(token, quizId).duration).toStrictEqual(durationSum);
+      expect(validQuizInfo(token, quizId).duration).toStrictEqual(durationSum);
     });
 
     test('test4.7 quiz info updates correctly when reaching maximum duration', () => {
@@ -701,7 +685,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       questionBody.answers.push(trueAnswer2);
       requestQuizQuestionCreate(token, quizId, questionBody);
 
-      const updatedQuizInfo = requestQuizInfo(token, quizId);
+      const updatedQuizInfo: ResQuizInfo = validQuizInfo(token, quizId);
       expect(updatedQuizInfo.numQuestions).toStrictEqual(2);
       expect(updatedQuizInfo.duration).toStrictEqual(MAX_DURATIONS_SECS);
     });
@@ -719,48 +703,48 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       questionBody.question = 'Third question';
       requestQuizQuestionCreate(token, quizId, questionBody);
 
-      const updatedQuizInfo = requestQuizInfo(token, quizId);
+      const updatedQuizInfo: ResQuizInfo = validQuizInfo(token, quizId);
       expect(updatedQuizInfo.questions[0].question).toStrictEqual('First question');
       expect(updatedQuizInfo.questions[1].question).toStrictEqual('Second question');
       expect(updatedQuizInfo.questions[2].question).toStrictEqual('Third question');
     });
 
     test('test4.9 quiz info reflects changes in timeLastEdited for each question addition', () => {
-      const quizInfo: Quiz = requestQuizInfo(token, quizId);
+      const quizInfo: ResQuizInfo = validQuizInfo(token, quizId);
       const initialTime = quizInfo.timeLastEdited;
 
       // question 1
       requestQuizQuestionCreate(token, quizId, questionBody);
-      const infoAfterQuestion1 = requestQuizInfo(token, quizId);
+      const infoAfterQuestion1: ResQuizInfo = validQuizInfo(token, quizId);
       expect(infoAfterQuestion1.timeLastEdited).toBeGreaterThanOrEqual(initialTime);
 
       // question 2
       questionBody.question = 'new question';
       requestQuizQuestionCreate(token, quizId, questionBody);
-      const infoAfterQuestion2 = requestQuizInfo(token, quizId);
+      const infoAfterQuestion2: ResQuizInfo = validQuizInfo(token, quizId);
       expect(infoAfterQuestion2.timeLastEdited).toBeGreaterThanOrEqual(infoAfterQuestion1.timeLastEdited);
     });
 
-    test('test5.0 quiz info should not update with invalid input', () => {
-      const initialQuizInfo = requestQuizInfo(token, quizId);
-      const invalidQuestionBody = {
+    test('test4.10 quiz info does not update with invalid input', () => {
+      const initQuizInfo: ResQuizInfo = validQuizInfo(token, quizId);
+      const invalidQuestionBody: QuestionBody = {
         question: 'q',
         duration: -1,
         points: 0,
         answers: [trueAnswer1]
       };
 
-      const result = requestQuizQuestionCreate(token, quizId, invalidQuestionBody);
+      result = requestQuizQuestionCreate(token, quizId, invalidQuestionBody);
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(BAD_REQUEST);
 
       // Check that quiz info hasn't changed
-      const updatedQuizInfo = requestQuizInfo(token, quizId);
-      expect(updatedQuizInfo).toEqual(initialQuizInfo);
-      expect(updatedQuizInfo.numQuestions).toStrictEqual(initialQuizInfo.numQuestions);
-      expect(updatedQuizInfo.questions).toStrictEqual(initialQuizInfo.questions);
-      expect(updatedQuizInfo.duration).toStrictEqual(initialQuizInfo.duration);
-      expect(updatedQuizInfo.timeLastEdited).toStrictEqual(initialQuizInfo.timeLastEdited);
+      const updatedQuizInfo: ResQuizInfo = validQuizInfo(token, quizId);
+      expect(updatedQuizInfo).toStrictEqual(initQuizInfo);
+      expect(updatedQuizInfo.numQuestions).toStrictEqual(initQuizInfo.numQuestions);
+      expect(updatedQuizInfo.questions).toStrictEqual(initQuizInfo.questions);
+      expect(updatedQuizInfo.duration).toStrictEqual(initQuizInfo.duration);
+      expect(updatedQuizInfo.timeLastEdited).toStrictEqual(initQuizInfo.timeLastEdited);
     });
   });
 });

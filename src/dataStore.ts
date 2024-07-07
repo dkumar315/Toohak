@@ -1,5 +1,6 @@
 import fs from 'fs';
 const DATA_FILE = './dataStore.json';
+import { StatusCodes } from 'http-status-codes';
 
 // YOU SHOULD MODIFY THIS OBJECT BELOW ONLY
 let data: Data = {
@@ -14,17 +15,11 @@ let data: Data = {
 
 // define constants
 export const INVALID = -1;
-const OK = 200;
-const BAD_REQUEST = 400;
-const UNAUTHORIZED = 401;
-const FORBIDDEN = 403;
-export { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN };
-// enum StatusCode {
-//   OK = 200,
-//   BAD_REQUEST = 400,
-//   UNAUTHORIZED = 401,
-//   FORBIDDEN = 403,
-// }
+export const OK = StatusCodes.OK; // 200
+export const BAD_REQUEST = StatusCodes.BAD_REQUEST; // 400
+export const UNAUTHORIZED = StatusCodes.UNAUTHORIZED; // 401
+export const FORBIDDEN = StatusCodes.FORBIDDEN; // 403
+
 export enum Colours {
   Red = 'red',
   Blue = 'blue',

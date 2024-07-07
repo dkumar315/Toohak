@@ -1,46 +1,53 @@
 import {
-  getData,
-  setData
+  getData, setData, Data, Quiz, Question,
+  EmptyObject, ErrorObject, INVALID
 } from './dataStore';
 import { findUserId } from './auth';
 
-const MAX_DESCRIPTION_LENGTH = 100;
-const FALSE_INDEX = -1;
-const MIN_NAME_LENGTH = 3;
-const MAX_NAME_LENGTH = 30;
+const MAX_DESCRIPTION_LENGTH: number = 100;
+const MIN_NAME_LENGTH: number = 3;
+const MAX_NAME_LENGTH: number = 30;
 
-export function validateUserId(authUserId) {
-  const data = getData();
+export interface QuizListReturn {
+  quizzes: { quizId: number; name: string }[];
+}
 
-  const user = data.users.find(user => user.userId === authUserId);
-  if (!user) {
-    return { error: `AuthUserId ${authUserId} is not valid` };
+export interface QuizCreateReturn {
+  quizId: number;
+}
+
+export interface QuizInfoReturn {
+  quizId: number;
+  name: string,
+  timeCreated: number,
+  timeLastEdited: number,
+  description: string,
+  numQuestions: number,
+  questions: Question[],
+  duration: number,
+}
+
+export function validateQuizId(quizId: number): true | ErrorObject {
+  const data: Data = getData();
+
+  const quiz: Quiz | undefined = data.quizzes.find(quiz => quiz.quizId === quizId);
+  if (!quiz) {
+    return { error: `QuizId ${quizId} is not valid.` };
   }
 
   return true;
 }
 
-export function validateQuizId(quizId) {
-  const data = getData();
+export function validateOwnership(authUserId: number, quizId: number): true | ErrorObject {
+  const data: Data = getData();
 
-  const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+  const quiz: Quiz | undefined = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (!quiz) {
-    return { error: `QuizId ${quizId} is not valid` };
-  }
-
-  return true;
-}
-
-export function validateOwnership(authUserId, quizId) {
-  const data = getData();
-
-  const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
-  if (!quiz) {
-    return { error: `QuizId ${quizId} does not exist` };
+    return { error: `QuizId ${quizId} does not exist.` };
   }
 
   if (quiz.creatorId !== authUserId) {
-    return { error: `UserId ${authUserId} does not own QuizId ${quizId}` };
+    return { error: `UserId ${authUserId} does not own QuizId ${quizId}.` };
   }
 
   return true;
@@ -50,19 +57,19 @@ export function validateOwnership(authUserId, quizId) {
  * This function provides a list of all quizzes that
  * are owned by the currently logged in user.
  *
- * @param {number} authUserId - ID of the authorised user
+ * @param {string} token - ID of the authorised user
  *
  * @return {object} - Returns the details of the quiz
  */
-export function adminQuizList(token) {
-  const authUserId = findUserId(token);
-  const userValidation = validateUserId(authUserId);
-  if (userValidation !== true) {
-    return userValidation;
+export function adminQuizList(token: string): QuizListReturn | ErrorObject {
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return { error: `Invalid token ${token}.` };
   }
 
-  const data = getData();
-  const quizArray = [];
+  const data: Data = getData();
+
+  const quizArray: { quizId: number; name: string }[] = [];
   for (const quiz of data.quizzes) {
     if (quiz.creatorId === authUserId) {
       quizArray.push({ quizId: quiz.quizId, name: quiz.name });
@@ -82,19 +89,18 @@ export function adminQuizList(token) {
  *
  * @return {object} - Returns the details of the quiz
  */
-export function adminQuizCreate(token, name, description) {
-  const authUserId = findUserId(token);
-  const userValidation = validateUserId(authUserId);
-
-  if (userValidation !== true) {
-    return userValidation;
+export function adminQuizCreate(token: string, name: string, description: string): QuizCreateReturn | ErrorObject {
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return { error: `Invalid token ${token}.` };
   }
 
   if (!/^[a-zA-Z0-9 ]{3,30}$/.test(name)) {
     return { error: 'Name contains invalid characters or is not the correct length.' };
   }
 
-  const data = getData();
+  const data: Data = getData();
+
   if (data.quizzes.some(quiz => quiz.creatorId === authUserId && quiz.name === name)) {
     return { error: `Name ${name} is already used by the current logged-in user for another quiz.` };
   }
@@ -103,7 +109,7 @@ export function adminQuizCreate(token, name, description) {
     return { error: 'Description is more than 100 characters in length.' };
   }
 
-  const newQuiz = {
+  const newQuiz: Quiz = {
     quizId: data.quizzes.length + 1,
     creatorId: authUserId,
     name,
@@ -112,12 +118,12 @@ export function adminQuizCreate(token, name, description) {
     timeLastEdited: Math.floor(Date.now() / 1000),
     numQuestions: 0,
     questions: [],
-    duration: 0,
+    duration: 0
   };
 
   data.quizzes.push(newQuiz);
-  setData(data);
 
+  setData(data);
   return { quizId: newQuiz.quizId };
 }
 
@@ -130,12 +136,10 @@ export function adminQuizCreate(token, name, description) {
  *
  * @return {object} - Returns an empty object
  */
-export function adminQuizRemove(token, quizId) {
-  const authUserId = findUserId(token);
-  const userValidation = validateUserId(authUserId);
-
-  if (userValidation !== true) {
-    return userValidation;
+export function adminQuizRemove(token: string, quizId: number): EmptyObject | ErrorObject {
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return { error: `Invalid token ${token}.` };
   }
 
   const quizValidation = validateQuizId(quizId);
@@ -148,15 +152,14 @@ export function adminQuizRemove(token, quizId) {
     return ownershipValidation;
   }
 
-  const data = getData();
-  const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
+  const data: Data = getData();
 
-  if (quizIndex !== FALSE_INDEX) {
+  const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
+  if (quizIndex !== INVALID) {
     data.quizzes.splice(quizIndex, 1);
   }
 
   setData(data);
-
   return {};
 }
 
@@ -170,11 +173,10 @@ export function adminQuizRemove(token, quizId) {
  * @return {object} - Returns an empty object
  *
  */
-export function adminQuizInfo(token, quizId) {
-  const authUserId = findUserId(token);
-  const userValidation = validateUserId(authUserId);
-  if (userValidation !== true) {
-    return userValidation;
+export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | ErrorObject {
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return { error: `Invalid token ${token}.` };
   }
 
   const quizValidation = validateQuizId(quizId);
@@ -187,9 +189,9 @@ export function adminQuizInfo(token, quizId) {
     return ownershipValidation;
   }
 
-  const data = getData();
+  const data: Data = getData();
 
-  const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+  const quiz: Quiz | undefined = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (!quiz) {
     return { error: `Quiz with ID ${quizId} not found` };
   }
@@ -215,11 +217,10 @@ export function adminQuizInfo(token, quizId) {
  *
  * @return {object} - Returns an empty object
  */
-export function adminQuizNameUpdate(authUserId, quizId, name) {
-  const userValidation = validateUserId(authUserId);
-
-  if (userValidation !== true) {
-    return userValidation;
+export function adminQuizNameUpdate(token: string, quizId: number, name: string): EmptyObject | ErrorObject {
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return { error: `Invalid token ${token}.` };
   }
 
   const quizValidation = validateQuizId(quizId);
@@ -255,14 +256,16 @@ export function adminQuizNameUpdate(authUserId, quizId, name) {
     return { error: `Name is more than ${MAX_NAME_LENGTH} characters long.` };
   }
 
-  const data = getData();
+  const data: Data = getData();
 
-  const nameInUse = data.quizzes.find(q => q.creatorId === authUserId && q.quizId !== quizId && q.name === name);
-  if (nameInUse) {
+  if (data.quizzes.find(
+    q => q.creatorId === authUserId &&
+    q.quizId !== quizId && q.name === name
+  )) {
     return { error: `Name ${name} is already used by the current logged-in user for another quiz.` };
   }
 
-  const quiz = data.quizzes.find(q => q.quizId === quizId);
+  const quiz: Quiz | undefined = data.quizzes.find(q => q.quizId === quizId);
   if (!quiz) {
     return { error: `Quiz ${quizId} not found` };
   }
@@ -273,8 +276,8 @@ export function adminQuizNameUpdate(authUserId, quizId, name) {
 
   quiz.name = name;
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
-  setData(data);
 
+  setData(data);
   return {};
 }
 
@@ -287,10 +290,10 @@ export function adminQuizNameUpdate(authUserId, quizId, name) {
  *
  * @return {object} - Returns an empty object
  */
-export function adminQuizDescriptionUpdate(authUserId, quizId, description) {
-  const userValidation = validateUserId(authUserId);
-  if (userValidation !== true) {
-    return userValidation;
+export function adminQuizDescriptionUpdate(token: string, quizId: number, description: string): EmptyObject | ErrorObject {
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return { error: `Invalid token ${token}.` };
   }
 
   const quizValidation = validateQuizId(quizId);
@@ -307,16 +310,16 @@ export function adminQuizDescriptionUpdate(authUserId, quizId, description) {
     return { error: `Description is more than ${MAX_DESCRIPTION_LENGTH} characters in length.` };
   }
 
-  const data = getData();
+  const data: Data = getData();
 
-  const quiz = data.quizzes.find(q => q.quizId === quizId);
+  const quiz: Quiz | undefined = data.quizzes.find(q => q.quizId === quizId);
   if (!quiz) {
     return { error: `Quiz ${quizId} not found in the datastore` };
   }
 
   quiz.description = description;
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
-  setData(data);
 
+  setData(data);
   return {};
 }
