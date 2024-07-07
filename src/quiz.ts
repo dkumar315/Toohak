@@ -1,5 +1,5 @@
 import {
-  getData, setData, Data, Quiz,
+  getData, setData, Data, Quiz, Question,
   EmptyObject, ErrorObject, INVALID
 } from './dataStore';
 import { findUserId } from './auth';
@@ -22,6 +22,9 @@ export interface QuizInfoReturn {
   timeCreated: number,
   timeLastEdited: number,
   description: string,
+  numQuestions: number,
+  questions: Question[],
+  duration: number,
 }
 
 export function validateQuizId(quizId: number): true | ErrorObject {
@@ -199,6 +202,9 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
     timeCreated: quiz.timeCreated,
     timeLastEdited: quiz.timeLastEdited,
     description: quiz.description,
+    numQuestions: quiz.numQuestions,
+    questions: quiz.questions,
+    duration: quiz.duration,
   };
 }
 

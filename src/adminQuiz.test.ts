@@ -180,6 +180,9 @@ describe('adminQuizInfo tests', () => {
       timeCreated: expect.any(Number),
       timeLastEdited: expect.any(Number),
       description: 'Quiz on Testing',
+      numQuestions: 0,
+      questions: [],
+      duration: 0,
       status: 200
     });
   });
