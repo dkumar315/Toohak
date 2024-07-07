@@ -81,7 +81,7 @@ export function requestQuizRemove(token: string,
   return requestHelper('DELETE', `/v1/admin/quiz/${quizId}`, { token });
 }
 
-export function requestQuizInfo(token: string, quizId: number): 
+export function requestQuizInfo(token: string, quizId: number):
 ApiResponse<QuizInfoReturn> {
   return requestHelper('GET', `/v1/admin/quiz/${quizId}`, { token });
 }
@@ -131,4 +131,3 @@ export const questionCreate = (token: string, quizId: number,
   if ('error' in result) throw new Error('Fail to create question, type ResError.');
   return result;
 };
-
