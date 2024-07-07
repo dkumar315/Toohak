@@ -81,7 +81,8 @@ export function requestQuizRemove(token: string,
   return requestHelper('DELETE', `/v1/admin/quiz/${quizId}`, { token });
 }
 
-export function requestQuizInfo(token: string, quizId: number): ApiResponse<QuizInfoReturn> {
+export function requestQuizInfo(token: string, quizId: number): 
+ApiResponse<QuizInfoReturn> {
   return requestHelper('GET', `/v1/admin/quiz/${quizId}`, { token });
 }
 
@@ -99,6 +100,7 @@ export function requestQuizDescriptionUpdate(token: string, quizId: number,
 export function requestQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): ApiResponse<QuestionIdReturn> {
   return requestHelper('POST', `/v1/admin/quiz/${quizId}/question`, { token, questionBody });
+}
 
 // ============== other ========================================================
 export function requestClear(): ApiResponse<EmptyObject> {
