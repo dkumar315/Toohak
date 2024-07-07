@@ -3,7 +3,7 @@ import { UserDetailReturn, UserDetails } from './auth';
 import {
   authRegister, requestAuthLogin, requestAuthLogout,
   requestUserDetails, requestUserDetailsUpdate,
-  requestUserPasswordUpdate, requestClear, VALID_EMPTY_RETURN, 
+  requestUserPasswordUpdate, requestClear, VALID_EMPTY_RETURN,
   ERROR, ResToken, ResEmpty, ResError
 } from './functionRequest';
 
