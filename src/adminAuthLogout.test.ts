@@ -1,10 +1,10 @@
 import { OK, UNAUTHORIZED } from './dataStore';
-import { UserDetailReturn, TokenReturn } from './auth';
+import { UserDetailReturn, UserDetails } from './auth';
 import {
-  requestAuthRegister, requestAuthLogin, requestAuthLogout,
+  authRegister, requestAuthLogin, requestAuthLogout,
   requestUserDetails, requestUserDetailsUpdate,
-  requestUserPasswordUpdate, requestClear,
-  VALID_EMPTY_RETURN, ERROR, ResEmpty, ResError
+  requestUserPasswordUpdate, requestClear, VALID_EMPTY_RETURN, 
+  ERROR, ResToken, ResEmpty, ResError
 } from './functionRequest';
 
 let email: string, password: string, nameFirst: string, nameLast: string;
@@ -16,7 +16,7 @@ beforeEach(() => {
   password = 'haydensmith123';
   nameFirst = 'Hayden';
   nameLast = 'Smith';
-  token1 = (requestAuthRegister(email, password, nameFirst, nameLast) as TokenReturn).token;
+  token1 = authRegister(email, password, nameFirst, nameLast).token;
 });
 afterAll(() => requestClear());
 
@@ -31,7 +31,7 @@ describe('testing POST /v1/admin/auth/logout adminAuthLogout', () => {
     });
 
     test('test 1.2 mutilple logout for different tokens of a same user', () => {
-      token2 = (requestAuthLogin(email, password) as TokenReturn).token;
+      token2 = (requestAuthLogin(email, password) as ResToken).token;
       expect(token2).not.toStrictEqual(token1);
       requestAuthLogout(token1);
       expect(requestUserDetails(token2).status).toStrictEqual(OK);
@@ -43,9 +43,9 @@ describe('testing POST /v1/admin/auth/logout adminAuthLogout', () => {
     });
 
     test('test 1.3 user1 login, user2 login, user1 logout and user1 login', () => {
-      const token2 = (requestAuthRegister('2' + email, '2' + password, nameFirst, nameLast) as TokenReturn).token;
+      const token2: string = authRegister('2' + email, '2' + password, nameFirst, nameLast).token;
       requestAuthLogout(token1);
-      const token3 = (requestAuthLogin(email, password) as TokenReturn).token;
+      const token3: string = (requestAuthLogin(email, password) as ResToken).token;
       expect(token1).not.toStrictEqual(token2);
       expect(token1).not.toStrictEqual(token3);
       expect(token2).not.toStrictEqual(token3);
@@ -86,7 +86,7 @@ describe('testing POST /v1/admin/auth/logout adminAuthLogout', () => {
     });
 
     test('test 2.4 token is invalid, session already log out', () => {
-      token2 = (requestAuthLogin(email, password) as TokenReturn).token;
+      token2 = (requestAuthLogin(email, password) as ResToken).token;
 
       requestAuthLogout(token1);
       result = requestAuthLogout(token1);
@@ -102,17 +102,18 @@ describe('testing POST /v1/admin/auth/logout adminAuthLogout', () => {
 
   describe('test3.0 test with other function', () => {
     test('test 3.1 userDetail', () => {
-      token2 = (requestAuthLogin(email, password) as TokenReturn).token;
+      let result: UserDetails;
+      token2 = (requestAuthLogin(email, password) as ResToken).token;
       requestAuthLogin(email, password + 'invalid');
 
-      const result1 = requestUserDetails(token1) as UserDetailReturn;
-      expect(result1.user.numSuccessfulLogins).toStrictEqual(2);
-      expect(result1.user.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
+      result = (requestUserDetails(token1) as UserDetailReturn).user;
+      expect(result.numSuccessfulLogins).toStrictEqual(2);
+      expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
 
       requestAuthLogout(token1);
-      const result2 = requestUserDetails(token2) as UserDetailReturn;
-      expect(result2.user.numSuccessfulLogins).toStrictEqual(2);
-      expect(result2.user.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
+      result = (requestUserDetails(token2) as UserDetailReturn).user;
+      expect(result.numSuccessfulLogins).toStrictEqual(2);
+      expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
 
       requestAuthLogout(token2);
       expect(requestUserDetails(token2).status).toStrictEqual(UNAUTHORIZED);
@@ -120,25 +121,25 @@ describe('testing POST /v1/admin/auth/logout adminAuthLogout', () => {
 
     test('test 3.2 logout after email change', () => {
       requestUserDetailsUpdate(token1, 'new' + email, nameFirst, nameLast);
-      const result1 = requestAuthLogout(token1) as ResEmpty;
-      expect(result1).toMatchObject(VALID_EMPTY_RETURN);
-      expect(result1.status).toStrictEqual(OK);
+      result = requestAuthLogout(token1);
+      expect(result).toMatchObject(VALID_EMPTY_RETURN);
+      expect(result.status).toStrictEqual(OK);
 
-      token2 = (requestAuthLogin('new' + email, password) as TokenReturn).token;
-      const result2 = requestAuthLogout(token2) as ResEmpty;
-      expect(result2).toMatchObject(VALID_EMPTY_RETURN);
-      expect(result2.status).toStrictEqual(OK);
+      token2 = (requestAuthLogin('new' + email, password) as ResToken).token;
+      result = requestAuthLogout(token2);
+      expect(result).toMatchObject(VALID_EMPTY_RETURN);
+      expect(result.status).toStrictEqual(OK);
     });
 
     test('test 3.3 logout after password change', () => {
       requestUserPasswordUpdate(token1, password, 'new' + password);
-      const result1 = requestAuthLogout(token1) as ResEmpty;
+      const result1: ResEmpty = requestAuthLogout(token1) as ResEmpty;
       expect(result1).toMatchObject(VALID_EMPTY_RETURN);
       expect(result1.status).toStrictEqual(OK);
 
-      const result2 = (requestAuthLogin(email, 'new' + password) as TokenReturn).token;
-      expect(result2).not.toStrictEqual(token1);
-      expect(result1.status).toStrictEqual(OK);
+      const result2: ResToken = requestAuthLogin(email, 'new' + password) as ResToken;
+      expect(result2.token).not.toStrictEqual(token1);
+      expect(result2.status).toStrictEqual(OK);
     });
   });
 });
