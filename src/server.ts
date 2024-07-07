@@ -39,6 +39,9 @@ import {
   adminQuizInfo, adminQuizNameUpdate,
   adminQuizDescriptionUpdate
 } from './quiz';
+import {
+  adminQuizQuestionCreate
+} from './quizQuestion';
 import { clear } from './other';
 
 // Example get request
