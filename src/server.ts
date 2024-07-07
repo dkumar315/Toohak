@@ -40,7 +40,7 @@ import {
   adminQuizDescriptionUpdate
 } from './quiz';
 import {
-  adminQuizQuestionCreate
+  adminQuizQuestionCreate, adminQuizQuestionUpdate,
 } from './quizQuestion';
 import { clear } from './other';
 

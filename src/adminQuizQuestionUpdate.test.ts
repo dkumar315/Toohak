@@ -1,6 +1,6 @@
 // request functions
 import {
-  requestAuthRegister, requestAuthLogout,
+  authRegister, requestAuthLogout,
   requestQuizCreate, requestQuizInfo, requestQuizRemove,
   requestQuizQuestionCreate, requestQuizQuestionUpdate,
   requestClear,
@@ -61,7 +61,7 @@ let token: string, quizId: number, questionId: number, questionBody: QuestionBod
 let result: QuestionIdRes | ResError;
 beforeEach(() => {
   requestClear();
-  token = requestAuthRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
+  token = authRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
   quizId = requestQuizCreate(token, 'Mirror Mirror on the wall', 'I love disney cartons').quizId;
   questionBody = JSON.parse(JSON.stringify(initQuestionBody));
 
@@ -274,7 +274,7 @@ describe('testing adminQuizQuestionUpdate' +
       });
 
       test('test2.2.2 invalid quizId, user does not own the quiz', () => {
-        const token2 = requestAuthRegister('email2@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
+        const token2 = authRegister('email2@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
         result = requestQuizQuestionUpdate(token2, quizId, questionId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
@@ -661,7 +661,7 @@ describe('testing adminQuizQuestionUpdate' +
     });
 
     test('test3.9.2 valid token, quiz owned by another user, and invalid points', () => {
-      const token2 = requestAuthRegister('another@email.com', 'password123', 'Another', 'User').token;
+      const token2 = authRegister('another@email.com', 'password123', 'Another', 'User').token;
       const quizId2 = requestQuizCreate(token2, 'Another Quiz', 'Description').quizId;
       questionBody.points = -5;
       result = requestQuizQuestionUpdate(token, quizId2, questionId, questionBody);
@@ -673,7 +673,7 @@ describe('testing adminQuizQuestionUpdate' +
   describe('test4.0 test with quizInfo', () => {
     beforeEach(() => {
       requestClear();
-      token = requestAuthRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
+      token = authRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
       quizId = requestQuizCreate(token, 'Mirror Mirror on the wall', 'I love disney cartons').quizId;
       questionBody = JSON.parse(JSON.stringify(initQuestionBody));
       questionBody.answers = [trueAnswer1, falseAnswer1];
