@@ -176,7 +176,7 @@ function isValidQuestionBody(questionBody: QuestionBody, quizDuration: number): 
 
   // points awarded invalid when points are less than 1 or greater than 10
   if (questionBody.points < PointsLimit.MinNum ||
-    questionBody.points > PointsLimit.MinNum) {
+    questionBody.points > PointsLimit.MaxNum) {
     isValidQuestion.errorMsg = {
       error: `Invalid points number: ${questionBody.points}.`
     };

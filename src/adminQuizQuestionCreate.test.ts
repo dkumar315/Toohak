@@ -55,12 +55,12 @@ beforeEach(() => {
   token = authRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
   quizId = quizCreate(token, 'Mirror Mirror on the wall', 'I love disney cartons').quizId;
   questionBody = JSON.parse(JSON.stringify(initQuestionBody));
-  const answers = [trueAnswer1, falseAnswer1];
+  const answers: AnswerInput[] = [trueAnswer1, falseAnswer1];
   questionBody = { ...initQuestionBody, answers };
 });
 afterAll(() => requestClear());
 
-describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question)', () => {
+describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question', () => {
   describe('test1.0 valid returns (valid token and quizId)', () => {
     test('test1.1 test with 1 correct answer, 3 answers in total', () => {
       questionBody.answers = [trueAnswer1, falseAnswer1, falseAnswer2];
@@ -137,7 +137,6 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
 
       test('test1.4.5 quiz with two quiz with 3 minutes duration in total', () => {
         questionBody.duration = Math.floor(MAX_DURATIONS_SECS / 2);
-
         // question 1
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
@@ -163,7 +162,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
         expect(result.status).toStrictEqual(OK);
       });
 
-      test('test1.4.8 the length of any answer is 1 character long', () => {
+      test('test1.4.8 the length of answer is 1 (special) character long', () => {
         const ShortAnswer: AnswerInput = {
           answer: ' ',
           correct: false
@@ -175,9 +174,8 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
       });
 
       test('test1.4.9 the length of any answer is 30 characters long', () => {
-        const answer = 'iseveryone'.repeat(3);
         const LongAnswer: AnswerInput = {
-          answer: answer,
+          answer: 'iseveryone'.repeat(3),
           correct: true
         };
         questionBody.answers = [LongAnswer, falseAnswer1];
@@ -201,7 +199,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
 
   describe('test2.0 invalid returns', () => {
     describe('test2.1 invalid Token', () => {
-      test('test2.1.1 invalid Token, token is empty', () => {
+      test('test2.1.1 token is empty', () => {
         result = requestQuizQuestionCreate('', quizId, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(UNAUTHORIZED);
@@ -225,7 +223,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
         expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
 
-      test('test2.1.5 token invalid, user log out', () => {
+      test('test2.1.5 user already log out', () => {
         requestAuthLogout(token);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
@@ -234,13 +232,13 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
     });
 
     describe('test2.2 invalid quizId', () => {
-      test('test2.2.1 invalid quizId, quiz is not exist', () => {
+      test('test2.2.1 quiz is not exist', () => {
         result = requestQuizQuestionCreate(token, quizId + 1, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
 
-      test('test2.2.2 invalid quizId, user does not own the quiz', () => {
+      test('test2.2.2 user does not own the quiz', () => {
         const token2: string = authRegister('email2@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
         result = requestQuizQuestionCreate(token2, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
@@ -252,7 +250,7 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
 
-      test('test2.2.3 invalid quizId, user does not own the quiz', () => {
+      test('test2.2.3 user does not own the quiz', () => {
         requestQuizRemove(token, quizId);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject(ERROR);
@@ -345,7 +343,6 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
 
       test('test2.6.2 one question has max duration, create new question', () => {
         questionBody.duration = MAX_DURATIONS_SECS;
-
         // question 1
         questionBody.answers.push(trueAnswer1, falseAnswer1);
         requestQuizQuestionCreate(token, quizId, questionBody);
@@ -359,7 +356,6 @@ describe('testing adminQuizQuestionCreate (POST /v1/admin/quiz/{quizid}/question
 
       test('test2.6.3 sum of 2 questions has max duration, create new question', () => {
         questionBody.duration = Math.floor(MAX_DURATIONS_SECS / 2);
-
         // question 1
         questionBody.answers.push(trueAnswer1, falseAnswer1);
         requestQuizQuestionCreate(token, quizId, questionBody);

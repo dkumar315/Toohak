@@ -1,6 +1,6 @@
 import { OK, BAD_REQUEST, UNAUTHORIZED } from './dataStore';
 import {
-  requestAuthRegister, requestAuthLogin,
+  authRegister, requestAuthLogin,
   requestQuizList, requestQuizCreate, requestQuizInfo, requestQuizRemove,
   requestQuizNameUpdate, requestQuizDescriptionUpdate, requestClear,
   ResError, ResEmpty, ResToken, ResQuizList, ResQuizId, ResQuizInfo
@@ -17,7 +17,7 @@ describe('adminQuizList', () => {
   });
 
   test('requestQuizList returns an empty list for a user with no quizzes', () => {
-    requestAuthRegister('akshatmishra@gmail.com', 'aks123456', 'Akshat', 'Mishra') as ResToken;
+    authRegister('akshatmishra@gmail.com', 'aks123456', 'Akshat', 'Mishra');
     const user = requestAuthLogin('akshatmishra@gmail.com', 'aks123456') as ResToken;
     const token = user.token;
     const result = requestQuizList(token) as ResQuizList;
@@ -25,7 +25,7 @@ describe('adminQuizList', () => {
   });
 
   test('requestQuizList returns a list of quizzes for the logged-in user', () => {
-    const user = requestAuthRegister('tonystark@gmail.com', 'assem1234ble', 'Tony', 'Stark') as ResToken;
+    const user = authRegister('tonystark@gmail.com', 'assem1234ble', 'Tony', 'Stark');
     const token = user.token;
     const quiz1Name = 'Quiz 1';
     const quiz2Name = 'Quiz 2';
@@ -41,7 +41,7 @@ describe('adminQuizList', () => {
 
 describe('adminQuizCreate', () => {
   test('Creating a quiz with valid inputs', () => {
-    const user = requestAuthRegister('akshatmish@yahoo.com', 'akst123456', 'Akshat', 'Mishra') as ResToken;
+    const user = authRegister('akshatmish@yahoo.com', 'akst123456', 'Akshat', 'Mishra');
     requestAuthLogin('akshatmish@yahoo.com', 'akst123456') as ResToken;
 
     const result = requestQuizCreate(user.token, 'Test Quiz', 'First test quiz.') as ResQuizId;
@@ -65,27 +65,27 @@ describe('adminQuizCreate', () => {
   });
 
   test('Creating a quiz with invalid name', () => {
-    const user = requestAuthRegister('DaveShalom@gmail.com', 'good23food', 'devaansh', 'shalom') as ResToken;
+    const user = authRegister('DaveShalom@gmail.com', 'good23food', 'devaansh', 'shalom');
     const result = requestQuizCreate(user.token, 'T$', 'Second test quiz.') as ResError;
     expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
   });
 
   test('Creating a quiz with a name that is too short', () => {
-    const user = requestAuthRegister('krishshalom@gmail.com', 'krisptel7', 'chris', 'patel') as ResToken;
+    const user = authRegister('krishshalom@gmail.com', 'krisptel7', 'chris', 'patel');
     const result = requestQuizCreate(user.token, 'Te', 'Third test quiz.') as ResError;
     expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
   });
 
   test('Creating a quiz with a name that is too long', () => {
     const name = 'n'.repeat(31);
-    const user = requestAuthRegister('krishshalom@gmail.com', 'krisptel7', 'chris', 'patel') as ResToken;
+    const user = authRegister('krishshalom@gmail.com', 'krisptel7', 'chris', 'patel');
     const result = requestQuizCreate(user.token, name, 'Third test quiz.') as ResError;
     expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
   });
 
   test('Creating a quiz with a name that is used by the current user for another quiz', () => {
     const name = 'Quiz';
-    const user = requestAuthRegister('krishshalom@gmail.com', 'krisptel7', 'chris', 'patel') as ResToken;
+    const user = authRegister('krishshalom@gmail.com', 'krisptel7', 'chris', 'patel');
     const result1 = requestQuizCreate(user.token, name, 'Third test quiz.') as ResError;
     expect(result1).toEqual(expect.objectContaining({ quizId: expect.any(Number) }));
 
@@ -94,7 +94,7 @@ describe('adminQuizCreate', () => {
   });
 
   test('Creating a quiz with a description that is too long', () => {
-    const user = requestAuthRegister('prishalom@gmail.com', 'primi456s', 'priyasnhu', 'mish') as ResToken;
+    const user = authRegister('prishalom@gmail.com', 'primi456s', 'priyasnhu', 'mish');
     const longDescription = 'a'.repeat(101);
     const result = requestQuizCreate(user.token, 'Test Quiz', longDescription) as ResError;
     expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
@@ -106,10 +106,10 @@ describe('adminQuizRemove tests', () => {
 
   beforeEach(() => {
     requestClear();
-    userId1 = requestAuthRegister('krishpatel@gmail.com', 'KrishP01', 'Krish', 'Patel') as ResToken;
+    userId1 = authRegister('krishpatel@gmail.com', 'KrishP01', 'Krish', 'Patel');
     requestAuthLogin('krishpatel@gmail.com', 'KrishP') as ResToken;
     quizId1 = requestQuizCreate(userId1.token, 'My Quiz', 'Quiz on Testing') as ResQuizId;
-    userId2 = requestAuthRegister('joshhoward@gmail.com', 'JoshH002', 'Josh', 'Howard') as ResToken;
+    userId2 = authRegister('joshhoward@gmail.com', 'JoshH002', 'Josh', 'Howard');
     requestAuthLogin('joshhoward@gmail.com', 'JoshH') as ResToken;
     requestQuizCreate(userId2.token, 'Second Quiz', 'Another quiz for testing') as ResQuizId;
   });
@@ -164,10 +164,10 @@ describe('adminQuizInfo tests', () => {
 
   beforeEach(() => {
     requestClear();
-    userId1 = requestAuthRegister('krishpatel@gmail.com', 'KrishP01', 'Krish', 'Patel') as ResToken;
+    userId1 = authRegister('krishpatel@gmail.com', 'KrishP01', 'Krish', 'Patel');
     requestAuthLogin('krishpatel@gmail.com', 'KrishP') as ResToken;
     quizId1 = requestQuizCreate(userId1.token, 'My Quiz', 'Quiz on Testing') as ResQuizId;
-    userId2 = requestAuthRegister('joshhoward@gmail.com', 'JoshH002', 'Josh', 'Howard') as ResToken;
+    userId2 = authRegister('joshhoward@gmail.com', 'JoshH002', 'Josh', 'Howard');
     requestAuthLogin('joshhoward@gmail.com', 'JoshH') as ResToken;
     quizId2 = requestQuizCreate(userId2.token, 'Second Quiz', 'Another quiz for testing') as ResQuizId;
   });
@@ -236,17 +236,17 @@ describe('Testing for adminQuizNameUpdate', () => {
   beforeEach(() => {
     requestClear();
 
-    userId1 = requestAuthRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar') as ResToken;
+    userId1 = authRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar');
     requestAuthLogin('devk@gmail.com', 'DevaanshK01') as ResToken;
     quizId1 = requestQuizCreate(userId1.token, 'My Quiz', 'Quiz on Testing') as ResQuizId;
     quizInfo1 = requestQuizInfo(userId1.token, quizId1.quizId) as ResQuizInfo;
 
-    userId2 = requestAuthRegister('krishp@gmail.com', 'KrishP02', 'Krish', 'Patel') as ResToken;
+    userId2 = authRegister('krishp@gmail.com', 'KrishP02', 'Krish', 'Patel');
     requestAuthLogin('krishp@gmail.com', 'KrishP02') as ResToken;
     quizId2 = requestQuizCreate(userId2.token, 'Your Quiz', 'Quiz on Implementation') as ResQuizId;
     quizInfo2 = requestQuizInfo(userId2.token, quizId2.quizId) as ResQuizInfo;
 
-    requestAuthRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar') as ResToken;
+    authRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar');
     requestAuthLogin('devk@gmail.com', 'DevaanshK01') as ResToken;
     quizId3 = requestQuizCreate(userId1.token, 'Our Quiz', 'Quiz on Ethics') as ResQuizId;
     quizInfo3 = requestQuizInfo(userId1.token, quizId3.quizId) as ResQuizInfo;
@@ -355,12 +355,12 @@ describe('Testing for adminQuizDescriptionUpdate', () => {
   beforeEach(() => {
     requestClear();
 
-    userId1 = requestAuthRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar') as ResToken;
+    userId1 = authRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar');
     requestAuthLogin('devk@gmail.com', 'DevaanshK01') as ResToken;
     quizId1 = requestQuizCreate(userId1.token, 'My Quiz', 'Quiz on Testing') as ResQuizId;
     quizInfo1 = requestQuizInfo(userId1.token, quizId1.quizId) as ResQuizInfo;
 
-    userId2 = requestAuthRegister('krishp@gmail.com', 'KrishP02', 'Krish', 'Patel') as ResToken;
+    userId2 = authRegister('krishp@gmail.com', 'KrishP02', 'Krish', 'Patel');
     requestAuthLogin('krishp@gmail.com', 'KrishP02') as ResToken;
     quizId2 = requestQuizCreate(userId2.token, 'Your Quiz', 'Quiz on Implementation') as ResQuizId;
     quizInfo2 = requestQuizInfo(userId2.token, quizId2.quizId) as ResQuizInfo;
