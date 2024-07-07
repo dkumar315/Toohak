@@ -1,7 +1,7 @@
 // request functions
 import {
   authRegister, requestAuthLogout,
-  quizCreate, validQuizInfo, requestQuizRemove, 
+  quizCreate, validQuizInfo, requestQuizRemove,
   questionCreate, requestQuizQuestionUpdate,
   requestClear, ResQuizInfo, ResEmpty,
   ERROR, ResError, VALID_EMPTY_RETURN
@@ -14,11 +14,6 @@ import {
   QuestionBody, AnswerInput, MAX_DURATIONS_SECS,
   QuestionLimit, AnswersLimit, DurationLimit, PointsLimit
 } from './quizQuestion';
-
-interface QuestionIdRes {
-  status: typeof OK;
-  questionId: number;
-}
 
 const initQuestionBody: QuestionBody = {
   question: 'who\'s the fairest of them all?',
@@ -158,7 +153,7 @@ describe('testing adminQuizQuestionUpdate' +
         result = requestQuizQuestionUpdate(token, quizId, questionId, questionBody);
         expect(result).toMatchObject(VALID_EMPTY_RETURN);
         expect(result.status).toStrictEqual(OK);
-        
+
         const questionId2: number = questionCreate(token, quizId, questionBody).questionId;
         result = requestQuizQuestionUpdate(token, quizId, questionId2, questionBody);
         expect(result).toMatchObject(VALID_EMPTY_RETURN);

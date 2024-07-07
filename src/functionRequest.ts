@@ -8,6 +8,7 @@ import { EmptyObject, ErrorObject } from './dataStore';
 import { TokenReturn, UserDetailReturn } from './auth';
 import { QuizListReturn, QuizCreateReturn, QuizInfoReturn } from './quiz';
 import { QuestionBody, QuestionIdReturn } from './quizQuestion';
+
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
 export type ResError = {
@@ -80,7 +81,8 @@ export function requestQuizRemove(token: string,
   return requestHelper('DELETE', `/v1/admin/quiz/${quizId}`, { token });
 }
 
-export function requestQuizInfo(token: string, quizId: number): ApiResponse<QuizInfoReturn> {
+export function requestQuizInfo(token: string, quizId: number):
+ApiResponse<QuizInfoReturn> {
   return requestHelper('GET', `/v1/admin/quiz/${quizId}`, { token });
 }
 
@@ -97,13 +99,13 @@ export function requestQuizDescriptionUpdate(token: string, quizId: number,
 // ============== adminQuizQuestion ============================================
 export function requestQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): ApiResponse<QuestionIdReturn> {
-  return requestHelper('POST', `/v1/admin/quiz/${quizId}/question`, 
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/question`,
     { token, questionBody });
 }
 
-export function requestQuizQuestionUpdate(token: string, quizId: number, 
+export function requestQuizQuestionUpdate(token: string, quizId: number,
   questionId: number, questionBody: QuestionBody): ApiResponse<EmptyObject> {
-  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/question/${questionId}`, 
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/question/${questionId}`,
     { token, questionBody });
 }
 

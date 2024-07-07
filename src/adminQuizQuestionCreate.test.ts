@@ -63,8 +63,31 @@ afterAll(() => requestClear());
 describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question', () => {
   describe('test1.0 valid returns (valid token and quizId)', () => {
     describe('test1.1 general valid cases, mutiple types of answers', () => {
-      test('test1.1.1 test with 1 correct answer, 3 answers in total', () => {
+      test('test1.1 test with 1 correct answer, 3 answers in total', () => {
         questionBody.answers = [trueAnswer1, falseAnswer1, falseAnswer2];
+        result = requestQuizQuestionCreate(token, quizId, questionBody);
+        expect(result).toMatchObject({ questionId: expect.any(Number) });
+        expect(result.status).toStrictEqual(OK);
+      });
+
+      test('test1.2 test with 2 correct answer, 3 answers in total', () => {
+        questionBody.answers = [trueAnswer1, trueAnswer2, falseAnswer1];
+        result = requestQuizQuestionCreate(token, quizId, questionBody);
+        expect(result).toMatchObject({ questionId: expect.any(Number) });
+        expect(result.status).toStrictEqual(OK);
+      });
+
+      test('test1.3 test with 3 correct answer, 3 answers in total', () => {
+        questionBody.answers = [trueAnswer1, trueAnswer2, trueAnswer3];
+        result = requestQuizQuestionCreate(token, quizId, questionBody);
+        expect(result).toMatchObject({ questionId: expect.any(Number) });
+        expect(result.status).toStrictEqual(OK);
+      });
+    });
+
+    describe('test1.4 just meet requiremnets', () => {
+      test('test 1.4.1 question string have 5 characters in length', () => {
+        questionBody.question = 'q'.repeat(QuestionLimit.MinLen);
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
