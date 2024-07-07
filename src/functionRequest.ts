@@ -4,7 +4,7 @@ const SERVER_URL: string = `${config.url}:${config.port}`;
 
 // ============== interfaces ===================================================
 import { StatusCodes } from 'http-status-codes';
-import { EmptyObject, ErrorObject, Quiz } from './dataStore';
+import { EmptyObject, ErrorObject } from './dataStore';
 import { TokenReturn, UserDetailReturn } from './auth';
 import { QuizListReturn, QuizCreateReturn, QuizInfoReturn } from './quiz';
 export const VALID_EMPTY_RETURN: EmptyObject = {};
@@ -79,7 +79,7 @@ export function requestQuizRemove(token: string,
   return requestHelper('DELETE', `/v1/admin/quiz/${quizId}`, { token });
 }
 
-export function requestQuizInfo(token: string, quizId: number): ApiResponse<Quiz> {
+export function requestQuizInfo(token: string, quizId: number): ApiResponse<QuizInfoReturn> {
   return requestHelper('GET', `/v1/admin/quiz/${quizId}`, { token });
 }
 
@@ -102,5 +102,15 @@ export type ResEmpty = ResValid<EmptyObject>;
 export type ResToken = ResValid<TokenReturn>;
 export type ResUserDetail = ResValid<UserDetailReturn>;
 export type ResQuizList = ResValid<QuizListReturn>;
-export type ResQuizCreate = ResValid<QuizCreateReturn>;
+export type ResQuizId = ResValid<QuizCreateReturn>;
 export type ResQuizInfo = ResValid<QuizInfoReturn>;
+
+export const authRegister = (email: string, password: string,
+  nameFirst: string, nameLast: string): ResToken =>
+  requestAuthRegister(email, password, nameFirst, nameLast) as ResToken;
+
+export const quizCreate = (token: string, name: string, description: string): ResQuizId =>
+  requestQuizCreate(token, name, description) as ResQuizId;
+
+export const validQuizInfo = (token: string, quizId: number): ResQuizInfo =>
+  requestQuizInfo(token, quizId) as ResQuizInfo;

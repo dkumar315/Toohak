@@ -4,16 +4,16 @@ import {
   requestUserDetails,
   requestQuizList, requestQuizCreate, requestQuizInfo,
   requestClear, ResToken, ResUserDetail,
-  ResQuizList, ResQuizCreate, ResQuizInfo, ResError
+  ResQuizList, ResQuizId, ResQuizInfo, ResError
 } from './functionRequest';
 
 let user: ResToken;
-let quiz: ResQuizCreate;
+let quiz: ResQuizId;
 
 beforeEach(() => {
   user = requestAuthRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar') as ResToken;
   requestAuthLogin('devk@gmail.com', 'DevaanshK01');
-  quiz = requestQuizCreate(user.token, 'My Quiz1', 'Quiz on Testing') as ResQuizCreate;
+  quiz = requestQuizCreate(user.token, 'My Quiz1', 'Quiz on Testing') as ResQuizId;
 });
 
 describe('clear test', () => {

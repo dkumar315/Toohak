@@ -3,7 +3,7 @@ import {
   requestAuthRegister, requestAuthLogin,
   requestQuizList, requestQuizCreate, requestQuizInfo, requestQuizRemove,
   requestQuizNameUpdate, requestQuizDescriptionUpdate, requestClear,
-  ResError, ResEmpty, ResToken, ResQuizList, ResQuizCreate, ResQuizInfo
+  ResError, ResEmpty, ResToken, ResQuizList, ResQuizId, ResQuizInfo
 } from './functionRequest';
 
 beforeEach(() => {
@@ -29,8 +29,8 @@ describe('adminQuizList', () => {
     const token = user.token;
     const quiz1Name = 'Quiz 1';
     const quiz2Name = 'Quiz 2';
-    const quiz1 = requestQuizCreate(token, quiz1Name, 'Description 1') as ResQuizCreate;
-    const quiz2 = requestQuizCreate(token, quiz2Name, 'Description 2') as ResQuizCreate;
+    const quiz1 = requestQuizCreate(token, quiz1Name, 'Description 1') as ResQuizId;
+    const quiz2 = requestQuizCreate(token, quiz2Name, 'Description 2') as ResQuizId;
     const result = requestQuizList(token) as ResQuizList;
     expect(result.quizzes).toStrictEqual([
       { quizId: quiz1.quizId, name: quiz1Name },
@@ -44,7 +44,7 @@ describe('adminQuizCreate', () => {
     const user = requestAuthRegister('akshatmish@yahoo.com', 'akst123456', 'Akshat', 'Mishra') as ResToken;
     requestAuthLogin('akshatmish@yahoo.com', 'akst123456') as ResToken;
 
-    const result = requestQuizCreate(user.token, 'Test Quiz', 'First test quiz.') as ResQuizCreate;
+    const result = requestQuizCreate(user.token, 'Test Quiz', 'First test quiz.') as ResQuizId;
     expect(result).toEqual(expect.objectContaining({ quizId: expect.any(Number) }));
 
     const quizzes = requestQuizList(user.token) as ResQuizList;
@@ -102,16 +102,16 @@ describe('adminQuizCreate', () => {
 });
 
 describe('adminQuizRemove tests', () => {
-  let userId1: ResToken, userId2: ResToken, quizId1: ResQuizCreate;
+  let userId1: ResToken, userId2: ResToken, quizId1: ResQuizId;
 
   beforeEach(() => {
     requestClear();
     userId1 = requestAuthRegister('krishpatel@gmail.com', 'KrishP01', 'Krish', 'Patel') as ResToken;
     requestAuthLogin('krishpatel@gmail.com', 'KrishP') as ResToken;
-    quizId1 = requestQuizCreate(userId1.token, 'My Quiz', 'Quiz on Testing') as ResQuizCreate;
+    quizId1 = requestQuizCreate(userId1.token, 'My Quiz', 'Quiz on Testing') as ResQuizId;
     userId2 = requestAuthRegister('joshhoward@gmail.com', 'JoshH002', 'Josh', 'Howard') as ResToken;
     requestAuthLogin('joshhoward@gmail.com', 'JoshH') as ResToken;
-    requestQuizCreate(userId2.token, 'Second Quiz', 'Another quiz for testing') as ResQuizCreate;
+    requestQuizCreate(userId2.token, 'Second Quiz', 'Another quiz for testing') as ResQuizId;
   });
 
   test('Quiz successfully gets removed', () => {
@@ -160,16 +160,16 @@ describe('adminQuizRemove tests', () => {
 });
 
 describe('adminQuizInfo tests', () => {
-  let userId1: ResToken, userId2: ResToken, quizId1: ResQuizCreate, quizId2: ResQuizCreate;
+  let userId1: ResToken, userId2: ResToken, quizId1: ResQuizId, quizId2: ResQuizId;
 
   beforeEach(() => {
     requestClear();
     userId1 = requestAuthRegister('krishpatel@gmail.com', 'KrishP01', 'Krish', 'Patel') as ResToken;
     requestAuthLogin('krishpatel@gmail.com', 'KrishP') as ResToken;
-    quizId1 = requestQuizCreate(userId1.token, 'My Quiz', 'Quiz on Testing') as ResQuizCreate;
+    quizId1 = requestQuizCreate(userId1.token, 'My Quiz', 'Quiz on Testing') as ResQuizId;
     userId2 = requestAuthRegister('joshhoward@gmail.com', 'JoshH002', 'Josh', 'Howard') as ResToken;
     requestAuthLogin('joshhoward@gmail.com', 'JoshH') as ResToken;
-    quizId2 = requestQuizCreate(userId2.token, 'Second Quiz', 'Another quiz for testing') as ResQuizCreate;
+    quizId2 = requestQuizCreate(userId2.token, 'Second Quiz', 'Another quiz for testing') as ResQuizId;
   });
 
   test('Successfully retrieves quiz information', () => {
@@ -225,12 +225,12 @@ describe('adminQuizInfo tests', () => {
 
 describe('Testing for adminQuizNameUpdate', () => {
   let userId1: ResToken;
-  let quizId1: ResQuizCreate;
+  let quizId1: ResQuizId;
   let quizInfo1: ResQuizInfo;
   let userId2: ResToken;
-  let quizId2: ResQuizCreate;
+  let quizId2: ResQuizId;
   let quizInfo2: ResQuizInfo;
-  let quizId3: ResQuizCreate;
+  let quizId3: ResQuizId;
   let quizInfo3: ResQuizInfo;
 
   beforeEach(() => {
@@ -238,17 +238,17 @@ describe('Testing for adminQuizNameUpdate', () => {
 
     userId1 = requestAuthRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar') as ResToken;
     requestAuthLogin('devk@gmail.com', 'DevaanshK01') as ResToken;
-    quizId1 = requestQuizCreate(userId1.token, 'My Quiz', 'Quiz on Testing') as ResQuizCreate;
+    quizId1 = requestQuizCreate(userId1.token, 'My Quiz', 'Quiz on Testing') as ResQuizId;
     quizInfo1 = requestQuizInfo(userId1.token, quizId1.quizId) as ResQuizInfo;
 
     userId2 = requestAuthRegister('krishp@gmail.com', 'KrishP02', 'Krish', 'Patel') as ResToken;
     requestAuthLogin('krishp@gmail.com', 'KrishP02') as ResToken;
-    quizId2 = requestQuizCreate(userId2.token, 'Your Quiz', 'Quiz on Implementation') as ResQuizCreate;
+    quizId2 = requestQuizCreate(userId2.token, 'Your Quiz', 'Quiz on Implementation') as ResQuizId;
     quizInfo2 = requestQuizInfo(userId2.token, quizId2.quizId) as ResQuizInfo;
 
     requestAuthRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar') as ResToken;
     requestAuthLogin('devk@gmail.com', 'DevaanshK01') as ResToken;
-    quizId3 = requestQuizCreate(userId1.token, 'Our Quiz', 'Quiz on Ethics') as ResQuizCreate;
+    quizId3 = requestQuizCreate(userId1.token, 'Our Quiz', 'Quiz on Ethics') as ResQuizId;
     quizInfo3 = requestQuizInfo(userId1.token, quizId3.quizId) as ResQuizInfo;
   });
 
@@ -346,10 +346,10 @@ describe('Testing for adminQuizNameUpdate', () => {
 
 describe('Testing for adminQuizDescriptionUpdate', () => {
   let userId1: ResToken;
-  let quizId1: ResQuizCreate;
+  let quizId1: ResQuizId;
   let quizInfo1: ResQuizInfo;
   let userId2: ResToken;
-  let quizId2: ResQuizCreate;
+  let quizId2: ResQuizId;
   let quizInfo2: ResQuizInfo;
 
   beforeEach(() => {
@@ -357,12 +357,12 @@ describe('Testing for adminQuizDescriptionUpdate', () => {
 
     userId1 = requestAuthRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar') as ResToken;
     requestAuthLogin('devk@gmail.com', 'DevaanshK01') as ResToken;
-    quizId1 = requestQuizCreate(userId1.token, 'My Quiz', 'Quiz on Testing') as ResQuizCreate;
+    quizId1 = requestQuizCreate(userId1.token, 'My Quiz', 'Quiz on Testing') as ResQuizId;
     quizInfo1 = requestQuizInfo(userId1.token, quizId1.quizId) as ResQuizInfo;
 
     userId2 = requestAuthRegister('krishp@gmail.com', 'KrishP02', 'Krish', 'Patel') as ResToken;
     requestAuthLogin('krishp@gmail.com', 'KrishP02') as ResToken;
-    quizId2 = requestQuizCreate(userId2.token, 'Your Quiz', 'Quiz on Implementation') as ResQuizCreate;
+    quizId2 = requestQuizCreate(userId2.token, 'Your Quiz', 'Quiz on Implementation') as ResQuizId;
     quizInfo2 = requestQuizInfo(userId2.token, quizId2.quizId) as ResQuizInfo;
   });
 
