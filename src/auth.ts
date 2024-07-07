@@ -116,7 +116,7 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
  * @param {string} email - unique email for a login user
  * @param {string} password - password for a login user
  *
- * @return {object} empty object
+ * @return {object} empty object - if valid
  * @return {object} error - if token is empty or invalid
  */
 export function adminAuthLogout(token: string): EmptyObject | ErrorObject {
@@ -168,7 +168,7 @@ export function adminUserDetails(token: string): UserDetailReturn | ErrorObject 
  * @param {string} nameFirst - user's first name
  * @param {string} nameLast - user's last name
  *
- * @return {object} empty object
+ * @return {object} empty object - if valid
  * @return {object} error - if authUserId, email, or names are invalid
  */
 export function adminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string): EmptyObject | ErrorObject {
@@ -201,7 +201,7 @@ export function adminUserDetailsUpdate(token: string, email: string, nameFirst: 
  * @param {string} oldPassword - the current password stored requires update
  * @param {string} newPassword - the replacement password submitted by user
  *
- * @return {object} empty object
+ * @return {object} empty object - if valid
  * @return {object} error - if authUserId or passwords invalid
  */
 export function adminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string) : EmptyObject | ErrorObject {
@@ -232,9 +232,9 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
 }
 
 /**
- * Generate a token that is unique
+ * Generate a token that is globally unique
  *
- * @return {string} return a new token
+ * @return {string} token - a new token stores in sessions
  */
 function generateToken(): string {
   const data: Data = getData();
@@ -263,7 +263,7 @@ function addSession(authUserId: number, token: string): void {
  *
  * @return {number} userId - corresponding login userId of given token
  */
-function findUserId(token: string): number {
+export function findUserId(token: string): number {
   const data: Data = getData();
   const session: Session = data.sessions.sessionIds.find(session =>
     session.token === token
@@ -277,7 +277,7 @@ function findUserId(token: string): number {
  *
  * @param {number} authUserId - unique identifier for a user
  *
- * @return {number} corresponding index of a user
+ * @return {number} userIndex - corresponding index of a user
  */
 function findUser(authUserId: number): number {
   const data: Data = getData();
@@ -292,7 +292,7 @@ function findUser(authUserId: number): number {
  * @param {string} email - user's email, according to
  * https://www.npmjs.com/package/validator
  *
- * @return {boolean} true if email is valid and not used by others
+ * @return {boolean} true - if email is valid and not used by others
  */
 function isValidEmail(email: string, userIndex: number): boolean {
   const data: Data = getData();
@@ -310,7 +310,7 @@ function isValidEmail(email: string, userIndex: number): boolean {
  *
  * @param {string} name - nameFirst or nameLast of a user
  *
- * @return {boolean} true iif contains letters, spaces, hyphens, or apostrophes
+ * @return {boolean} true - if contains letters, spaces, hyphens, or apostrophes
  */
 function isValidName(name: string): boolean {
   const pattern = new RegExp(`^[a-zA-Z\\s-']{${NAME_MIN_LEN},${NAME_MAX_LEN}}$`);
@@ -323,7 +323,7 @@ function isValidName(name: string): boolean {
  *
  * @param {string} password - nameFirst or nameLast of a user
  *
- * @return {boolean} true iif len > 8 && contains >= 1 (letter & integer)
+ * @return {boolean} true - if len > 8 && contains >= 1 (letter & integer)
  */
 function isValidPassword(password: string): boolean {
   const stringPattern = /[a-zA-Z]/;
