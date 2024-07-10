@@ -116,6 +116,47 @@ export function adminQuizQuestionUpdate(token: string, quizId: number,
 }
 
 /**
+ * Move a question from one particular position in the quiz to another.
+ * When this route is called, the timeLastEdited is updated.
+ *
+ * @param {string} token - a unique identifier for a login user
+ * @param {number} quizId - a unique identifier for a valid quiz
+ * @param {number} questionId - a unique identifier for a valid question
+ * @param {number} newPosition - new position for the question
+ *
+ * @return {object} empty object - inputs valid, successfully move question
+ * @return {object} error - token, quizId, questionId, or newPosition invalid
+ */
+export function adminQuizQuestionMove(token: string, quizId: number,
+  questionId: number, newPosition: number): EmptyObject | ErrorObject {
+  const isValidObj: IsValid = isValidIds(token, quizId, questionId, null);
+  if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
+
+  const data: Data = getData();
+  const quiz = data.quizzes[isValidObj.quizIndex];
+  
+  if (newPosition < 0 || newPosition >= quiz.questions.length) {
+    return {
+      error: `Invalid newPosition number: ${newPosition}. 
+      It must be between 0 and ${quiz.questions.length - 1}.`
+    };
+  }
+  
+  if (isValidObj.questionIndex === newPosition) {
+    return {
+      error: `The question is already at position ${newPosition}.`
+    };
+  }
+  
+  const [movedQuestion] = quiz.questions.splice(isValidObj.questionIndex, 1);
+  quiz.questions.splice(newPosition, 0, movedQuestion);
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
+
+  setData(data);
+  return {};
+}
+
+/**
  * Duplicate a question after where the source question is
  * if current quiz duration exceeds 3 mins, return error (BAD_REQUEST)
  *
