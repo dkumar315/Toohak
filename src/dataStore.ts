@@ -6,6 +6,7 @@ import { StatusCodes } from 'http-status-codes';
 let data: Data = {
   users: [],
   quizzes: [],
+  trashedQuizzes: [], // added
   sessions: {
     globalCounter: 0,
     questionCounter: 0,
@@ -37,6 +38,7 @@ export type ErrorObject = { error: string };
 export interface Data {
   users: User[];
   quizzes: Quiz[];
+  trashedQuizzes: Quiz[]; // added
   sessions: Sessions;
 }
 
@@ -88,6 +90,13 @@ export interface Sessions {
 export interface Session {
   userId: number;
   token: string;
+}
+
+export interface Restore {
+  users: User[];
+  quizzes: Quiz[];
+  trashedQuizzes: Quiz[]; 
+  sessions: Sessions;
 }
 
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY

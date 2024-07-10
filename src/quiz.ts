@@ -1,6 +1,6 @@
 import {
-  getData, setData, Data, Quiz, Question,
-  EmptyObject, ErrorObject, INVALID
+  getData, setData, Data, Question,
+  EmptyObject, ErrorObject, INVALID, Restore
 } from './dataStore';
 import { findUserId } from './auth';
 
@@ -26,6 +26,26 @@ export interface QuizInfoReturn {
   questions: Question[],
   duration: number,
 }
+
+export interface QuizRestoreReturn {
+  status: number;
+  error?: string;
+}
+
+export interface Quiz {
+  quizId: number;
+  creatorId: number;
+  name: string;
+  description: string;
+  timeCreated: number;
+  timeLastEdited: number;
+  numQuestions: number;
+  questions: Question[];
+  duration: number;
+  trashed?: boolean; 
+}
+
+
 
 export function validateQuizId(quizId: number): true | ErrorObject {
   const data: Data = getData();
@@ -322,4 +342,40 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
 
   setData(data);
   return {};
+}
+
+
+/**
+ * This function restores a quiz from the trash back to active quizzes.
+ *
+ * @param {string} token - ID of the authorised user
+ * @param {number} quizId - ID of the quiz
+ *
+ * @return {Restore | ErrorObject} - Returns the entire dataset if successful, or an error object if unsuccessful
+ */
+export function adminQuizRestore(token: string, quizId: number): Restore | ErrorObject {
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return { error: `Invalid token ${token}.` };
+  }
+
+  const data: Data = getData();
+
+  const trashedQuizIndex = data.trashedQuizzes.findIndex(quiz => quiz.quizId === quizId);
+  if (trashedQuizIndex === -1) {
+    return { error: `Quiz ${quizId} is not in the trash` };
+  }
+
+  const quiz = data.trashedQuizzes[trashedQuizIndex];
+  if (quiz.creatorId !== authUserId) {
+    return { error: `UserId ${authUserId} does not own QuizId ${quizId}.` };
+  }
+
+  // Restore the quiz by moving it back to the active quizzes
+  data.quizzes.push(quiz);
+  data.trashedQuizzes.splice(trashedQuizIndex, 1);
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
+
+  setData(data);
+  return getData(); // Return the updated dataset
 }
