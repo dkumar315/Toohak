@@ -109,7 +109,7 @@ export function requestQuizQuestionUpdate(token: string, quizId: number,
     { token, questionBody });
 }
 
-export function requestQuizQuestionMove(token: string, quizId: number, 
+export function requestQuizQuestionMove(token: string, quizId: number,
   questionId: number, newPosition: number): ApiResponse<EmptyObject> {
   return requestHelper('PUT', `/v1/admin/quiz/${quizId}/question/${questionId}/move`,
     { token, newPosition });

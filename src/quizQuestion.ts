@@ -134,20 +134,20 @@ export function adminQuizQuestionMove(token: string, quizId: number,
 
   const data: Data = getData();
   const quiz = data.quizzes[isValidObj.quizIndex];
-  
+
   if (newPosition < 0 || newPosition >= quiz.questions.length) {
     return {
       error: `Invalid newPosition number: ${newPosition}. 
       It must be between 0 and ${quiz.questions.length - 1}.`
     };
   }
-  
+
   if (isValidObj.questionIndex === newPosition) {
     return {
       error: `The question is already at position ${newPosition}.`
     };
   }
-  
+
   const [movedQuestion] = quiz.questions.splice(isValidObj.questionIndex, 1);
   quiz.questions.splice(newPosition, 0, movedQuestion);
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
