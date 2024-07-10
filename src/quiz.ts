@@ -27,6 +27,14 @@ export interface QuizInfoReturn {
   duration: number,
 }
 
+
+export interface QuizTrashReturn {
+  quizzes: Array<{
+    quizId: number;
+    name: string;
+  }>;
+}
+
 export function validateQuizId(quizId: number): true | ErrorObject {
   const data: Data = getData();
 
@@ -118,7 +126,8 @@ export function adminQuizCreate(token: string, name: string, description: string
     timeLastEdited: Math.floor(Date.now() / 1000),
     numQuestions: 0,
     questions: [],
-    duration: 0
+    duration: 0,
+    isTrashed: false
   };
 
   data.quizzes.push(newQuiz);
@@ -137,6 +146,7 @@ export function adminQuizCreate(token: string, name: string, description: string
  * @return {object} - Returns an empty object
  */
 export function adminQuizRemove(token: string, quizId: number): EmptyObject | ErrorObject {
+  console.log('calling remove');
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     return { error: `Invalid token ${token}.` };
@@ -174,6 +184,7 @@ export function adminQuizRemove(token: string, quizId: number): EmptyObject | Er
  *
  */
 export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | ErrorObject {
+  console.log('calling info');
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     return { error: `Invalid token ${token}.` };
@@ -218,6 +229,7 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
  * @return {object} - Returns an empty object
  */
 export function adminQuizNameUpdate(token: string, quizId: number, name: string): EmptyObject | ErrorObject {
+  console.log('calling name update');
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     return { error: `Invalid token ${token}.` };
@@ -291,6 +303,7 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
  * @return {object} - Returns an empty object
  */
 export function adminQuizDescriptionUpdate(token: string, quizId: number, description: string): EmptyObject | ErrorObject {
+  console.log('calling desc update');
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     return { error: `Invalid token ${token}.` };
@@ -322,4 +335,22 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
 
   setData(data);
   return {};
+}
+export function adminQuizTrash(token: string):  QuizTrashReturn | ErrorObject {
+  const data = getData();
+  console.log('calling quizTrash'+`${token}`);
+
+  // Validate token
+  const session = data.sessions.sessionIds.find(session => session.token === token);
+  if (!session) {
+    return { error: 'Invalid token' };
+  }
+
+  const userId = session.userId;
+
+  // Get the quizzes in the trash for this user
+  const trashedQuizzes = data.quizzes.filter(quiz => quiz.creatorId === userId && quiz.isTrashed)
+                                     .map(({ quizId, name }) => ({ quizId, name }));
+
+  return { quizzes: trashedQuizzes };
 }

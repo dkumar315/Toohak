@@ -61,6 +61,7 @@ export interface Quiz {
   numQuestions: number;
   questions: Question[];
   duration: number; // in seconds
+  isTrashed : boolean;
 
 }
 

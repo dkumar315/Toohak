@@ -6,7 +6,7 @@ const SERVER_URL: string = `${config.url}:${config.port}`;
 import { StatusCodes } from 'http-status-codes';
 import { EmptyObject, ErrorObject } from './dataStore';
 import { TokenReturn, UserDetailReturn } from './auth';
-import { QuizListReturn, QuizCreateReturn, QuizInfoReturn } from './quiz';
+import { QuizListReturn, QuizCreateReturn, QuizInfoReturn, QuizTrashReturn } from './quiz';
 import { QuestionBody, QuestionIdReturn, NewQuestionIdReturn } from './quizQuestion';
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
@@ -96,6 +96,7 @@ export function requestQuizDescriptionUpdate(token: string, quizId: number,
     { token, description });
 }
 
+
 // ============== adminQuizQuestion ============================================
 export function requestQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): ApiResponse<QuestionIdReturn> {
@@ -115,6 +116,9 @@ export function requestQuizQuestionDuplicate(token: string, quizId: number,
     `/v1/admin/quiz/${quizId}/question/${questionId}/duplicate`, { token });
 }
 
+export function requestAdminQuizTrash(token: string): ApiResponse<QuizTrashReturn> {
+  return requestHelper('GET', '/v1/admin/quiz/trash', { token });
+}
 // ============== other ========================================================
 export function requestClear(): ApiResponse<EmptyObject> {
   return requestHelper('DELETE', '/v1/clear', {});
@@ -128,6 +132,7 @@ export type ResQuizId = ResValid<QuizCreateReturn>;
 export type ResQuizInfo = ResValid<QuizInfoReturn>;
 export type ResQuestionId = ResValid<QuestionIdReturn>;
 export type ResNewQuestionId = ResValid<NewQuestionIdReturn>;
+export type ResQuizTrash = ResValid<QuizTrashReturn>;
 
 export const authRegister = (email: string, password: string,
   nameFirst: string, nameLast: string): ResToken =>
@@ -145,3 +150,6 @@ export const questionCreate = (token: string, quizId: number,
   if ('error' in result) throw new Error(`Fail to create question: ${result.error}`);
   return result;
 };
+
+export const adminQuizTrash = (token: string): ResQuizTrash =>
+  requestAdminQuizTrash(token) as ResQuizTrash;
