@@ -48,11 +48,11 @@ const falseAnswer3: AnswerInput = {
   answer: 'None of the Above',
   correct: false
 };
-  
+
 beforeEach(() => {
   requestClear();
 });
-  
+
 describe('adminQuizQuestionDelete', () => {
   let user: ResToken;
   let quiz: ResQuizId;
@@ -60,11 +60,11 @@ describe('adminQuizQuestionDelete', () => {
   let questionBody2: QuestionBody;
   let question1: ResQuestionId;
   let question2: ResQuestionId;
-  
+
   beforeEach(() => {
     user = authRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar');
     requestAuthLogin('devk@gmail.com', 'DevaanshK01') as ResToken;
-    quiz = requestQuizCreate(user.token, 'Sample Quiz', 'Sample Description') as ResQuizId;
+    quiz = requestQuizCreate(user.token, 'My Quiz', 'Quiz on Testing') as ResQuizId;
 
     questionBody1 = JSON.parse(JSON.stringify(initQuestionBody1));
     const answers: AnswerInput[] = [trueAnswer1, falseAnswer1];
@@ -80,32 +80,61 @@ describe('adminQuizQuestionDelete', () => {
 
   test('Successfully deletes a question', () => {
     const result = requestQuizQuestionDelete(user.token, quiz.quizId, question1.questionId) as ResEmpty;
-    expect(result).toStrictEqual({ status: OK });
+    expect(result.status).toStrictEqual(OK);
 
     const quizInfo = requestQuizInfo(user.token, quiz.quizId) as ResQuizInfo;
     expect(quizInfo.questions.length).toStrictEqual(1);
-    expect(quizInfo.questions[0].questionId).toStrictEqual(question2);
+    expect(quizInfo.questions[0].questionId).toStrictEqual(question2.questionId);
   });
 
   test('Error when token is invalid', () => {
     const result = requestQuizQuestionDelete('invalid token', quiz.quizId, question1.questionId) as ResError;
-    expect(result).toStrictEqual({ status: UNAUTHORIZED, ERROR });
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(UNAUTHORIZED);
+  });
+
+  test('Error when token is missing', () => {
+    const result = requestQuizQuestionDelete('', quiz.quizId, question1.questionId) as ResError;
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(UNAUTHORIZED);
   });
 
   test('Error when quizId is invalid', () => {
     const result = requestQuizQuestionDelete(user.token, 999, question1.questionId) as ResError;
-    expect(result).toStrictEqual({ status: BAD_REQUEST, ERROR });
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(FORBIDDEN);
+  });
+
+  test('Error when quizId is missing', () => {
+    const result = requestQuizQuestionDelete(user.token, null, question1.questionId) as ResError;
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(FORBIDDEN);
   });
 
   test('Error when questionId is invalid', () => {
     const result = requestQuizQuestionDelete(user.token, quiz.quizId, 999) as ResError;
-    expect(result).toStrictEqual({ status: BAD_REQUEST, ERROR });
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
+  });
+
+  test('Error when questionId is missing', () => {
+    const result = requestQuizQuestionDelete(user.token, quiz.quizId, null) as ResError;
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 
   test('Error when question has already been deleted', () => {
     requestQuizQuestionDelete(user.token, quiz.quizId, question1.questionId) as ResEmpty;
     const result = requestQuizQuestionDelete(user.token, quiz.quizId, question1.questionId) as ResError;
-    expect(result).toStrictEqual({ status: BAD_REQUEST, ERROR });
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
+  });
+
+  test('Error when questionId belongs to a different quiz', () => {
+    const quiz2 = requestQuizCreate(user.token, 'Your Quiz', 'Quiz on Implementation') as ResQuizId;
+    const result = requestQuizQuestionDelete(user.token, quiz2.quizId, question1.questionId) as ResError;
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 
   test('Error when user does not own the quiz', () => {
@@ -113,6 +142,7 @@ describe('adminQuizQuestionDelete', () => {
     requestAuthLogin('krishp@gmail.com', 'KrishP02') as ResToken;
 
     const result = requestQuizQuestionDelete(user2.token, quiz.quizId, question1.questionId) as ResError;
-    expect(result).toStrictEqual({ status: BAD_REQUEST, ERROR });
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(FORBIDDEN);
   });
 });
