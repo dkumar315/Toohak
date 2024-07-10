@@ -87,6 +87,15 @@ describe('adminQuizQuestionDelete', () => {
     expect(quizInfo.questions[1].questionId).toStrictEqual(question1.questionId);
   });
 
+  test('Successfully moves a question to the last position (boundary)', () => {
+    const result = requestQuizQuestionMove(user.token, quiz.quizId, question1.questionId, 1) as ResEmpty;
+    expect(result.status).toStrictEqual(OK);
+
+    const quizInfo = requestQuizInfo(user.token, quiz.quizId) as ResQuizInfo;
+    expect(quizInfo.questions[0].questionId).toStrictEqual(question2.questionId);
+    expect(quizInfo.questions[1].questionId).toStrictEqual(question1.questionId);
+  });
+
   test('Error when token is invalid', () => {
     const result = requestQuizQuestionMove('invalid_token', quiz.quizId, question1.questionId, 0) as ResError;
     expect(result).toMatchObject(ERROR);
@@ -131,6 +140,23 @@ describe('adminQuizQuestionDelete', () => {
 
   test('Error when moving question to a position greater than number of questions', () => {
     const result = requestQuizQuestionMove(user.token, quiz.quizId, question1.questionId, 3) as ResError;
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
+  });
+
+  test('Error when moving question to the same position', () => {
+    const result = requestQuizQuestionMove(user.token, quiz.quizId, question1.questionId, 0) as ResError;
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
+  });
+
+  test('Error when moving a single question within a single-question quiz', () => {
+    const singleQuestionQuiz = requestQuizCreate(user.token, 'Single Question Quiz', 'Quiz with One Question') as ResQuizId;
+    const singleQuestionBody = JSON.parse(JSON.stringify(initQuestionBody1));
+    singleQuestionBody.answers = [trueAnswer1, falseAnswer1];
+    const singleQuestion = requestQuizQuestionCreate(user.token, singleQuestionQuiz.quizId, singleQuestionBody) as ResQuestionId;
+
+    const result = requestQuizQuestionMove(user.token, singleQuestionQuiz.quizId, singleQuestion.questionId, 0) as ResEmpty;
     expect(result).toMatchObject(ERROR);
     expect(result.status).toStrictEqual(BAD_REQUEST);
   });
