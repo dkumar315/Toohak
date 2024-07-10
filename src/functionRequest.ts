@@ -109,7 +109,7 @@ export function requestQuizQuestionUpdate(token: string, quizId: number,
     { token, questionBody });
 }
 
-export function requestQuizQuestionDelete(token: string, quizId: number, 
+export function requestQuizQuestionDelete(token: string, quizId: number,
   questionId: number): ApiResponse<EmptyObject> {
   return requestHelper('DELETE', `/v1/admin/quiz/${quizId}/question/${questionId}`, { token });
 }

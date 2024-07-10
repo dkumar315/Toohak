@@ -133,10 +133,10 @@ export function adminQuizQuestionDelete(token: string, quizId: number,
 
   const data: Data = getData();
   const quiz = data.quizzes[isValidObj.quizIndex];
-  
+
   quiz.questions.splice(isValidObj.questionIndex, 1);
   quiz.numQuestions -= 1;
-  
+
   quiz.duration = quiz.questions.reduce((total, question) => total + question.duration, 0);
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
 
