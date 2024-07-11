@@ -1,4 +1,4 @@
-import express, { json, Request, Response, NextFunction } from 'express';
+import express, { json, Request, Response } from 'express';
 import { echo } from './newecho';
 import morgan from 'morgan';
 import config from './config.json';

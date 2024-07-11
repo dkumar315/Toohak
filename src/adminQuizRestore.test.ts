@@ -1,4 +1,4 @@
-import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, getData } from './dataStore';
+import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
 import {
   ERROR, authRegister, requestAuthLogout,
   quizCreate, validQuizInfo, requestQuizRemove,
@@ -26,7 +26,6 @@ beforeEach(() => {
   otherQuizId = otherQuizCreateResponse.quizId;
 
   requestQuizRemove(token, quizId);
-  let data = getData();
   requestQuizRemove(otherToken, otherQuizId);
 });
 
@@ -68,7 +67,7 @@ describe('testing adminQuizRestore POST /v1/admin/quiz/{quizId}/restore', () => 
 
     test('test2.4 valid token is provided, but user is not an owner of this quiz or quiz doesn\'t exist', () => {
       const newTokenResponse = authRegister('anotheremail@gmail.com', 'anotherpassw0rd', 'anotherFirst', 'anotherLast');
-      let newToken: string = newTokenResponse.token;
+      const newToken: string = newTokenResponse.token;
       const result = restoreQuiz(newToken, quizId) as ResError;
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(FORBIDDEN);

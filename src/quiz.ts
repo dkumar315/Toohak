@@ -1,6 +1,6 @@
 import {
   getData, setData, Data, Question,
-  EmptyObject, ErrorObject, INVALID, Restore
+  EmptyObject, ErrorObject, INVALID
 } from './dataStore';
 import { findUserId } from './auth';
 
@@ -37,10 +37,8 @@ export interface Quiz {
   numQuestions: number;
   questions: Question[];
   duration: number;
-  trashed?: boolean; 
+  trashed?: boolean;
 }
-
-
 
 export function validateQuizId(quizId: number): true | ErrorObject {
   const data: Data = getData();
@@ -171,7 +169,7 @@ export function adminQuizRemove(token: string, quizId: number): EmptyObject | Er
 
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
   if (quizIndex === INVALID) {
-    return {error : `${quizIndex} does not exist`};
+    return { error: `${quizIndex} does not exist` };
   }
   const [deletedQuiz] = data.quizzes.splice(quizIndex, 1);
   data.trashedQuizzes.push(deletedQuiz);
