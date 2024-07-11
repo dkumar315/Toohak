@@ -138,7 +138,7 @@ export function adminQuizQuestionDelete(token: string, quizId: number,
   quiz.numQuestions -= 1;
 
   quiz.duration = quiz.questions.reduce((total, question) => total + question.duration, 0);
-  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
+  quiz.timeLastEdited = timeStamp();
 
   setData(data);
   return {};
@@ -179,7 +179,7 @@ export function adminQuizQuestionMove(token: string, quizId: number,
 
   const [movedQuestion] = quiz.questions.splice(isValidObj.questionIndex, 1);
   quiz.questions.splice(newPosition, 0, movedQuestion);
-  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
+  quiz.timeLastEdited = timeStamp();
 
   setData(data);
   return {};
