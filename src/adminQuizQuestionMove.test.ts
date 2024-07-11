@@ -1,8 +1,7 @@
 import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
 import {
   ERROR, ResError, ResEmpty, ResToken, ResQuizId, ResQuizInfo,
-  authRegister, requestAuthLogin,
-  requestQuizCreate, requestQuizInfo,
+  authRegister, quizCreate, validQuizInfo,
   requestQuizQuestionCreate, requestQuizQuestionMove, requestClear,
   ResQuestionId
 } from './functionRequest';
@@ -63,8 +62,7 @@ describe('adminQuizQuestionDelete', () => {
 
   beforeEach(() => {
     user = authRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar');
-    requestAuthLogin('devk@gmail.com', 'DevaanshK01') as ResToken;
-    quiz = requestQuizCreate(user.token, 'My Quiz', 'Quiz on Testing') as ResQuizId;
+    quiz = quizCreate(user.token, 'My Quiz', 'Quiz on Testing') as ResQuizId;
 
     questionBody1 = JSON.parse(JSON.stringify(initQuestionBody1));
     const answers: AnswerInput[] = [trueAnswer1, falseAnswer1];
@@ -82,7 +80,7 @@ describe('adminQuizQuestionDelete', () => {
     const result = requestQuizQuestionMove(user.token, quiz.quizId, question2.questionId, 0) as ResEmpty;
     expect(result.status).toStrictEqual(OK);
 
-    const quizInfo = requestQuizInfo(user.token, quiz.quizId) as ResQuizInfo;
+    const quizInfo = validQuizInfo(user.token, quiz.quizId) as ResQuizInfo;
     expect(quizInfo.questions[0].questionId).toStrictEqual(question2.questionId);
     expect(quizInfo.questions[1].questionId).toStrictEqual(question1.questionId);
   });
@@ -91,7 +89,7 @@ describe('adminQuizQuestionDelete', () => {
     const result = requestQuizQuestionMove(user.token, quiz.quizId, question1.questionId, 1) as ResEmpty;
     expect(result.status).toStrictEqual(OK);
 
-    const quizInfo = requestQuizInfo(user.token, quiz.quizId) as ResQuizInfo;
+    const quizInfo = validQuizInfo(user.token, quiz.quizId) as ResQuizInfo;
     expect(quizInfo.questions[0].questionId).toStrictEqual(question2.questionId);
     expect(quizInfo.questions[1].questionId).toStrictEqual(question1.questionId);
   });
@@ -151,7 +149,7 @@ describe('adminQuizQuestionDelete', () => {
   });
 
   test('Error when moving a single question within a single-question quiz', () => {
-    const singleQuestionQuiz = requestQuizCreate(user.token, 'Single Question Quiz', 'Quiz with One Question') as ResQuizId;
+    const singleQuestionQuiz = quizCreate(user.token, 'Single Question Quiz', 'Quiz with One Question') as ResQuizId;
     const singleQuestionBody = JSON.parse(JSON.stringify(initQuestionBody1));
     singleQuestionBody.answers = [trueAnswer1, falseAnswer1];
     const singleQuestion = requestQuizQuestionCreate(user.token, singleQuestionQuiz.quizId, singleQuestionBody) as ResQuestionId;
@@ -162,16 +160,14 @@ describe('adminQuizQuestionDelete', () => {
   });
 
   test('Error when questionId belongs to a different quiz', () => {
-    const quiz2 = requestQuizCreate(user.token, 'Your Quiz', 'Quiz on Implementation') as ResQuizId;
+    const quiz2 = quizCreate(user.token, 'Your Quiz', 'Quiz on Implementation') as ResQuizId;
     const result = requestQuizQuestionMove(user.token, quiz2.quizId, question1.questionId, 0) as ResError;
     expect(result).toMatchObject(ERROR);
     expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 
   test('Error when user does not own the quiz', () => {
-    const user2 = authRegister('krishp@gmail.com', 'KrishP02', 'Krish', 'Patel') as ResToken;
-    requestAuthLogin('krishp@gmail.com', 'KrishP02') as ResToken;
-
+    const user2 = authRegister('krishp@gmail.com', 'KrishP02', 'Krish', 'Patel');
     const result = requestQuizQuestionMove(user2.token, quiz.quizId, question1.questionId, 0) as ResError;
     expect(result).toMatchObject(ERROR);
     expect(result.status).toStrictEqual(FORBIDDEN);
