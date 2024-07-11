@@ -26,7 +26,7 @@ function requestHelper<T>(method: HttpVerb, path: string, payload: object): ApiR
   } else { // ['PUT', 'POST']
     res = request(method, SERVER_URL + path, { json: payload });
   }
-  console.log(res.body);
+  
   const bodyObject = JSON.parse(res.body.toString());
   return { status: res.statusCode, ...bodyObject };
 }

@@ -170,9 +170,11 @@ export function adminQuizRemove(token: string, quizId: number): EmptyObject | Er
   const data: Data = getData();
 
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
-  if (quizIndex !== INVALID) {
-    data.quizzes.splice(quizIndex, 1);
+  if (quizIndex === INVALID) {
+    return {error : `${quizIndex} does not exist`};
   }
+  const [deletedQuiz] = data.quizzes.splice(quizIndex, 1);
+  data.trashedQuizzes.push(deletedQuiz);
 
   setData(data);
   return {};
