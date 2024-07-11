@@ -92,7 +92,7 @@ export function adminQuizList(token: string): QuizListReturn | ErrorObjectNumber
  * This function if given basic details about a new quiz,
  * creates one for the logged in user.
  *
- * @param {number} authUserId - ID of the authorised user
+ * @param {string} token - ID of the authorised user
  * @param {string} name - The name of the quiz
  * @param {string} description - The description of the quiz
  *
@@ -141,7 +141,7 @@ export function adminQuizCreate(token: string, name: string, description: string
  * This function permanently removes the quiz,
  * when it is given the quiz as the input
  *
- * @param {number} authUserId - ID of the authorised user
+ * @param {string} token - ID of the authorised user
  * @param {number} quizId - ID of the quiz
  *
  * @return {object} - Returns an empty object
@@ -178,7 +178,7 @@ export function adminQuizRemove(token: string, quizId: number): EmptyObject | Er
  * This function gets all of the relevant information,
  * about the current quiz
  *
- * @param {number} authUserId - ID of the authorised user
+ * @param {string} token - ID of the authorised user
  * @param {number} quizId - ID of the quiz
  *
  * @return {object} - Returns an empty object
@@ -223,7 +223,7 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
 /**
  * This function updates the name of the relevant quiz.
  *
- * @param {number} authUserId - ID of the authorised user
+ * @param {string} token - ID of the authorised user
  * @param {number} quizId - ID of the quiz
  * @param {string} name - Name of the quiz
  *
@@ -297,7 +297,7 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
 /**
  * This function updates the description of the relevant quiz.
  *
- * @param {number} authUserId - ID of the authorised user
+ * @param {string} token - ID of the authorised user
  * @param {number} quizId - ID of the quiz
  * @param {string} description - Description of the quiz
  *

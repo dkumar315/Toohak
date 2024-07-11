@@ -3,7 +3,7 @@ import { QuestionBody, MAX_DURATIONS_SECS } from './quizQuestion';
 import {
   authRegister, requestAuthLogout, quizCreate, validQuizInfo,
   requestQuizRemove, questionCreate, requestQuizQuestionDuplicate,
-  ResQuizInfo, ResNewQuestionId,
+  ResQuizInfo, ResNewQuestionId, requestQuizQuestionDelete,
   requestClear, ERROR, ResError, VALID_EMPTY_RETURN
 } from './functionRequest';
 
@@ -124,13 +124,13 @@ describe('testing adminQuizQuestionDuplicate' +
     });
 
     describe('test2.2 invalid quizId', () => {
-      test('test2.2.1 invalid quizId, quiz is not exist', () => {
+      test('test2.2.1 quiz is not exist', () => {
         result = requestQuizQuestionDuplicate(token, quizId + 1, questionId);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
 
-      test('test2.2.2 invalid quizId, user does not own the quiz', () => {
+      test('test2.2.2 user does not own the quiz', () => {
         const token2 = authRegister('email2@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
         result = requestQuizQuestionDuplicate(token2, quizId, questionId);
         expect(result).toMatchObject(ERROR);
@@ -142,9 +142,15 @@ describe('testing adminQuizQuestionDuplicate' +
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
 
-      test('test2.2.3 invalid quizId, user does not own the quiz', () => {
+      test('test2.2.3 user removed the quiz', () => {
         requestQuizRemove(token, quizId);
         result = requestQuizQuestionDuplicate(token, quizId, questionId);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(FORBIDDEN);
+      });
+
+      test('test2.2.4 quizId is null', () => {
+        result = requestQuizQuestionDuplicate(token, null, questionId);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
@@ -171,8 +177,8 @@ describe('testing adminQuizQuestionDuplicate' +
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test.skip('test2.3.3 question is removed', () => {
-        // requestQuizQuestionRemove(token, quizId, questionId);
+      test('test2.3.3 question is removed', () => {
+        requestQuizQuestionDelete(token, quizId, questionId);
         result = requestQuizQuestionDuplicate(token, quizId, questionId);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
@@ -203,6 +209,12 @@ describe('testing adminQuizQuestionDuplicate' +
         expect(result.status).toStrictEqual(BAD_REQUEST);
 
         result = requestQuizQuestionDuplicate(token, quizId2, questionId);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
+      });
+
+      test('test2.3.5 questionId is null', () => {
+        result = requestQuizQuestionDuplicate(token, quizId, null);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
