@@ -6,28 +6,28 @@ import {
 import { findUserId } from './auth';
 
 export enum QuestionLimit {
-  MinLen = 5,
-  MaxLen = 50
+  MIN_LEN = 5,
+  MAX_LEN = 50
 }
 
 export enum AnswersLimit {
-  MinCount = 2,
-  MaxCount = 6,
-  MinStrLen = 1,
-  MaxStrLen = 30
+  MIN_COUNT = 2,
+  MAX_COUNT = 6,
+  MIN_STR_LEN = 1,
+  MAX_STR_LEN = 30
 }
 
 export enum DurationLimit {
-  MinQuestionSecs = 1,
-  MinQuizSumMins = 3,
-  MinsToSecs = 60,
+  MIN_QUESTION_SECS = 1,
+  MIN_QUIZ_SUM_MINS = 3,
+  MINS_TO_SECS = 60,
 }
 export const MAX_DURATIONS_SECS =
-  DurationLimit.MinQuizSumMins * DurationLimit.MinsToSecs;
+  DurationLimit.MIN_QUIZ_SUM_MINS * DurationLimit.MINS_TO_SECS;
 
 export enum PointsLimit {
-  MinNum = 1,
-  MaxNum = 10,
+  MIN_NUM = 1,
+  MAX_NUM = 10,
 }
 
 interface IsValid {
@@ -58,11 +58,11 @@ export interface NewQuestionIdReturn {
 }
 
 enum QuestionOperation {
-  Create,
-  Update,
-  Duplicate,
-  Move,
-  Delete
+  CREATE,
+  UPDATE,
+  DUPLICATE,
+  MOVE,
+  DELETE
 }
 
 /**
@@ -87,7 +87,7 @@ export function adminQuizQuestionCreate(token: string, quizId: number,
   const data: Data = getData();
   const quizIndex : number = isValidObj.quizIndex;
   const questionId: number = setQuestion(questionBody, quizIndex,
-    data.quizzes[quizIndex].questions.length, QuestionOperation.Create);
+    data.quizzes[quizIndex].questions.length, QuestionOperation.CREATE);
   return { questionId: questionId };
 }
 
@@ -111,7 +111,36 @@ export function adminQuizQuestionUpdate(token: string, quizId: number,
 
   // if all inputs valid, update the question
   setQuestion(questionBody, isValidObj.quizIndex, isValidObj.questionIndex,
-    QuestionOperation.Update);
+    QuestionOperation.UPDATE);
+  return {};
+}
+
+/**
+ * Delete a particular question from a quiz.
+ * When this route is called, the timeLastEdited is updated.
+ *
+ * @param {string} token - a unique identifier for a login user
+ * @param {number} quizId - a unique identifier for a valid quiz
+ * @param {number} questionId - a unique identifier for a valid question
+ *
+ * @return {object} empty object - inputs valid, successfully delete question
+ * @return {object} error - token, quizId, or questionId invalid
+ */
+export function adminQuizQuestionDelete(token: string, quizId: number,
+  questionId: number): EmptyObject | ErrorObject {
+  const isValidObj: IsValid = isValidIds(token, quizId, questionId, null);
+  if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
+
+  const data: Data = getData();
+  const quiz = data.quizzes[isValidObj.quizIndex];
+
+  quiz.questions.splice(isValidObj.questionIndex, 1);
+  quiz.numQuestions -= 1;
+
+  quiz.duration = quiz.questions.reduce((total, question) => total + question.duration, 0);
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
+
+  setData(data);
   return {};
 }
 
@@ -139,12 +168,12 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number,
   if (quiz.duration > MAX_DURATIONS_SECS) {
     return {
       error: `Invalid current quiz durations number: ${quiz.duration}
-    exceeds ${DurationLimit.MinQuizSumMins} minutes.`
+    exceeds ${DurationLimit.MIN_QUIZ_SUM_MINS} minutes.`
     };
   }
 
   const newQuestionId: number = setQuestion(quiz.questions[questionIndex],
-    quizIndex, questionIndex + 1, QuestionOperation.Duplicate);
+    quizIndex, questionIndex + 1, QuestionOperation.DUPLICATE);
   return { newQuestionId };
 }
 
@@ -261,28 +290,28 @@ function isValidQuestionBody(questionBody: QuestionBody,
   const isValid: boolean = false;
   let errorMsg: string;
 
-  if (question.length < QuestionLimit.MinLen ||
-    question.length > QuestionLimit.MaxLen) {
+  if (question.length < QuestionLimit.MIN_LEN ||
+    question.length > QuestionLimit.MAX_LEN) {
     // Question string has less than 5 or greater than 50 characters
     errorMsg = `Invalid question string Len: ${question.length}.`;
     return { isValid, errorMsg };
   }
 
-  if (answers.length < AnswersLimit.MinCount ||
-    answers.length > AnswersLimit.MaxCount) {
+  if (answers.length < AnswersLimit.MIN_COUNT ||
+    answers.length > AnswersLimit.MAX_COUNT) {
     // question has more than 6 answers or less than 2 answers
     errorMsg = `Invalid answers number: ${answers.length}.`;
     return { isValid, errorMsg };
   }
 
-  if (duration < DurationLimit.MinQuestionSecs ||
+  if (duration < DurationLimit.MIN_QUESTION_SECS ||
     quizDuration + duration > MAX_DURATIONS_SECS) {
     // question duration <== 0 or the sum of question durations in quiz > 3 mins
     errorMsg = `Invalid duration number: ${duration}.`;
     return { isValid, errorMsg };
   }
 
-  if (points < PointsLimit.MinNum || points > PointsLimit.MaxNum) {
+  if (points < PointsLimit.MIN_NUM || points > PointsLimit.MAX_NUM) {
     // points awarded are less than 1 or greater than 10
     errorMsg = `Invalid points number: ${points}.`;
     return { isValid, errorMsg };
@@ -307,8 +336,8 @@ function isValidQuestionBody(questionBody: QuestionBody,
  */
 function isValidAnswer(answers: AnswerInput[]): boolean {
   const invalidAnswerLen: boolean = answers.some((answerBody: AnswerInput) =>
-    answerBody.answer.length < AnswersLimit.MinStrLen ||
-    answerBody.answer.length > AnswersLimit.MaxStrLen);
+    answerBody.answer.length < AnswersLimit.MIN_STR_LEN ||
+    answerBody.answer.length > AnswersLimit.MAX_STR_LEN);
 
   const uniqueAnswers: Set<string> = new Set(answers.map((answerBody: AnswerInput) => answerBody.answer));
   const hasDuplicateAnswer: boolean = uniqueAnswers.size !== answers.length;
@@ -353,8 +382,8 @@ function setQuestion(questionBody: QuestionBody | Question, quizIndex: number,
   questionIndex: number, operation: QuestionOperation): number {
   const data: Data = getData();
   const quiz: Quiz = data.quizzes[quizIndex];
-  const isCreate: boolean = (operation === QuestionOperation.Create ||
-    operation === QuestionOperation.Duplicate);
+  const isCreate: boolean = (operation === QuestionOperation.CREATE ||
+    operation === QuestionOperation.DUPLICATE);
 
   let questionId: number;
   if (isCreate) {
@@ -368,7 +397,7 @@ function setQuestion(questionBody: QuestionBody | Question, quizIndex: number,
 
   // set new question
   let newQuestion: Question;
-  if (operation === QuestionOperation.Duplicate) {
+  if (operation === QuestionOperation.DUPLICATE) {
     newQuestion = { ...quiz.questions[questionIndex - 1], questionId };
   } else {
     const { answers: answerBody, ...question } = questionBody;

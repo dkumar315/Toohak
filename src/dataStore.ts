@@ -21,13 +21,13 @@ export const UNAUTHORIZED = StatusCodes.UNAUTHORIZED; // 401
 export const FORBIDDEN = StatusCodes.FORBIDDEN; // 403
 
 export enum Colours {
-  Red = 'red',
-  Blue = 'blue',
-  Green = 'green',
-  Yellow = 'yellow',
-  Purple = 'purple',
-  Brown = 'brown',
-  Orange = 'orange'
+  RED = 'red',
+  BLUE = 'blue',
+  GREEN = 'green',
+  YELLOW = 'yellow',
+  PURPLE = 'purple',
+  BROWN = 'brown',
+  ORANGE = 'orange'
 }
 
 // interfaces
