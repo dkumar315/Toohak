@@ -338,25 +338,7 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
   return {};
 }
 
-/* export function adminQuizTrash(token: string): QuizTrashReturn | ErrorObjectNumber {
-  const data = getData();
-  const session = data.sessions.sessionIds.find(session => session.token === token);
-  console.log('Session:', session);
 
-  if (!session) {
-    console.log('Invalid token provided:', token);
-    return { error: 'Invalid token', status: UNAUTHORIZED };
-  }
-
-  const userId = session.userId;
-  const trashedQuizzes = data.quizzes
-    .filter(quiz => quiz.creatorId === userId && quiz.isTrashed)
-    .map(({ quizId, name }) => ({ quizId, name }));
-  console.log('Trashed quizzes:', trashedQuizzes);
-
-  return { quizzes: trashedQuizzes, status: OK };
-}
-*/
 export function adminQuizTrash(token: string): QuizTrashReturn | ErrorObjectNumber {
   const data = getData();
   const session = data.sessions.sessionIds.find(session => session.token === token);

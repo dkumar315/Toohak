@@ -288,15 +288,8 @@ app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request,
 
   return res.json(result);
 });
-// displays the quizzes in the trash
-/* app.get('/v1/admin/quiz/trash',(req : Request, res : Response) => {
-  const token = req.query.token as string;
-  const result = adminQuizTrash(token);
-  if('error' in result){
-    return res.status(UNAUTHORIZED).json(result);
-  }
-  return res.json(result);
-}); */
+
+
 app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const result = adminQuizTrash(token);
