@@ -7,7 +7,7 @@ import {
   ERROR, ResError, VALID_EMPTY_RETURN
 } from './functionRequest';
 import {
-  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Colours
+  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Colours, Colour
 } from './dataStore';
 import {
   QuestionBody, AnswerInput, MAX_DURATIONS_SECS,
@@ -282,6 +282,12 @@ describe('testing adminQuizQuestionUpdate' +
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
+
+      test('test2.2.4 quizId is null', () => {
+        result = requestQuizQuestionUpdate(token, null, questionId, questionBody);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(FORBIDDEN);
+      });
     });
 
     describe('test2.3 invalid questionId', () => {
@@ -311,9 +317,21 @@ describe('testing adminQuizQuestionUpdate' +
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
+
+      test('test2.3.4 questionId is null', () => {
+        result = requestQuizQuestionUpdate(token, quizId, null, questionBody);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
+      });
     });
 
     describe('test2.4 invalid question string', () => {
+      test('test2.3.4 questionId is null', () => {
+        result = requestQuizQuestionUpdate(token, quizId, questionId, null);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
+      });
+
       test('test2.4.1 string is less than 5 characters in length', () => {
         questionBody.question = '';
         result = requestQuizQuestionUpdate(token, quizId, questionId, questionBody);
@@ -808,7 +826,7 @@ describe('testing adminQuizQuestionUpdate' +
 
     test('test4.4.3 colors are randomly regenerated', () => {
       const initQuizInfo = validQuizInfo(token, quizId);
-      const initialColors: string[] = initQuizInfo.questions[0].answers.map((ans: Answer) => ans.colour);
+      const initialColors: Colour[] = initQuizInfo.questions[0].answers.map((ans: Answer) => ans.colour);
 
       questionBody.answers.push(trueAnswer3, falseAnswer3);
       result = requestQuizQuestionUpdate(token, quizId, questionId, questionBody);
@@ -819,7 +837,7 @@ describe('testing adminQuizQuestionUpdate' +
       // cannot check if colors have changed,
       // for a same questionBody of create and update
       // as there's a minimum (1/COLOURS.length)^MAX_ANSWERS_LEN fail the test
-      const updatedColors: string[] = updatedQuizInfo.questions[0].answers.map((ans: Answer) => ans.colour);
+      const updatedColors: Colour[] = updatedQuizInfo.questions[0].answers.map((ans: Answer) => ans.colour);
       expect(updatedColors).not.toEqual(initialColors);
 
       // Ensure all colors are valid
