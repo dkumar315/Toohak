@@ -26,7 +26,7 @@ function requestHelper<T>(method: HttpVerb, path: string, payload: object): ApiR
   } else { // ['PUT', 'POST']
     res = request(method, SERVER_URL + path, { json: payload });
   }
-
+  console.log(res.body);
   const bodyObject = JSON.parse(res.body.toString());
   return { status: res.statusCode, ...bodyObject };
 }
@@ -96,7 +96,9 @@ export function requestQuizDescriptionUpdate(token: string, quizId: number,
     { token, description });
 }
 
-
+export function restoreQuiz(token: string, quizId: number): ApiResponse<EmptyObject> {
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/restore`, { token });
+}
 
 // ============== adminQuizQuestion ============================================
 export function requestQuizQuestionCreate(token: string, quizId: number,
@@ -130,8 +132,6 @@ export type ResQuizId = ResValid<QuizCreateReturn>;
 export type ResQuizInfo = ResValid<QuizInfoReturn>;
 export type ResQuestionId = ResValid<QuestionIdReturn>;
 export type ResNewQuestionId = ResValid<NewQuestionIdReturn>;
-export type ResRestore = ResValid<EmptyObject>;
-
 
 export const authRegister = (email: string, password: string,
   nameFirst: string, nameLast: string): ResToken =>
@@ -149,6 +149,3 @@ export const questionCreate = (token: string, quizId: number,
   if ('error' in result) throw new Error(`Fail to create question: ${result.error}`);
   return result;
 };
-
-export const requestQuizRestore = (token: string, quizId: number): ResRestore =>
-  requestQuizRestore(token, quizId) as ResRestore;

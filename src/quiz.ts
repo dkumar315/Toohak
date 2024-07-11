@@ -27,11 +27,6 @@ export interface QuizInfoReturn {
   duration: number,
 }
 
-export interface QuizRestoreReturn {
-  status: number;
-  error?: string;
-}
-
 export interface Quiz {
   quizId: number;
   creatorId: number;
@@ -344,16 +339,15 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
   return {};
 }
 
-
 /**
  * This function restores a quiz from the trash back to active quizzes.
  *
  * @param {string} token - ID of the authorised user
  * @param {number} quizId - ID of the quiz
  *
- * @return {Restore | ErrorObject} - Returns the entire dataset if successful, or an error object if unsuccessful
+ * @return {EmptyObject | ErrorObject} - Returns the entire dataset if successful, or an error object if unsuccessful
  */
-export function adminQuizRestore(token: string, quizId: number): Restore | ErrorObject {
+export function adminQuizRestore(token: string, quizId: number): EmptyObject | ErrorObject {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     return { error: `Invalid token ${token}.` };
@@ -361,9 +355,9 @@ export function adminQuizRestore(token: string, quizId: number): Restore | Error
 
   const data: Data = getData();
 
-  const trashedQuizIndex = data.trashedQuizzes.findIndex(quiz => quiz.quizId === quizId);
-  if (trashedQuizIndex === -1) {
-    return { error: `Quiz ${quizId} is not in the trash` };
+  const trashedQuizIndex = data.trashedQuizzes.findIndex(trashQuiz => trashQuiz.quizId === quizId);
+  if (trashedQuizIndex === INVALID) {
+    return { error: `Quiz ${quizId} is not in the trash.` };
   }
 
   const quiz = data.trashedQuizzes[trashedQuizIndex];
@@ -371,11 +365,15 @@ export function adminQuizRestore(token: string, quizId: number): Restore | Error
     return { error: `UserId ${authUserId} does not own QuizId ${quizId}.` };
   }
 
+  if (data.quizzes.some(existingQuiz => existingQuiz.name === quiz.name)) {
+    return { error: `Quiz name ${quiz.name} is already used by another active quiz.` };
+  }
+
   // Restore the quiz by moving it back to the active quizzes
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
   data.quizzes.push(quiz);
   data.trashedQuizzes.splice(trashedQuizIndex, 1);
-  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
 
   setData(data);
-  return getData(); // Return the updated dataset
+  return {}; // Return an appropriate response
 }
