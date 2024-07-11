@@ -132,11 +132,7 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const result = adminQuizList(token);
   if ('error' in result) {
-    if (result.error.includes('token')) {
-      return res.status(UNAUTHORIZED).json(result);
-    } else {
-      return res.status(BAD_REQUEST).json(result);
-    }
+    res.status(UNAUTHORIZED);
   }
   return res.json(result);
 });
@@ -163,10 +159,8 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   if ('error' in result) {
     if (result.error.includes('token')) {
       return res.status(UNAUTHORIZED).json(result);
-    } else if (result.error.includes('owner')) {
+    } else if (result.error.includes('QuizId')) {
       return res.status(FORBIDDEN).json(result);
-    } else {
-      return res.status(BAD_REQUEST).json(result);
     }
   }
   return res.json(result);
@@ -180,16 +174,14 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   if ('error' in result) {
     if (result.error.includes('token')) {
       return res.status(UNAUTHORIZED).json(result);
-    } else if (result.error.includes('owner')) {
+    } else if (result.error.includes('QuizId')) {
       return res.status(FORBIDDEN).json(result);
-    } else {
-      return res.status(BAD_REQUEST).json(result);
     }
   }
   return res.json(result);
 });
 
-// update quiz name
+// Update quiz name
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   const { token, name } = req.body;
   const quizId = parseInt(req.params.quizid);
@@ -197,7 +189,7 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   if ('error' in result) {
     if (result.error.includes('token')) {
       return res.status(UNAUTHORIZED).json(result);
-    } else if (result.error.includes('owner')) {
+    } else if (result.error.includes('QuizId')) {
       return res.status(FORBIDDEN).json(result);
     } else {
       return res.status(BAD_REQUEST).json(result);
@@ -206,7 +198,7 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-// Get info about crrent quiz
+// Update quiz description
 app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   const { token, description } = req.body;
   const quizId = parseInt(req.params.quizid);
@@ -214,7 +206,7 @@ app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   if ('error' in result) {
     if (result.error.includes('token')) {
       return res.status(UNAUTHORIZED).json(result);
-    } else if (result.error.includes('owner')) {
+    } else if (result.error.includes('QuizId')) {
       return res.status(FORBIDDEN).json(result);
     } else {
       return res.status(BAD_REQUEST).json(result);
