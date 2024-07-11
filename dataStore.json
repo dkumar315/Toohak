@@ -1,1 +1,1 @@
-{"users":[{"userId":1,"nameFirst":"Akshat","nameLast":"Mishra","email":"Akshat123mish@gmail.com","password":"Ak12shat","numSuccessfulLogins":1,"numFailedPasswordsSinceLastLogin":0}],"quizzes":[],"sessions":{"globalCounter":1,"questionCounter":0,"sessionIds":[{"userId":1,"token":"1"}]}}
+{"users":[],"quizzes":[],"sessions":{"globalCounter":0,"questionCounter":0,"sessionIds":[]}}

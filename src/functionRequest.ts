@@ -127,9 +127,7 @@ export function requestQuizQuestionDuplicate(token: string, quizId: number,
 }
 
 export function requestAdminQuizTrash(token: string): ResQuizTrash | ErrorObjectNumber {
-  console.log('Sending request with token:', token);
   const res = requestHelper<QuizTrashReturn>('GET', '/v1/admin/quiz/trash', { token }) as ResQuizTrash | ErrorObjectNumber;
-  console.log('requestAdminQuizTrash response:', res);
   return res;
 }
 

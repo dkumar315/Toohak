@@ -147,7 +147,6 @@ export function adminQuizCreate(token: string, name: string, description: string
  * @return {object} - Returns an empty object
  */
 export function adminQuizRemove(token: string, quizId: number): EmptyObject | ErrorObject {
-  console.log('calling remove');
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     return { error: `Invalid token ${token}.` };
@@ -185,7 +184,6 @@ export function adminQuizRemove(token: string, quizId: number): EmptyObject | Er
  *
  */
 export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | ErrorObject {
-  console.log('calling info');
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     return { error: `Invalid token ${token}.` };
@@ -230,7 +228,6 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
  * @return {object} - Returns an empty object
  */
 export function adminQuizNameUpdate(token: string, quizId: number, name: string): EmptyObject | ErrorObject {
-  console.log('calling name update');
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     return { error: `Invalid token ${token}.` };
@@ -304,7 +301,6 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
  * @return {object} - Returns an empty object
  */
 export function adminQuizDescriptionUpdate(token: string, quizId: number, description: string): EmptyObject | ErrorObject {
-  console.log('calling desc update');
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     return { error: `Invalid token ${token}.` };
@@ -338,14 +334,10 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
   return {};
 }
 
-
 export function adminQuizTrash(token: string): QuizTrashReturn | ErrorObjectNumber {
   const data = getData();
   const session = data.sessions.sessionIds.find(session => session.token === token);
-  console.log('Session:', session);
-
   if (!session) {
-    console.log('Invalid token provided:', token);
     return { error: 'Invalid token', status: UNAUTHORIZED };
   }
 
@@ -353,7 +345,5 @@ export function adminQuizTrash(token: string): QuizTrashReturn | ErrorObjectNumb
   const trashedQuizzes = data.quizzes
     .filter(quiz => quiz.creatorId === userId && quiz.isTrashed)
     .map(({ quizId, name }) => ({ quizId, name }));
-  console.log('Trashed quizzes:', trashedQuizzes);
-
   return { quizzes: trashedQuizzes, status: OK };
 }
