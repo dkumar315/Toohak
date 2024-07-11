@@ -37,7 +37,7 @@ import {
 import {
   adminQuizList, adminQuizCreate, adminQuizRemove,
   adminQuizInfo, adminQuizNameUpdate,
-  adminQuizDescriptionUpdate
+  adminQuizDescriptionUpdate, adminQuizTransfer 
 } from './quiz';
 import {
   adminQuizQuestionCreate, adminQuizQuestionUpdate,
@@ -222,6 +222,25 @@ app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   }
   return res.json(result);
 });
+
+// Transfer quiz ownership
+app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token, userEmail } = req.body;
+  const transferData = { token, quizId, userEmail };
+  const result = adminQuizTransfer(transferData);
+  if ('error' in result) {
+    if (result.error.includes('token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else if (result.error.includes('owner')) {
+      return res.status(FORBIDDEN).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
+  return res.json(result);
+});
+
 
 // adminQuizQuestion
 // Create quiz question
