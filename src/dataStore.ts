@@ -96,7 +96,7 @@ export interface Session {
 export interface Restore {
   users: User[];
   quizzes: Quiz[];
-  trashedQuizzes: Quiz[]; 
+  trashedQuizzes: Quiz[];
   sessions: Sessions;
 }
 
