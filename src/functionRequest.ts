@@ -96,6 +96,14 @@ export function requestQuizDescriptionUpdate(token: string, quizId: number,
     { token, description });
 }
 
+export function requestRestoreQuiz(token: string, quizId: number): ApiResponse<EmptyObject> {
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/restore`, { token });
+}
+
+export function requestQuizTransfer(transferData: QuizTransfer): ApiResponse<EmptyObject> {
+  return requestHelper('POST', `/v1/admin/quiz/${transferData.quizId}/transfer`, transferData);
+}
+
 // ============== adminQuizQuestion ============================================
 export function requestQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): ApiResponse<QuestionIdReturn> {
@@ -124,11 +132,6 @@ export function requestQuizQuestionDuplicate(token: string, quizId: number,
   questionId: number): ApiResponse<NewQuestionIdReturn> {
   return requestHelper('POST',
     `/v1/admin/quiz/${quizId}/question/${questionId}/duplicate`, { token });
-}
-
-// ============== adminQuizTransfer ============================================
-export function requestQuizTransfer(transferData: QuizTransfer): ApiResponse<EmptyObject> {
-  return requestHelper('POST', `/v1/admin/quiz/${transferData.quizId}/transfer`, transferData);
 }
 
 // ============== other ========================================================
