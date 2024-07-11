@@ -244,41 +244,6 @@ app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   if ('error' in result) {
     if (result.error.includes('token')) {
       return res.status(UNAUTHORIZED).json(result);
-    } else if (result.error.includes('QuizId')) {
-      return res.status(FORBIDDEN).json(result);
-    } else {
-      return res.status(BAD_REQUEST).json(result);
-    }
-  }
-  return res.json(result);
-});
-
-// Restore a quiz from trash
-app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
-  const { token } = req.body;
-  const quizId = parseInt(req.params.quizid as string);
-  const result = adminQuizRestore(token, quizId);
-  if ('error' in result) {
-    if (result.error.includes('Invalid token')) {
-      return res.status(UNAUTHORIZED).json(result);
-    } else if (result.error.includes('does not own')) {
-      return res.status(FORBIDDEN).json(result);
-    } else {
-      return res.status(BAD_REQUEST).json(result);
-    }
-  }
-  return res.json(result);
-});
-
-// Transfer quiz ownership
-app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
-  const quizId = parseInt(req.params.quizid);
-  const { token, userEmail } = req.body;
-  const transferData = { token, quizId, userEmail };
-  const result = adminQuizTransfer(transferData);
-  if ('error' in result) {
-    if (result.error.includes('token')) {
-      return res.status(UNAUTHORIZED).json(result);
     } else if (result.error.includes('owner')) {
       return res.status(FORBIDDEN).json(result);
     } else {
