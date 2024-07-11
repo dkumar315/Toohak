@@ -1,5 +1,5 @@
 import {
-  getData, setData, Data, Quiz, Question,
+  getData, setData, Data, Quiz, Question, QuizTransfer,
   EmptyObject, ErrorObject, INVALID
 } from './dataStore';
 import { findUserId } from './auth';
@@ -139,9 +139,11 @@ export function adminQuizRemove(token: string, quizId: number): EmptyObject | Er
   const data: Data = getData();
 
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
-  if (quizIndex !== INVALID) {
-    data.quizzes.splice(quizIndex, 1);
+  if (quizIndex === INVALID) {
+    return { error: `${quizIndex} does not exist` };
   }
+  const [deletedQuiz] = data.quizzes.splice(quizIndex, 1);
+  data.trashedQuizzes.push(deletedQuiz);
 
   setData(data);
   return {};
@@ -210,13 +212,8 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
 
   name = name.trim();
 
-  for (const letter of name) {
-    if (!((letter >= 'A' && letter <= 'Z') ||
-      (letter >= 'a' && letter <= 'z') ||
-      (letter >= '0' && letter <= '9') ||
-      (letter === ' '))) {
-      return { error: `Name ${name} contains invalid characters, only alphanumeric and spaces allowed` };
-    }
+  if (!/^[a-zA-Z0-9 ]$/.test(name)) {
+    return { error: `Name ${name} contains invalid characters, only alphanumeric and spaces allowed` };
   }
 
   if (name.length < MIN_NAME_LENGTH) {
@@ -274,6 +271,91 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
   const quiz: Quiz = data.quizzes.find(q => q.quizId === quizId);
 
   quiz.description = description;
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
+
+  setData(data);
+  return {};
+}
+
+/**
+ * This function restores a quiz from the trash back to active quizzes.
+ *
+ * @param {string} token - ID of the authorised user
+ * @param {number} quizId - ID of the quiz
+ *
+ * @return {EmptyObject | ErrorObject} - Returns the entire dataset if successful, or an error object if unsuccessful
+ */
+export function adminQuizRestore(token: string, quizId: number): EmptyObject | ErrorObject {
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return { error: `Invalid token ${token}.` };
+  }
+
+  const data: Data = getData();
+
+  const trashedQuizIndex = data.trashedQuizzes.findIndex(trashQuiz => trashQuiz.quizId === quizId);
+  if (trashedQuizIndex === INVALID) {
+    return { error: `Quiz ${quizId} is not in the trash.` };
+  }
+
+  const quiz = data.trashedQuizzes[trashedQuizIndex];
+  if (quiz.creatorId !== authUserId) {
+    return { error: `UserId ${authUserId} does not own QuizId ${quizId}.` };
+  }
+
+  if (data.quizzes.some(existingQuiz => existingQuiz.name === quiz.name)) {
+    return { error: `Quiz name ${quiz.name} is already used by another active quiz.` };
+  }
+
+  // Restore the quiz by moving it back to the active quizzes
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
+  data.quizzes.push(quiz);
+  data.trashedQuizzes.splice(trashedQuizIndex, 1);
+
+  setData(data);
+  return {}; // Return an appropriate response
+}
+
+/**
+ * This function transfers the ownership of a quiz to another user.
+ *
+ * @param {QuizTransfer} transferData - The data required for the transfer
+ *
+ * @return {object} - Returns an empty object
+ */
+export function adminQuizTransfer(transferData: QuizTransfer): EmptyObject | ErrorObject {
+  const { token, quizId, userEmail } = transferData;
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return { error: `Invalid token ${token}.` };
+  }
+
+  const ownershipValidation = validateQuiz(authUserId, quizId);
+  if (ownershipValidation !== true) {
+    return ownershipValidation;
+  }
+
+  const data: Data = getData();
+
+  // Find the new owner's user ID by their email
+  const newOwner = data.users.find(user => user.email === userEmail);
+  if (!newOwner) {
+    return { error: `User with email ${userEmail} does not exist.` };
+  }
+
+  const newOwnerId = newOwner.userId;
+
+  if (newOwnerId === authUserId) {
+    return { error: 'Cannot transfer quiz to the current owner.' };
+  }
+
+  if (data.quizzes.some(quiz => quiz.creatorId === newOwnerId && quiz.name === data.quizzes[quizId - 1].name)) {
+    return { error: `Quiz with name ${data.quizzes[quizId - 1].name} already exists for the new owner.` };
+  }
+
+  const quiz: Quiz = data.quizzes.find(q => q.quizId === quizId);
+
+  quiz.creatorId = newOwnerId;
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
 
   setData(data);

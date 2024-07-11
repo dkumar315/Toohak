@@ -4,7 +4,7 @@ const SERVER_URL: string = `${config.url}:${config.port}`;
 
 // ============== interfaces ===================================================
 import { StatusCodes } from 'http-status-codes';
-import { EmptyObject, ErrorObject } from './dataStore';
+import { EmptyObject, ErrorObject, QuizTransfer } from './dataStore';
 import { TokenReturn, UserDetailReturn } from './auth';
 import { QuizListReturn, QuizCreateReturn, QuizInfoReturn } from './quiz';
 import { QuestionBody, QuestionIdReturn, NewQuestionIdReturn } from './quizQuestion';
@@ -94,6 +94,14 @@ export function requestQuizDescriptionUpdate(token: string, quizId: number,
   description: string): ApiResponse<EmptyObject> {
   return requestHelper('PUT', `/v1/admin/quiz/${quizId}/description`,
     { token, description });
+}
+
+export function requestRestoreQuiz(token: string, quizId: number): ApiResponse<EmptyObject> {
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/restore`, { token });
+}
+
+export function requestQuizTransfer(transferData: QuizTransfer): ApiResponse<EmptyObject> {
+  return requestHelper('POST', `/v1/admin/quiz/${transferData.quizId}/transfer`, transferData);
 }
 
 // ============== adminQuizQuestion ============================================
