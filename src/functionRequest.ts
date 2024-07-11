@@ -96,6 +96,10 @@ export function requestQuizDescriptionUpdate(token: string, quizId: number,
     { token, description });
 }
 
+export function restoreQuiz(token: string, quizId: number): ApiResponse<EmptyObject> {
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/restore`, { token });
+}
+
 // ============== adminQuizQuestion ============================================
 export function requestQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): ApiResponse<QuestionIdReturn> {

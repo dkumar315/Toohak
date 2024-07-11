@@ -37,7 +37,7 @@ import {
 import {
   adminQuizList, adminQuizCreate, adminQuizRemove,
   adminQuizInfo, adminQuizNameUpdate,
-  adminQuizDescriptionUpdate
+  adminQuizDescriptionUpdate, adminQuizRestore
 } from './quiz';
 import {
   adminQuizQuestionCreate, adminQuizQuestionUpdate,
@@ -53,28 +53,31 @@ import { clear } from './other';
 app.get('/echo', (req: Request, res: Response) => {
   const result = echo(req.query.echo as string);
   if ('error' in result) {
-    res.status(BAD_REQUEST);
+    res.status(BAD_REQUEST).json(result);
+  } else {
+    res.json(result);
   }
-  return res.json(result);
 });
 
 // adminAuth
-// Login an admin user
+// Register an admin user
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
   const result = adminAuthRegister(email, password, nameFirst, nameLast);
   if ('error' in result) {
     return res.status(BAD_REQUEST).json(result);
   }
-
   return res.json(result);
 });
 
-// login (todo)
 // Login an admin user
 app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   const { email, password } = req.body;
-  return res.json(adminAuthLogin(email, password));
+  const result = adminAuthLogin(email, password);
+  if ('error' in result) {
+    return res.status(BAD_REQUEST).json(result);
+  }
+  return res.json(result);
 });
 
 // Logs out an admin user who has active user session
@@ -82,7 +85,7 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   const { token } = req.body;
   const result = adminAuthLogout(token);
   if ('error' in result) {
-    res.status(UNAUTHORIZED);
+    return res.status(UNAUTHORIZED).json(result);
   }
   return res.json(result);
 });
@@ -93,7 +96,7 @@ app.get('/v1/admin/user/details', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const result = adminUserDetails(token);
   if ('error' in result) {
-    res.status(UNAUTHORIZED);
+    return res.status(UNAUTHORIZED).json(result);
   }
   return res.json(result);
 });
@@ -189,6 +192,23 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   return res.json(result);
 });
 
+// Restore a quiz from trash
+app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
+  const { token } = req.body;
+  const quizId = parseInt(req.params.quizid as string);
+  const result = adminQuizRestore(token, quizId);
+  if ('error' in result) {
+    if (result.error.includes('Invalid token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else if (result.error.includes('does not own')) {
+      return res.status(FORBIDDEN).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
+  return res.json(result);
+});
+
 // update quiz name
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   const { token, name } = req.body;
@@ -206,7 +226,7 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-// Get info about crrent quiz
+// update quiz description
 app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   const { token, description } = req.body;
   const quizId = parseInt(req.params.quizid);
@@ -239,7 +259,6 @@ app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
       return res.status(BAD_REQUEST).json(result);
     }
   }
-
   return res.json(result);
 });
 
@@ -259,7 +278,6 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Respo
       return res.status(BAD_REQUEST).json(result);
     }
   }
-
   return res.json(result);
 });
 
@@ -319,7 +337,6 @@ app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request,
       return res.status(BAD_REQUEST).json(result);
     }
   }
-
   return res.json(result);
 });
 

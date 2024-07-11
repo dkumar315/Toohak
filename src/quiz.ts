@@ -1,5 +1,5 @@
 import {
-  getData, setData, Data, Quiz, Question,
+  getData, setData, Data, Question,
   EmptyObject, ErrorObject, INVALID
 } from './dataStore';
 import { findUserId } from './auth';
@@ -25,6 +25,19 @@ export interface QuizInfoReturn {
   numQuestions: number,
   questions: Question[],
   duration: number,
+}
+
+export interface Quiz {
+  quizId: number;
+  creatorId: number;
+  name: string;
+  description: string;
+  timeCreated: number;
+  timeLastEdited: number;
+  numQuestions: number;
+  questions: Question[];
+  duration: number;
+  trashed?: boolean;
 }
 
 export function validateQuizId(quizId: number): true | ErrorObject {
@@ -155,9 +168,11 @@ export function adminQuizRemove(token: string, quizId: number): EmptyObject | Er
   const data: Data = getData();
 
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
-  if (quizIndex !== INVALID) {
-    data.quizzes.splice(quizIndex, 1);
+  if (quizIndex === INVALID) {
+    return { error: `${quizIndex} does not exist` };
   }
+  const [deletedQuiz] = data.quizzes.splice(quizIndex, 1);
+  data.trashedQuizzes.push(deletedQuiz);
 
   setData(data);
   return {};
@@ -322,4 +337,43 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
 
   setData(data);
   return {};
+}
+
+/**
+ * This function restores a quiz from the trash back to active quizzes.
+ *
+ * @param {string} token - ID of the authorised user
+ * @param {number} quizId - ID of the quiz
+ *
+ * @return {EmptyObject | ErrorObject} - Returns the entire dataset if successful, or an error object if unsuccessful
+ */
+export function adminQuizRestore(token: string, quizId: number): EmptyObject | ErrorObject {
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return { error: `Invalid token ${token}.` };
+  }
+
+  const data: Data = getData();
+
+  const trashedQuizIndex = data.trashedQuizzes.findIndex(trashQuiz => trashQuiz.quizId === quizId);
+  if (trashedQuizIndex === INVALID) {
+    return { error: `Quiz ${quizId} is not in the trash.` };
+  }
+
+  const quiz = data.trashedQuizzes[trashedQuizIndex];
+  if (quiz.creatorId !== authUserId) {
+    return { error: `UserId ${authUserId} does not own QuizId ${quizId}.` };
+  }
+
+  if (data.quizzes.some(existingQuiz => existingQuiz.name === quiz.name)) {
+    return { error: `Quiz name ${quiz.name} is already used by another active quiz.` };
+  }
+
+  // Restore the quiz by moving it back to the active quizzes
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
+  data.quizzes.push(quiz);
+  data.trashedQuizzes.splice(trashedQuizIndex, 1);
+
+  setData(data);
+  return {}; // Return an appropriate response
 }
