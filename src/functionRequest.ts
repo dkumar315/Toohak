@@ -4,7 +4,7 @@ const SERVER_URL: string = `${config.url}:${config.port}`;
 
 // ============== interfaces ===================================================
 import { StatusCodes } from 'http-status-codes';
-import { EmptyObject, ErrorObject } from './dataStore';
+import { EmptyObject, ErrorObject, QuizTransfer } from './dataStore';
 import { TokenReturn, UserDetailReturn } from './auth';
 import { QuizListReturn, QuizCreateReturn, QuizInfoReturn } from './quiz';
 import { QuestionBody, QuestionIdReturn, NewQuestionIdReturn } from './quizQuestion';
@@ -113,6 +113,11 @@ export function requestQuizQuestionDuplicate(token: string, quizId: number,
   questionId: number): ApiResponse<NewQuestionIdReturn> {
   return requestHelper('POST',
     `/v1/admin/quiz/${quizId}/question/${questionId}/duplicate`, { token });
+}
+
+// ============== adminQuizTransfer ============================================
+export function requestQuizTransfer(transferData: QuizTransfer): ApiResponse<EmptyObject> {
+  return requestHelper('POST', `/v1/admin/quiz/${transferData.quizId}/transfer`, transferData);
 }
 
 // ============== other ========================================================
