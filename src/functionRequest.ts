@@ -4,7 +4,7 @@ const SERVER_URL: string = `${config.url}:${config.port}`;
 
 // ============== interfaces ===================================================
 import { StatusCodes } from 'http-status-codes';
-import { EmptyObject, ErrorObject } from './dataStore';
+import { EmptyObject, ErrorObject, ErrorObjectNumber } from './dataStore';
 import { TokenReturn, UserDetailReturn } from './auth';
 import { QuizListReturn, QuizCreateReturn, QuizInfoReturn, QuizTrashReturn } from './quiz';
 import { QuestionBody, QuestionIdReturn, NewQuestionIdReturn } from './quizQuestion';
@@ -96,7 +96,6 @@ export function requestQuizDescriptionUpdate(token: string, quizId: number,
     { token, description });
 }
 
-
 // ============== adminQuizQuestion ============================================
 export function requestQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): ApiResponse<QuestionIdReturn> {
@@ -116,9 +115,13 @@ export function requestQuizQuestionDuplicate(token: string, quizId: number,
     `/v1/admin/quiz/${quizId}/question/${questionId}/duplicate`, { token });
 }
 
-export function requestAdminQuizTrash(token: string): ApiResponse<QuizTrashReturn> {
-  return requestHelper('GET', '/v1/admin/quiz/trash', { token });
+export function requestAdminQuizTrash(token: string): ResQuizTrash | ErrorObjectNumber {
+  console.log('Sending request with token:', token);
+  const res = requestHelper<QuizTrashReturn>('GET', '/v1/admin/quiz/trash', { token }) as ResQuizTrash | ErrorObjectNumber;
+  console.log('requestAdminQuizTrash response:', res);
+  return res;
 }
+
 // ============== other ========================================================
 export function requestClear(): ApiResponse<EmptyObject> {
   return requestHelper('DELETE', '/v1/clear', {});

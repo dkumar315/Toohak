@@ -1,6 +1,7 @@
 import {
   getData, setData, Data, Quiz, Question,
-  EmptyObject, ErrorObject, INVALID
+  EmptyObject, ErrorObject, INVALID,
+  ErrorObjectNumber, OK, UNAUTHORIZED
 } from './dataStore';
 import { findUserId } from './auth';
 
@@ -27,12 +28,12 @@ export interface QuizInfoReturn {
   duration: number,
 }
 
-
 export interface QuizTrashReturn {
   quizzes: Array<{
     quizId: number;
     name: string;
   }>;
+  status?: number
 }
 
 export function validateQuizId(quizId: number): true | ErrorObject {
@@ -69,7 +70,7 @@ export function validateOwnership(authUserId: number, quizId: number): true | Er
  *
  * @return {object} - Returns the details of the quiz
  */
-export function adminQuizList(token: string): QuizListReturn | ErrorObject {
+export function adminQuizList(token: string): QuizListReturn | ErrorObjectNumber | ErrorObject {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     return { error: `Invalid token ${token}.` };
@@ -336,21 +337,41 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
   setData(data);
   return {};
 }
-export function adminQuizTrash(token: string):  QuizTrashReturn | ErrorObject {
-  const data = getData();
-  console.log('calling quizTrash'+`${token}`);
 
-  // Validate token
+/* export function adminQuizTrash(token: string): QuizTrashReturn | ErrorObjectNumber {
+  const data = getData();
   const session = data.sessions.sessionIds.find(session => session.token === token);
+  console.log('Session:', session);
+
   if (!session) {
-    return { error: 'Invalid token' };
+    console.log('Invalid token provided:', token);
+    return { error: 'Invalid token', status: UNAUTHORIZED };
   }
 
   const userId = session.userId;
+  const trashedQuizzes = data.quizzes
+    .filter(quiz => quiz.creatorId === userId && quiz.isTrashed)
+    .map(({ quizId, name }) => ({ quizId, name }));
+  console.log('Trashed quizzes:', trashedQuizzes);
 
-  // Get the quizzes in the trash for this user
-  const trashedQuizzes = data.quizzes.filter(quiz => quiz.creatorId === userId && quiz.isTrashed)
-                                     .map(({ quizId, name }) => ({ quizId, name }));
+  return { quizzes: trashedQuizzes, status: OK };
+}
+*/
+export function adminQuizTrash(token: string): QuizTrashReturn | ErrorObjectNumber {
+  const data = getData();
+  const session = data.sessions.sessionIds.find(session => session.token === token);
+  console.log('Session:', session);
 
-  return { quizzes: trashedQuizzes };
+  if (!session) {
+    console.log('Invalid token provided:', token);
+    return { error: 'Invalid token', status: UNAUTHORIZED };
+  }
+
+  const userId = session.userId;
+  const trashedQuizzes = data.quizzes
+    .filter(quiz => quiz.creatorId === userId && quiz.isTrashed)
+    .map(({ quizId, name }) => ({ quizId, name }));
+  console.log('Trashed quizzes:', trashedQuizzes);
+
+  return { quizzes: trashedQuizzes, status: OK };
 }
