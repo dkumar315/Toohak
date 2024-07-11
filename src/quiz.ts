@@ -4,7 +4,6 @@ import {
 } from './dataStore';
 import { findUserId } from './auth';
 
-
 const MAX_DESCRIPTION_LENGTH: number = 100;
 const MIN_NAME_LENGTH: number = 3;
 const MAX_NAME_LENGTH: number = 30;
@@ -360,7 +359,7 @@ export function adminQuizTransfer(transferData: QuizTransfer): EmptyObject | Err
   const newOwnerId = newOwner.userId;
 
   if (newOwnerId === authUserId) {
-    return { error: `Cannot transfer quiz to the current owner.` };
+    return { error: 'Cannot transfer quiz to the current owner.' };
   }
 
   if (data.quizzes.some(quiz => quiz.creatorId === newOwnerId && quiz.name === data.quizzes[quizId - 1].name)) {
@@ -378,5 +377,3 @@ export function adminQuizTransfer(transferData: QuizTransfer): EmptyObject | Err
   setData(data);
   return {};
 }
-
-

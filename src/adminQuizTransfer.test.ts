@@ -1,8 +1,7 @@
 import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
 import {
-  authRegister, requestAuthLogin, requestAuthLogout,
-  requestQuizCreate, requestQuizInfo, requestQuizTransfer, requestClear,
-  ResError, ResEmpty, ResToken, ResQuizId
+  authRegister, requestAuthLogout,
+  requestQuizCreate, requestQuizInfo, requestQuizTransfer, requestClear
 } from './functionRequest';
 import { QuizTransfer } from './dataStore';
 
@@ -15,12 +14,11 @@ beforeEach(() => {
   token = authRegister('krishpatel@gmail.com', 'KrishPatel0123', 'Krish', 'Patel').token;
   otherToken = authRegister('johnsmith@gmail.com', 'Johnsmith012345', 'John', 'Smith').token;
 
-  let quizCreateResponse = requestQuizCreate(token, 'Test Quiz', 'This is a test quiz.');
+  const quizCreateResponse = requestQuizCreate(token, 'Test Quiz', 'This is a test quiz.');
   if ('quizId' in quizCreateResponse) {
     quizId = quizCreateResponse.quizId;
   } else {
     console.error(`Failed to create quiz: ${quizCreateResponse.error}`);
-    return;
   }
 });
 
@@ -83,7 +81,6 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
         expect(quizInfo).toMatchObject({ quizId: minimalQuizId, name: 'Min', description: 'D' });
       } else {
         console.error(`Failed to create minimal quiz: ${minimalQuizCreateResponse.error}`);
-        return;
       }
     });
 
@@ -100,7 +97,6 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
         expect(quizInfo).toMatchObject({ quizId: maxQuizId, name: longName, description: longDescription });
       } else {
         console.error(`Failed to create max quiz: ${maxQuizCreateResponse.error}`);
-        return;
       }
     });
 

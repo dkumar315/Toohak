@@ -37,7 +37,7 @@ import {
 import {
   adminQuizList, adminQuizCreate, adminQuizRemove,
   adminQuizInfo, adminQuizNameUpdate,
-  adminQuizDescriptionUpdate, adminQuizTransfer 
+  adminQuizDescriptionUpdate, adminQuizTransfer
 } from './quiz';
 import {
   adminQuizQuestionCreate, adminQuizQuestionUpdate,
@@ -240,7 +240,6 @@ app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   }
   return res.json(result);
 });
-
 
 // adminQuizQuestion
 // Create quiz question
