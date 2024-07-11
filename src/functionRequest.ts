@@ -114,6 +114,12 @@ export function requestQuizQuestionDelete(token: string, quizId: number,
   return requestHelper('DELETE', `/v1/admin/quiz/${quizId}/question/${questionId}`, { token });
 }
 
+export function requestQuizQuestionMove(token: string, quizId: number,
+  questionId: number, newPosition: number): ApiResponse<EmptyObject> {
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/question/${questionId}/move`,
+    { token, newPosition });
+}
+
 export function requestQuizQuestionDuplicate(token: string, quizId: number,
   questionId: number): ApiResponse<NewQuestionIdReturn> {
   return requestHelper('POST',
@@ -145,8 +151,5 @@ export const validQuizInfo = (token: string, quizId: number): ResQuizInfo =>
   requestQuizInfo(token, quizId) as ResQuizInfo;
 
 export const questionCreate = (token: string, quizId: number,
-  questionBody: QuestionBody): ResQuestionId => {
-  const result = requestQuizQuestionCreate(token, quizId, questionBody) as ResQuestionId;
-  if ('error' in result) throw new Error(`Fail to create question: ${result.error}`);
-  return result;
-};
+  questionBody: QuestionBody): ResQuestionId =>
+  requestQuizQuestionCreate(token, quizId, questionBody) as ResQuestionId;
