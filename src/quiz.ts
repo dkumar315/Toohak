@@ -139,9 +139,6 @@ export function adminQuizRemove(token: string, quizId: number): EmptyObject | Er
   const data: Data = getData();
 
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
-  if (quizIndex === INVALID) {
-    return { error: `${quizIndex} does not exist` };
-  }
   const [deletedQuiz] = data.quizzes.splice(quizIndex, 1);
   data.trashedQuizzes.push(deletedQuiz);
 
@@ -212,7 +209,7 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
 
   name = name.trim();
 
-  if (!/^[a-zA-Z0-9 ]$/.test(name)) {
+  if (!/^[a-zA-Z0-9 ]+$/.test(name)) {
     return { error: `Name ${name} contains invalid characters, only alphanumeric and spaces allowed` };
   }
 
