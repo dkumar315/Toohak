@@ -151,8 +151,5 @@ export const validQuizInfo = (token: string, quizId: number): ResQuizInfo =>
   requestQuizInfo(token, quizId) as ResQuizInfo;
 
 export const questionCreate = (token: string, quizId: number,
-  questionBody: QuestionBody): ResQuestionId => {
-  const result = requestQuizQuestionCreate(token, quizId, questionBody) as ResQuestionId;
-  if ('error' in result) throw new Error(`Fail to create question: ${result.error}`);
-  return result;
-};
+  questionBody: QuestionBody): ResQuestionId =>
+  requestQuizQuestionCreate(token, quizId, questionBody) as ResQuestionId;
