@@ -303,8 +303,8 @@ describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question'
       });
     });
 
-    describe('test2.2 invalid questionBody', () => {
-      test('test2.2.0 questionBody is null', () => {
+    describe('test2.3+ invalid questionBody', () => {
+      test('test2.3.0 questionBody is null', () => {
         result = requestQuizQuestionCreate(token, quizId, null);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
@@ -354,7 +354,7 @@ describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question'
           expect(result.status).toStrictEqual(BAD_REQUEST);
         });
 
-        test('test2.4.4 invalid answers, question have only 7 answers', () => {
+        test('test2.4.4 question have 7 answers (AnswersLimit.MAX_COUNT = 6)', () => {
           const extraAnswer: AnswerInput = {
             answer: 'N/A',
             correct: false,

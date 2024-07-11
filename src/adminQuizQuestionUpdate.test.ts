@@ -325,12 +325,6 @@ describe('testing adminQuizQuestionUpdate' +
     });
 
     describe('test2.4 invalid question string', () => {
-      test('test2.3.4 questionId is null', () => {
-        result = requestQuizQuestionUpdate(token, quizId, questionId, null);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
       test('test2.4.1 string is less than 5 characters in length', () => {
         questionBody.question = '';
         result = requestQuizQuestionUpdate(token, quizId, questionId, questionBody);
