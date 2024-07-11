@@ -1,10 +1,9 @@
 import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Colours } from './dataStore';
 import {
-  ERROR, ResError, ResQuestionId, ResQuizInfo,
-  authRegister, quizCreate, questionCreate,
-  validQuizInfo, requestQuizQuestionCreate,
-  requestAuthLogout, requestQuizRemove,
-  requestClear
+  authRegister, requestAuthLogout,
+  quizCreate, validQuizInfo, requestQuizRemove,
+  requestQuizQuestionCreate, questionCreate,
+  requestClear, ERROR, ResError, ResQuestionId, ResQuizInfo,
 } from './functionRequest';
 import {
   QuestionBody, AnswerInput, MAX_DURATIONS_SECS,
@@ -296,218 +295,232 @@ describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question'
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
-    });
 
-    describe('test2.3 invalid question string', () => {
-      test('test2.3.1 string is less than 5 characters in length', () => {
-        questionBody.question = '';
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
+      test('test2.2.1 quizId is null', () => {
+        result = requestQuizQuestionCreate(token, null, questionBody);
         expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
-      test('test2.3.2 string is 4 characters in length', () => {
-        questionBody.question = 'q'.repeat(QuestionLimit.MIN_LEN - 1);
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
-      test('test2.3.3 string is greater than 50 characters in length', () => {
-        questionBody.question = 'q'.repeat(QuestionLimit.MAX_LEN + 1);
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
+        expect(result.status).toStrictEqual(FORBIDDEN);
       });
     });
 
-    describe('test2.4 invalid answers length', () => {
-      test('test2.4.1 question does not have answer', () => {
-        questionBody.answers = [];
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-      });
-
-      test('test2.4.2 uestion have only 1 true answer', () => {
-        questionBody.answers.push(trueAnswer1);
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
+    describe('test2.3+ invalid questionBody', () => {
+      test('test2.3.0 questionBody is null', () => {
+        result = requestQuizQuestionCreate(token, quizId, null);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test('test2.4.3 question have only 1 false answer', () => {
-        questionBody.answers.push(falseAnswer1);
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
+      describe('test2.3 invalid question string', () => {
+        test('test2.3.1 string is less than 5 characters in length', () => {
+          questionBody.question = '';
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+
+        test('test2.3.2 string is 4 characters in length', () => {
+          questionBody.question = 'q'.repeat(QuestionLimit.MIN_LEN - 1);
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+
+        test('test2.3.3 string is greater than 50 characters in length', () => {
+          questionBody.question = 'q'.repeat(QuestionLimit.MAX_LEN + 1);
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
       });
 
-      test('test2.4.4 invalid answers, question have only 7 answers', () => {
-        const extraAnswer: AnswerInput = {
-          answer: 'N/A',
+      describe('test2.4 invalid answers length', () => {
+        test('test2.4.1 question does not have answer', () => {
+          questionBody.answers = [];
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+        });
+
+        test('test2.4.2 uestion have only 1 true answer', () => {
+          questionBody.answers.push(trueAnswer1);
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+
+        test('test2.4.3 question have only 1 false answer', () => {
+          questionBody.answers.push(falseAnswer1);
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+
+        test('test2.4.4 question have 7 answers (AnswersLimit.MAX_COUNT = 6)', () => {
+          const extraAnswer: AnswerInput = {
+            answer: 'N/A',
+            correct: false,
+          };
+          questionBody.answers.push(trueAnswer1, trueAnswer2, trueAnswer3,
+            falseAnswer1, falseAnswer2, falseAnswer3, extraAnswer);
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+      });
+
+      describe('test2.5 invalid question durations', () => {
+        test('test2.5.1 question durations is 0', () => {
+          questionBody.answers.push(trueAnswer1);
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+
+        test('test2.5.2 question durations is negative', () => {
+          questionBody.duration = -1;
+          questionBody.answers.push(trueAnswer1, falseAnswer1);
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+      });
+
+      describe('test2.6 invalid durations length', () => {
+        test('test2.6.1 question pass duration', () => {
+          questionBody.duration = MAX_DURATIONS_SECS + 1;
+          questionBody.answers.push(trueAnswer1, falseAnswer1);
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+
+        test('test2.6.2 one question has max duration, create new question', () => {
+          questionBody.duration = MAX_DURATIONS_SECS;
+          // question 1
+          questionBody.answers.push(trueAnswer1, falseAnswer1);
+          requestQuizQuestionCreate(token, quizId, questionBody);
+
+          // question 2
+          questionBody.duration = 1;
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+
+        test('test2.6.3 sum of 2 questions has max duration, create new question', () => {
+          questionBody.duration = Math.floor(MAX_DURATIONS_SECS / 2);
+          // question 1
+          questionBody.answers.push(trueAnswer1, falseAnswer1);
+          requestQuizQuestionCreate(token, quizId, questionBody);
+
+          // question 2
+          questionBody.answers.push(trueAnswer2, falseAnswer2);
+          requestQuizQuestionCreate(token, quizId, questionBody);
+
+          // question 3
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+      });
+
+      describe('test2.7 invalid points awarded', () => {
+        test('test2.7.1 points awarded is negative value', () => {
+          questionBody.points = -1;
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+
+        test('test2.7.2 points awarded is 0', () => {
+          questionBody.points = 0;
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+
+        test('test2.7.3 points awarded is more than 10', () => {
+          questionBody.points = PointsLimit.MAX_NUM + 1;
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+      });
+
+      describe('test2.8 invalid length of answer string', () => {
+        const tooShortAnswer: AnswerInput = {
+          answer: '',
           correct: false,
         };
-        questionBody.answers.push(trueAnswer1, trueAnswer2, trueAnswer3,
-          falseAnswer1, falseAnswer2, falseAnswer3, extraAnswer);
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-    });
+        const tooLongAnswer: AnswerInput = {
+          answer: 'ans'.repeat(AnswersLimit.MAX_STR_LEN),
+          correct: false,
+        };
 
-    describe('test2.5 invalid question durations', () => {
-      test('test2.5.1 question durations is 0', () => {
-        questionBody.answers.push(trueAnswer1);
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
+        test('test2.8.1 answer is empty', () => {
+          questionBody.answers.push(tooShortAnswer);
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
 
-      test('test2.5.2 question durations is negative', () => {
-        questionBody.duration = -1;
-        questionBody.answers.push(trueAnswer1, falseAnswer1);
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-    });
+        test('test2.8.2 answer is over long', () => {
+          questionBody.answers.unshift(tooShortAnswer);
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
 
-    describe('test2.6 invalid durations length', () => {
-      test('test2.6.1 question pass duration', () => {
-        questionBody.duration = MAX_DURATIONS_SECS + 1;
-        questionBody.answers.push(trueAnswer1, falseAnswer1);
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
+        test('test2.8.3 answers are too short or too long', () => {
+          questionBody.answers.unshift(tooShortAnswer, trueAnswer1);
+          questionBody.answers.push(tooLongAnswer, trueAnswer2);
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
 
-      test('test2.6.2 one question has max duration, create new question', () => {
-        questionBody.duration = MAX_DURATIONS_SECS;
-        // question 1
-        questionBody.answers.push(trueAnswer1, falseAnswer1);
-        requestQuizQuestionCreate(token, quizId, questionBody);
-
-        // question 2
-        questionBody.duration = 1;
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
+        test('test2.8.4 answers are all too short or too long', () => {
+          questionBody.answers = [tooShortAnswer, tooLongAnswer];
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
       });
 
-      test('test2.6.3 sum of 2 questions has max duration, create new question', () => {
-        questionBody.duration = Math.floor(MAX_DURATIONS_SECS / 2);
-        // question 1
-        questionBody.answers.push(trueAnswer1, falseAnswer1);
-        requestQuizQuestionCreate(token, quizId, questionBody);
+      describe('test2.9 invalid questionBody.answers', () => {
+        test('test2.9.1 1 answers are duplicate', () => {
+          questionBody.answers.push(trueAnswer1);
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
 
-        // question 2
-        questionBody.answers.push(trueAnswer2, falseAnswer2);
-        requestQuizQuestionCreate(token, quizId, questionBody);
+        test('test2.9.2 mutiple answers are duplicate', () => {
+          questionBody.answers.push(trueAnswer1, trueAnswer2, falseAnswer1);
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
 
-        // question 3
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-    });
+        test('test2.9.3 all answers are duplicate', () => {
+          questionBody.answers.push(trueAnswer1, falseAnswer1);
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
 
-    describe('test2.7 invalid points awarded', () => {
-      test('test2.7.1 points awarded is negative value', () => {
-        questionBody.points = -1;
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
+        test('test2.9.4 all answers are duplicate', () => {
+          questionBody.answers = [trueAnswer1, trueAnswer1, trueAnswer1];
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
 
-      test('test2.7.2 points awarded is 0', () => {
-        questionBody.points = 0;
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
-      test('test2.7.3 points awarded is more than 10', () => {
-        questionBody.points = PointsLimit.MAX_NUM + 1;
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-    });
-
-    describe('test2.8 invalid length of answer string', () => {
-      const tooShortAnswer: AnswerInput = {
-        answer: '',
-        correct: false,
-      };
-      const tooLongAnswer: AnswerInput = {
-        answer: 'ans'.repeat(AnswersLimit.MAX_STR_LEN),
-        correct: false,
-      };
-
-      test('test2.8.1 answer is empty', () => {
-        questionBody.answers.push(tooShortAnswer);
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
-      test('test2.8.2 answer is over long', () => {
-        questionBody.answers.unshift(tooShortAnswer);
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
-      test('test2.8.3 answers are too short or too long', () => {
-        questionBody.answers.unshift(tooShortAnswer, trueAnswer1);
-        questionBody.answers.push(tooLongAnswer, trueAnswer2);
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
-      test('test2.8.4 answers are all too short or too long', () => {
-        questionBody.answers = [tooShortAnswer, tooLongAnswer];
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-    });
-
-    describe('test2.9 invalid questionBody.answers', () => {
-      test('test2.9.1 1 answers are duplicate', () => {
-        questionBody.answers.push(trueAnswer1);
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
-      test('test2.9.2 mutiple answers are duplicate', () => {
-        questionBody.answers.push(trueAnswer1, trueAnswer2, falseAnswer1);
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
-      test('test2.9.3 all answers are duplicate', () => {
-        questionBody.answers.push(trueAnswer1, falseAnswer1);
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
-      test('test2.9.4 all answers are duplicate', () => {
-        questionBody.answers = [trueAnswer1, trueAnswer1, trueAnswer1];
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
-      test('test2.9.5 all false answers', () => {
-        questionBody.answers = [falseAnswer1, falseAnswer2, falseAnswer3];
-        result = requestQuizQuestionCreate(token, quizId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
+        test('test2.9.5 all false answers', () => {
+          questionBody.answers = [falseAnswer1, falseAnswer2, falseAnswer3];
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
       });
     });
   });
@@ -619,7 +632,7 @@ describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question'
       result = requestQuizQuestionCreate(token, quizId, questionBody);
       expect(result).toStrictEqual({ questionId: expect.any(Number), status: OK });
 
-      const updatedQuizInfo = validQuizInfo(token, quizId);
+      const updatedQuizInfo: ResQuizInfo = validQuizInfo(token, quizId);
       expect(updatedQuizInfo.numQuestions).toStrictEqual(1);
       expect(updatedQuizInfo.questions.length).toStrictEqual(1);
       expect(updatedQuizInfo.questions[0].question).toStrictEqual(questionBody.question);
@@ -628,6 +641,8 @@ describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question'
       expect(updatedQuizInfo.questions[0].answers.length).toStrictEqual(questionBody.answers.length);
       expect(updatedQuizInfo.duration).toStrictEqual(questionBody.duration);
       expect(updatedQuizInfo.timeLastEdited).toBeGreaterThanOrEqual(initQuizInfo.timeLastEdited);
+      const currentTime: number = Math.floor(Date.now() / 1000);
+      expect(updatedQuizInfo.timeLastEdited).toBeLessThanOrEqual(currentTime);
     });
 
     test('test4.2 quiz info updates after adding multiple questions', () => {
@@ -640,6 +655,8 @@ describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question'
       expect(updatedQuizInfo.questions.length).toStrictEqual(2);
       expect(updatedQuizInfo.duration).toStrictEqual(questionBody.duration * 2);
       expect(updatedQuizInfo.timeLastEdited).toBeGreaterThanOrEqual(quizInfo.timeLastEdited);
+      const currentTime: number = Math.floor(Date.now() / 1000);
+      expect(updatedQuizInfo.timeLastEdited).toBeLessThanOrEqual(currentTime);
     });
 
     test('test4.3 quiz info reflects correct questionId', () => {
@@ -746,6 +763,9 @@ describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question'
       requestQuizQuestionCreate(token, quizId, questionBody);
       const infoAfterQuestion2: ResQuizInfo = validQuizInfo(token, quizId);
       expect(infoAfterQuestion2.timeLastEdited).toBeGreaterThanOrEqual(infoAfterQuestion1.timeLastEdited);
+
+      const currentTime: number = Math.floor(Date.now() / 1000);
+      expect(infoAfterQuestion1.timeLastEdited).toBeLessThanOrEqual(currentTime);
     });
 
     test('test4.10 quiz info does not update with invalid input', () => {

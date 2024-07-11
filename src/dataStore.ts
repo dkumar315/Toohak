@@ -29,6 +29,7 @@ export enum Colours {
   BROWN = 'brown',
   ORANGE = 'orange'
 }
+export type Colour = Colours[keyof Colours];
 
 // interfaces
 export type EmptyObject = Record<string, never>;
@@ -75,7 +76,7 @@ export interface Question {
 export interface Answer {
   answerId: number;
   answer: string;
-  colour: Colours;
+  colour: Colour;
   correct: boolean;
 }
 

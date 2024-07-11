@@ -10,7 +10,7 @@ tests:
   stage: checks
   script:
     - SERVER_LOG=$(mktemp)
-    - time npm run coverage >& $SERVER_LOG &
+    - npm run coverage >& $SERVER_LOG &
     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
     - timeout -s SIGINT 180s npm run test || (cat $SERVER_LOG && exit 1)
     - kill -SIGINT %1

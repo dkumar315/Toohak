@@ -1,7 +1,6 @@
 import {
-  setData, getData,
-  INVALID, Colours,
-  Data, Quiz, Question, Answer, ErrorObject, EmptyObject
+  setData, getData, INVALID, Colours,
+  Data, Colour, Quiz, Question, Answer, ErrorObject, EmptyObject
 } from './dataStore';
 import { findUserId } from './auth';
 
@@ -80,7 +79,7 @@ enum QuestionOperation {
 export function adminQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): QuestionIdReturn | ErrorObject {
   // check token, quizId, no questionId, questionBody
-  const isValidObj: IsValid = isValidIds(token, quizId, null, questionBody);
+  const isValidObj: IsValid = isValidIds({ token, quizId, questionBody });
   if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
 
   // if all valid
@@ -106,7 +105,7 @@ export function adminQuizQuestionCreate(token: string, quizId: number,
  */
 export function adminQuizQuestionUpdate(token: string, quizId: number,
   questionId: number, questionBody: QuestionBody): EmptyObject | ErrorObject {
-  const isValidObj: IsValid = isValidIds(token, quizId, questionId, questionBody);
+  const isValidObj: IsValid = isValidIds({ token, quizId, questionId, questionBody });
   if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
 
   // if all inputs valid, update the question
@@ -128,7 +127,7 @@ export function adminQuizQuestionUpdate(token: string, quizId: number,
  */
 export function adminQuizQuestionDelete(token: string, quizId: number,
   questionId: number): EmptyObject | ErrorObject {
-  const isValidObj: IsValid = isValidIds(token, quizId, questionId, null);
+  const isValidObj: IsValid = isValidIds({ token, quizId, questionId });
   if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
 
   const data: Data = getData();
@@ -158,7 +157,7 @@ export function adminQuizQuestionDelete(token: string, quizId: number,
  */
 export function adminQuizQuestionMove(token: string, quizId: number,
   questionId: number, newPosition: number): EmptyObject | ErrorObject {
-  const isValidObj: IsValid = isValidIds(token, quizId, questionId, null);
+  const isValidObj: IsValid = isValidIds({ token, quizId, questionId });
   if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
 
   const data: Data = getData();
@@ -198,18 +197,18 @@ export function adminQuizQuestionMove(token: string, quizId: number,
  */
 export function adminQuizQuestionDuplicate(token: string, quizId: number,
   questionId: number): NewQuestionIdReturn | ErrorObject {
-  const isValidObj: IsValid = isValidIds(token, quizId, questionId, null);
+  const isValidObj: IsValid = isValidIds({ token, quizId, questionId });
   if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
 
   // new question is add after the source question
   const data: Data = getData();
-  const { quizIndex, questionIndex } = isValidObj as { quizIndex: number; questionIndex: number };
+  const { quizIndex, questionIndex } = isValidObj;
 
   const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
   if (quiz.duration > MAX_DURATIONS_SECS) {
     return {
-      error: `Invalid current quiz durations number: ${quiz.duration}
-    exceeds ${DurationLimit.MIN_QUIZ_SUM_MINS} minutes.`
+      error: `Invalid current quiz durations number: ${quiz.duration} ` +
+      `exceeds ${DurationLimit.MIN_QUIZ_SUM_MINS} minutes.`
     };
   }
 
@@ -230,13 +229,13 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number,
  * questionIndex: number - when isValid is true, corresponding index in the quiz
  * errorMsg: string - if token, questionId or quizId invalid
  */
-function isValidIds(token: string, quizId: number, questionId: number | null,
-  questionBody: QuestionBody | null): IsValid {
+function isValidIds(params: { token: string, quizId: number, questionId?: number,
+  questionBody?: QuestionBody }): IsValid {
+  const { token, quizId, questionId, questionBody } = params;
   // check token
   const userId: number = findUserId(token);
   if (userId === INVALID) {
-    const errorMsg: string = `Invalid token string: ${token} not exists.`;
-    return { isValid: false, errorMsg };
+    return isValidErrorReturn(`Invalid token string: ${token} not exists.`);
   }
 
   // check quizId
@@ -247,15 +246,15 @@ function isValidIds(token: string, quizId: number, questionId: number | null,
   const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
 
   // check questionId
-  if (questionId !== null) {
+  if (questionId !== undefined) {
     const isValidQuestionId: IsValid = findQuestionIndex(isValidObj.quizIndex, questionId);
     if (!isValidQuestionId.isValid) return isValidQuestionId;
     isValidObj.questionIndex = isValidQuestionId.questionIndex;
   }
 
-  if (questionBody !== null) {
-    let duration = quiz.duration;
-    if (questionId !== null) duration -= quiz.questions[isValidObj.questionIndex].duration;
+  if (questionBody !== undefined) {
+    let duration: number = quiz.duration;
+    if (questionId !== undefined) duration -= quiz.questions[isValidObj.questionIndex].duration;
     const isValidQuestion: IsValid = isValidQuestionBody(questionBody, duration);
     if (!isValidQuestion.isValid) return isValidQuestion;
   }
@@ -281,14 +280,12 @@ function findQuizIndex(quizId: number, authUserId: number): IsValid {
 
   // userId not exist
   if (quizIndex === INVALID) {
-    const errorMsg: string = `Invalid quizId number: ${quizId} not exists.`;
-    return { isValid: false, errorMsg };
+    return isValidErrorReturn(`Invalid quizId number: ${quizId} not exists.`);
   }
 
   // user does not own the quiz
   if (data.quizzes[quizIndex].creatorId !== authUserId) {
-    const errorMsg: string = `Invalid quizId number: ${quizId} access denied.`;
-    return { isValid: false, errorMsg };
+    return isValidErrorReturn(`Invalid quizId number: ${quizId} access denied.`);
   }
 
   return { isValid: true, quizIndex };
@@ -303,7 +300,7 @@ function findQuizIndex(quizId: number, authUserId: number): IsValid {
  * @return {object} isValidQuestion - includes isValid and (index or errorMsg)
  * isValid: boolean - unique identifier for a quiz of a user
  * questionIndex: number - set isValidObj.questionId if questionId is valid
- * errorMsg: string - if questionId invalid, i.e. isValid is false
+ * errorMsg: string - if questionId invalid or null, i.e. isValid is false
  */
 function findQuestionIndex(quizIndex: number, questionId: number): IsValid {
   const data: Data = getData();
@@ -311,9 +308,9 @@ function findQuestionIndex(quizIndex: number, questionId: number): IsValid {
   const questionIndex: number = quiz.questions.findIndex(quiz =>
     quiz.questionId === questionId);
 
-  return questionIndex === INVALID
-    ? { isValid: false, errorMsg: `Invalid questionId number: ${questionId}.` }
-    : { isValid: true, questionIndex };
+  return questionIndex !== INVALID
+    ? { isValid: true, questionIndex }
+    : { isValid: false, errorMsg: `Invalid questionId number: ${questionId}.` };
 }
 
 /**
@@ -327,44 +324,31 @@ function findQuestionIndex(quizIndex: number, questionId: number): IsValid {
  */
 function isValidQuestionBody(questionBody: QuestionBody,
   quizDuration: number): IsValid {
+  if (questionBody === null) {
+    return isValidErrorReturn('Invalid questionBody object: null.');
+  }
   const { question, duration, points, answers } = questionBody;
-  const isValid: boolean = false;
-  let errorMsg: string;
 
   if (question.length < QuestionLimit.MIN_LEN ||
     question.length > QuestionLimit.MAX_LEN) {
-    // Question string has less than 5 or greater than 50 characters
-    errorMsg = `Invalid question string Len: ${question.length}.`;
-    return { isValid, errorMsg };
+    return isValidErrorReturn(`Invalid question length: ${question.length}.`);
   }
 
   if (answers.length < AnswersLimit.MIN_COUNT ||
     answers.length > AnswersLimit.MAX_COUNT) {
-    // question has more than 6 answers or less than 2 answers
-    errorMsg = `Invalid answers number: ${answers.length}.`;
-    return { isValid, errorMsg };
+    return isValidErrorReturn(`Invalid answers number: ${answers.length}.`);
   }
 
   if (duration < DurationLimit.MIN_QUESTION_SECS ||
     quizDuration + duration > MAX_DURATIONS_SECS) {
-    // question duration <== 0 or the sum of question durations in quiz > 3 mins
-    errorMsg = `Invalid duration number: ${duration}.`;
-    return { isValid, errorMsg };
+    return isValidErrorReturn(`Invalid duration number: ${duration}.`);
   }
 
   if (points < PointsLimit.MIN_NUM || points > PointsLimit.MAX_NUM) {
-    // points awarded are less than 1 or greater than 10
-    errorMsg = `Invalid points number: ${points}.`;
-    return { isValid, errorMsg };
+    return isValidErrorReturn(`Invalid points number: ${points}.`);
   }
 
-  if (!isValidAnswer(answers)) {
-    // any answer len invalild, duplicate, or all answer is false
-    errorMsg = `Invalid answers object: ${answers}.`;
-    return { isValid, errorMsg };
-  }
-
-  return { isValid: true };
+  return isValidAnswer(answers);
 }
 
 /**
@@ -375,17 +359,40 @@ function isValidQuestionBody(questionBody: QuestionBody,
  *
  * @return {boolean} true - if no answer strings are duplicates of another
  */
-function isValidAnswer(answers: AnswerInput[]): boolean {
+function isValidAnswer(answers: AnswerInput[]): IsValid {
   const invalidAnswerLen: boolean = answers.some((answerBody: AnswerInput) =>
     answerBody.answer.length < AnswersLimit.MIN_STR_LEN ||
     answerBody.answer.length > AnswersLimit.MAX_STR_LEN);
+  if (invalidAnswerLen) {
+    return isValidErrorReturn(
+      'Invalid answers object, answer string length number(s) invalid.');
+  }
 
-  const uniqueAnswers: Set<string> = new Set(answers.map((answerBody: AnswerInput) => answerBody.answer));
+  const uniqueAnswers: Set<string> = new Set(answers
+    .map((answerBody: AnswerInput) => answerBody.answer));
   const hasDuplicateAnswer: boolean = uniqueAnswers.size !== answers.length;
+  if (hasDuplicateAnswer) {
+    return isValidErrorReturn(
+      'Invalid answers object, answer string(s) not unique.');
+  }
 
-  const hasCorrectAnswer = answers.some((answerBody: AnswerInput) => answerBody.correct);
+  const hasCorrectAnswer = answers.some((answerBody: AnswerInput) =>
+    answerBody.correct);
+  if (!hasCorrectAnswer) {
+    return isValidErrorReturn(
+      'Invalid answers object, answers has no correct answer.');
+  }
 
-  return !invalidAnswerLen && !hasDuplicateAnswer && hasCorrectAnswer;
+  return { isValid: true };
+}
+
+/**
+ * Return an object of { isValid, errorMsg } for isValid function when invalid
+ *
+ * @return {object} isValidObj - an object contains errorMsg
+ */
+function isValidErrorReturn (errorMsg: string): IsValid {
+  return { isValid: false, errorMsg };
 }
 
 /**
@@ -394,8 +401,8 @@ function isValidAnswer(answers: AnswerInput[]): boolean {
  *
  * @return {string} color - a name of a random color
  */
-function generateRandomColor(): Colours {
-  const colours = Object.values(Colours);
+function generateRandomColor(): Colour {
+  const colours: Colour[] = Object.values(Colours);
   const randomIndex: number = Math.floor(Math.random() * colours.length);
   return colours[randomIndex];
 }
