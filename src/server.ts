@@ -41,7 +41,7 @@ import {
 } from './quiz';
 import {
   adminQuizQuestionCreate, adminQuizQuestionUpdate,
-  adminQuizQuestionDuplicate
+  adminQuizQuestionDelete, adminQuizQuestionMove, adminQuizQuestionDuplicate
 } from './quizQuestion';
 import { clear } from './other';
 
@@ -264,10 +264,44 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Respo
 });
 
 // Delete quiz question
-// app.delete /v1/admin/quiz/{quizid}/question/{questionid}
+app.delete('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid as string);
+  const questionId = parseInt(req.params.questionid as string);
+  const token = req.query.token as string;
+
+  const result = adminQuizQuestionDelete(token, quizId, questionId);
+  if ('error' in result) {
+    if (result.error.includes('token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else if (result.error.includes('quizId')) {
+      return res.status(FORBIDDEN).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
+
+  return res.json(result);
+});
 
 // Move quiz question
-// app.put /v1/admin/quiz/{quizid}/question/{questionid}/move
+app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid as string);
+  const questionId = parseInt(req.params.questionid as string);
+  const { token, newPosition } = req.body;
+
+  const result = adminQuizQuestionMove(token, quizId, questionId, newPosition);
+  if ('error' in result) {
+    if (result.error.includes('token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else if (result.error.includes('quizId')) {
+      return res.status(FORBIDDEN).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
+
+  return res.json(result);
+});
 
 // Duplicate quiz question
 app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request, res: Response) => {

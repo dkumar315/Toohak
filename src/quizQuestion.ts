@@ -5,28 +5,28 @@ import {
 import { findUserId } from './auth';
 
 export enum QuestionLimit {
-  MinLen = 5,
-  MaxLen = 50
+  MIN_LEN = 5,
+  MAX_LEN = 50
 }
 
 export enum AnswersLimit {
-  MinCount = 2,
-  MaxCount = 6,
-  MinStrLen = 1,
-  MaxStrLen = 30
+  MIN_COUNT = 2,
+  MAX_COUNT = 6,
+  MIN_STR_LEN = 1,
+  MAX_STR_LEN = 30
 }
 
 export enum DurationLimit {
-  MinQuestionSecs = 1,
-  MinQuizSumMins = 3,
-  MinsToSecs = 60,
+  MIN_QUESTION_SECS = 1,
+  MIN_QUIZ_SUM_MINS = 3,
+  MINS_TO_SECS = 60,
 }
 export const MAX_DURATIONS_SECS =
-  DurationLimit.MinQuizSumMins * DurationLimit.MinsToSecs;
+  DurationLimit.MIN_QUIZ_SUM_MINS * DurationLimit.MINS_TO_SECS;
 
 export enum PointsLimit {
-  MinNum = 1,
-  MaxNum = 10,
+  MIN_NUM = 1,
+  MAX_NUM = 10,
 }
 
 interface IsValid {
@@ -57,11 +57,11 @@ export interface NewQuestionIdReturn {
 }
 
 enum QuestionOperation {
-  Create,
-  Update,
-  Duplicate,
-  Move,
-  Delete
+  CREATE,
+  UPDATE,
+  DUPLICATE,
+  MOVE,
+  DELETE
 }
 
 /**
@@ -86,7 +86,7 @@ export function adminQuizQuestionCreate(token: string, quizId: number,
   const data: Data = getData();
   const quizIndex : number = isValidObj.quizIndex;
   const questionId: number = setQuestion(questionBody, quizIndex,
-    data.quizzes[quizIndex].questions.length, QuestionOperation.Create);
+    data.quizzes[quizIndex].questions.length, QuestionOperation.CREATE);
   return { questionId: questionId };
 }
 
@@ -110,7 +110,77 @@ export function adminQuizQuestionUpdate(token: string, quizId: number,
 
   // if all inputs valid, update the question
   setQuestion(questionBody, isValidObj.quizIndex, isValidObj.questionIndex,
-    QuestionOperation.Update);
+    QuestionOperation.UPDATE);
+  return {};
+}
+
+/**
+ * Delete a particular question from a quiz.
+ * When this route is called, the timeLastEdited is updated.
+ *
+ * @param {string} token - a unique identifier for a login user
+ * @param {number} quizId - a unique identifier for a valid quiz
+ * @param {number} questionId - a unique identifier for a valid question
+ *
+ * @return {object} empty object - inputs valid, successfully delete question
+ * @return {object} error - token, quizId, or questionId invalid
+ */
+export function adminQuizQuestionDelete(token: string, quizId: number,
+  questionId: number): EmptyObject | ErrorObject {
+  const isValidObj: IsValid = isValidIds({ token, quizId, questionId });
+  if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
+
+  const data: Data = getData();
+  const quiz = data.quizzes[isValidObj.quizIndex];
+
+  quiz.questions.splice(isValidObj.questionIndex, 1);
+  quiz.numQuestions -= 1;
+
+  quiz.duration = quiz.questions.reduce((total, question) => total + question.duration, 0);
+  quiz.timeLastEdited = timeStamp();
+
+  setData(data);
+  return {};
+}
+
+/**
+ * Move a question from one particular position in the quiz to another.
+ * When this route is called, the timeLastEdited is updated.
+ *
+ * @param {string} token - a unique identifier for a login user
+ * @param {number} quizId - a unique identifier for a valid quiz
+ * @param {number} questionId - a unique identifier for a valid question
+ * @param {number} newPosition - new position for the question
+ *
+ * @return {object} empty object - inputs valid, successfully move question
+ * @return {object} error - token, quizId, questionId, or newPosition invalid
+ */
+export function adminQuizQuestionMove(token: string, quizId: number,
+  questionId: number, newPosition: number): EmptyObject | ErrorObject {
+  const isValidObj: IsValid = isValidIds({ token, quizId, questionId });
+  if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
+
+  const data: Data = getData();
+  const quiz = data.quizzes[isValidObj.quizIndex];
+
+  if (newPosition < 0 || newPosition >= quiz.questions.length) {
+    return {
+      error: `Invalid newPosition number: ${newPosition}. 
+      It must be between 0 and ${quiz.questions.length - 1}.`
+    };
+  }
+
+  if (isValidObj.questionIndex === newPosition) {
+    return {
+      error: `The question is already at position ${newPosition}.`
+    };
+  }
+
+  const [movedQuestion] = quiz.questions.splice(isValidObj.questionIndex, 1);
+  quiz.questions.splice(newPosition, 0, movedQuestion);
+  quiz.timeLastEdited = timeStamp();
+
+  setData(data);
   return {};
 }
 
@@ -136,11 +206,14 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number,
 
   const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
   if (quiz.duration > MAX_DURATIONS_SECS) {
-    return { error: `Invalid current quiz durations number: ${quiz.duration}` };
+    return {
+      error: `Invalid current quiz durations number: ${quiz.duration} ` +
+      `exceeds ${DurationLimit.MIN_QUIZ_SUM_MINS} minutes.`
+    };
   }
 
   const newQuestionId: number = setQuestion(quiz.questions[questionIndex],
-    quizIndex, questionIndex + 1, QuestionOperation.Duplicate);
+    quizIndex, questionIndex + 1, QuestionOperation.DUPLICATE);
   return { newQuestionId };
 }
 
@@ -256,26 +329,22 @@ function isValidQuestionBody(questionBody: QuestionBody,
   }
   const { question, duration, points, answers } = questionBody;
 
-  if (question.length < QuestionLimit.MinLen ||
-    question.length > QuestionLimit.MaxLen) {
+  if (question.length < QuestionLimit.MIN_LEN ||
+    question.length > QuestionLimit.MAX_LEN) {
     return isValidErrorReturn(`Invalid question length: ${question.length}.`);
   }
 
-  if (answers.length < AnswersLimit.MinCount ||
-    answers.length > AnswersLimit.MaxCount) {
+  if (answers.length < AnswersLimit.MIN_COUNT ||
+    answers.length > AnswersLimit.MAX_COUNT) {
     return isValidErrorReturn(`Invalid answers number: ${answers.length}.`);
   }
 
-  if (duration < DurationLimit.MinQuestionSecs ||
+  if (duration < DurationLimit.MIN_QUESTION_SECS ||
     quizDuration + duration > MAX_DURATIONS_SECS) {
     return isValidErrorReturn(`Invalid duration number: ${duration}.`);
   }
 
-  if (points < PointsLimit.MinNum || points > PointsLimit.MaxNum) {
-    return isValidErrorReturn(`Invalid points number: ${points}.`);
-  }
-
-  if (points < PointsLimit.MinNum || points > PointsLimit.MaxNum) {
+  if (points < PointsLimit.MIN_NUM || points > PointsLimit.MAX_NUM) {
     return isValidErrorReturn(`Invalid points number: ${points}.`);
   }
 
@@ -292,8 +361,8 @@ function isValidQuestionBody(questionBody: QuestionBody,
  */
 function isValidAnswer(answers: AnswerInput[]): IsValid {
   const invalidAnswerLen: boolean = answers.some((answerBody: AnswerInput) =>
-    answerBody.answer.length < AnswersLimit.MinStrLen ||
-    answerBody.answer.length > AnswersLimit.MaxStrLen);
+    answerBody.answer.length < AnswersLimit.MIN_STR_LEN ||
+    answerBody.answer.length > AnswersLimit.MAX_STR_LEN);
   if (invalidAnswerLen) {
     return isValidErrorReturn(
       'Invalid answers object, answer string length number(s) invalid.');
@@ -361,8 +430,8 @@ function setQuestion(questionBody: QuestionBody | Question, quizIndex: number,
   questionIndex: number, operation: QuestionOperation): number {
   const data: Data = getData();
   const quiz: Quiz = data.quizzes[quizIndex];
-  const isCreate: boolean = (operation === QuestionOperation.Create ||
-    operation === QuestionOperation.Duplicate);
+  const isCreate: boolean = (operation === QuestionOperation.CREATE ||
+    operation === QuestionOperation.DUPLICATE);
 
   let questionId: number;
   if (isCreate) {
@@ -376,7 +445,7 @@ function setQuestion(questionBody: QuestionBody | Question, quizIndex: number,
 
   // set new question
   let newQuestion: Question;
-  if (operation === QuestionOperation.Duplicate) {
+  if (operation === QuestionOperation.DUPLICATE) {
     newQuestion = { ...quiz.questions[questionIndex - 1], questionId };
   } else {
     const { answers: answerBody, ...question } = questionBody;

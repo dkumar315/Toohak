@@ -3,7 +3,7 @@ import { QuestionBody, MAX_DURATIONS_SECS } from './quizQuestion';
 import {
   authRegister, requestAuthLogout, quizCreate, validQuizInfo,
   requestQuizRemove, questionCreate, requestQuizQuestionDuplicate,
-  ResQuizInfo, ResNewQuestionId,
+  ResQuizInfo, ResNewQuestionId, requestQuizQuestionDelete,
   requestClear, ERROR, ResError, VALID_EMPTY_RETURN
 } from './functionRequest';
 
@@ -177,8 +177,8 @@ describe('testing adminQuizQuestionDuplicate' +
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test.skip('test2.3.3 question is removed', () => {
-        // requestQuizQuestionRemove(token, quizId, questionId);
+      test('test2.3.3 question is removed', () => {
+        requestQuizQuestionDelete(token, quizId, questionId);
         result = requestQuizQuestionDuplicate(token, quizId, questionId);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
