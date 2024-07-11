@@ -18,6 +18,7 @@ tests:
     - cat $SERVER_LOG
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
+    untracked: true
     paths:
       - coverage/
     expose_as: Coverage Report
