@@ -1,5 +1,5 @@
 import {
-  getData, setData, Data, Question,
+  getData, setData, Data, Question, QuizTransfer,
   EmptyObject, ErrorObject, INVALID
 } from './dataStore';
 import { findUserId } from './auth';
@@ -376,4 +376,58 @@ export function adminQuizRestore(token: string, quizId: number): EmptyObject | E
 
   setData(data);
   return {}; // Return an appropriate response
+}
+
+/**
+ * This function transfers the ownership of a quiz to another user.
+ *
+ * @param {QuizTransfer} transferData - The data required for the transfer
+ *
+ * @return {object} - Returns an empty object
+ */
+export function adminQuizTransfer(transferData: QuizTransfer): EmptyObject | ErrorObject {
+  const { token, quizId, userEmail } = transferData;
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return { error: `Invalid token ${token}.` };
+  }
+
+  const quizValidation = validateQuizId(quizId);
+  if (quizValidation !== true) {
+    return quizValidation;
+  }
+
+  const ownershipValidation = validateOwnership(authUserId, quizId);
+  if (ownershipValidation !== true) {
+    return ownershipValidation;
+  }
+
+  const data: Data = getData();
+
+  // Find the new owner's user ID by their email
+  const newOwner = data.users.find(user => user.email === userEmail);
+  if (!newOwner) {
+    return { error: `User with email ${userEmail} does not exist.` };
+  }
+
+  const newOwnerId = newOwner.userId;
+
+  if (newOwnerId === authUserId) {
+    return { error: 'Cannot transfer quiz to the current owner.' };
+  }
+
+  if (data.quizzes.some(quiz => quiz.creatorId === newOwnerId && quiz.name === data.quizzes[quizId - 1].name)) {
+    return { error: `Quiz with name ${data.quizzes[quizId - 1].name} already exists for the new owner.` };
+  }
+
+  const quiz: Quiz | undefined = data.quizzes.find(q => q.quizId === quizId);
+  if (!quiz) {
+    return { error: `Quiz ${quizId} not found in the datastore` };
+  }
+
+  quiz.creatorId = newOwnerId;
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
+
+  setData(data);
+  return {};
 }
