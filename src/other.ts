@@ -1,14 +1,15 @@
-import { setData, Data } from './dataStore';
+import { setData, Data, EmptyObject } from './dataStore';
 
 /**
  * Reset the state of the application back to the start.
  *
  * @return {object} empty object
  */
-export function clear() {
+export function clear(): EmptyObject {
   const data: Data = {
     users: [],
     quizzes: [],
+    trashedQuizzes: [],
     sessions: {
       globalCounter: 0,
       questionCounter: 0,
