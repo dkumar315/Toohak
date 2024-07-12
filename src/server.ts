@@ -37,7 +37,8 @@ import {
 import {
   adminQuizList, adminQuizCreate, adminQuizRemove,
   adminQuizInfo, adminQuizNameUpdate,
-  adminQuizDescriptionUpdate, adminQuizRestore, adminQuizTransfer
+  adminQuizDescriptionUpdate,
+  adminQuizRestore, adminQuizTransfer
 } from './quiz';
 import {
   adminQuizQuestionCreate, adminQuizQuestionUpdate,

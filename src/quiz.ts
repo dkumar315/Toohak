@@ -1,5 +1,5 @@
 import {
-  getData, setData, Data, Quiz, Question, QuizTransfer,
+  getData, setData, Data, Quiz, Question,
   EmptyObject, ErrorObject, INVALID
 } from './dataStore';
 import { findUserId } from './auth';
@@ -25,6 +25,21 @@ export interface QuizInfoReturn {
   numQuestions: number,
   questions: Question[],
   duration: number,
+}
+
+export interface QuizViewTrashReturn {
+  quizzes: Array<
+    {
+      quizId: number;
+      name: string;
+    }
+  >;
+}
+
+export interface QuizTransfer {
+  token: string;
+  quizId: number;
+  userEmail: string;
 }
 
 export function validateQuiz(authUserId: number, quizId: number): true | ErrorObject {
@@ -310,7 +325,7 @@ export function adminQuizRestore(token: string, quizId: number): EmptyObject | E
   data.trashedQuizzes.splice(trashedQuizIndex, 1);
 
   setData(data);
-  return {}; // Return an appropriate response
+  return {};
 }
 
 /**

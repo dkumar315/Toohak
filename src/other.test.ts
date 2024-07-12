@@ -16,6 +16,8 @@ beforeEach(() => {
   quiz = requestQuizCreate(user.token, 'My Quiz1', 'Quiz on Testing') as ResQuizId;
 });
 
+afterAll(() => requestClear());
+
 describe('clear test', () => {
   test('clears all the user details', () => {
     expect((requestUserDetails(user.token) as ResUserDetail).user).toStrictEqual({

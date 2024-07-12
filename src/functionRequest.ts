@@ -4,9 +4,9 @@ const SERVER_URL: string = `${config.url}:${config.port}`;
 
 // ============== interfaces ===================================================
 import { StatusCodes } from 'http-status-codes';
-import { EmptyObject, ErrorObject, QuizTransfer } from './dataStore';
+import { EmptyObject, ErrorObject } from './dataStore';
 import { TokenReturn, UserDetailReturn } from './auth';
-import { QuizListReturn, QuizCreateReturn, QuizInfoReturn } from './quiz';
+import { QuizListReturn, QuizCreateReturn, QuizInfoReturn, QuizTransfer } from './quiz';
 import { QuestionBody, QuestionIdReturn, NewQuestionIdReturn } from './quizQuestion';
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
@@ -96,7 +96,7 @@ export function requestQuizDescriptionUpdate(token: string, quizId: number,
     { token, description });
 }
 
-export function requestRestoreQuiz(token: string, quizId: number): ApiResponse<EmptyObject> {
+export function requestQuizRestore(token: string, quizId: number): ApiResponse<EmptyObject> {
   return requestHelper('POST', `/v1/admin/quiz/${quizId}/restore`, { token });
 }
 

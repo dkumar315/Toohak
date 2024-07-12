@@ -1,9 +1,11 @@
 import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
 import {
-  authRegister, requestAuthLogout,
-  requestQuizCreate, requestQuizInfo, requestQuizTransfer, requestClear
+  authRegister, requestAuthLogout, requestQuizCreate,
+  requestQuizInfo, requestQuizTransfer, requestClear
 } from './functionRequest';
-import { QuizTransfer } from './dataStore';
+import {
+  QuizTransfer
+} from './quiz';
 
 let token: string;
 let otherToken: string;
