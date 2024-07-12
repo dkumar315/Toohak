@@ -1,5 +1,5 @@
 
-import { requestAuthRegister, requestAuthLogin, requestUserDetails, requestClear } from './functionRequest';
+import { requestAuthRegister, requestAuthLogin, requestClear } from './functionRequest';
 import { OK, BAD_REQUEST } from './dataStore';
 
 let result: any;
