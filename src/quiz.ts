@@ -27,15 +27,6 @@ export interface QuizInfoReturn {
   duration: number,
 }
 
-export interface QuizViewTrashReturn {
-  quizzes: Array<
-    {
-      quizId: number;
-      name: string;
-    }
-  >;
-}
-
 export interface QuizTransfer {
   token: string;
   quizId: number;
@@ -113,8 +104,10 @@ export function adminQuizCreate(token: string, name: string, description: string
     return { error: 'Description is more than 100 characters in length.' };
   }
 
+  data.sessions.quizCounter += 1;
+
   const newQuiz: Quiz = {
-    quizId: data.quizzes.length + 1,
+    quizId: data.sessions.quizCounter,
     creatorId: authUserId,
     name,
     description,
@@ -325,6 +318,27 @@ export function adminQuizTrashEmpty(token: string, quizIds: string): EmptyObject
 
   setData(data);
   return {};
+}
+
+/**
+ * This function restores a quiz from the trash back to active quizzes.
+ *
+ * @param {string} token - ID of the authorised user
+ *
+ * @return {QuizListReturn | ErrorObject} - Returns the info of trashed quiz, or an error object if unsuccessful
+ */
+export function adminQuizViewTrash(token: string): QuizListReturn | ErrorObject {
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return { error: `Invalid token ${token}.` };
+  }
+
+  const data = getData();
+  const trashedquizArray: { quizId: number; name: string }[] = data.trashedQuizzes
+    .filter(quiz => quiz.creatorId === authUserId)
+    .map(({ quizId, name }) => ({ quizId, name }));
+
+  return { quizzes: trashedquizArray };
 }
 
 /**

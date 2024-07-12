@@ -37,7 +37,7 @@ import {
 import {
   adminQuizList, adminQuizCreate, adminQuizRemove,
   adminQuizInfo, adminQuizNameUpdate,
-  adminQuizDescriptionUpdate,
+  adminQuizDescriptionUpdate, adminQuizViewTrash,
   adminQuizRestore, adminQuizTransfer, adminQuizTrashEmpty
 } from './quiz';
 import {
@@ -166,6 +166,16 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
     } else if (result.error.includes('QuizId')) {
       return res.status(FORBIDDEN).json(result);
     }
+  }
+  return res.json(result);
+});
+
+// To view quizzes in trash
+app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const result = adminQuizViewTrash(token);
+  if ('error' in result) {
+    return res.status(UNAUTHORIZED).json(result);
   }
   return res.json(result);
 });
