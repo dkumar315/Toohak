@@ -37,7 +37,7 @@ import {
 import {
   adminQuizList, adminQuizCreate, adminQuizRemove,
   adminQuizInfo, adminQuizNameUpdate,
-  adminQuizDescriptionUpdate, adminQuizTrash
+  adminQuizDescriptionUpdate, adminQuizTrash, adminQuizTrashDelete
 } from './quiz';
 import {
   adminQuizQuestionCreate, adminQuizQuestionUpdate,
@@ -332,6 +332,26 @@ app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   return res.json(result);
 });
 
+app.delete('/v1/admin/quiz/trash/empty', (req : Request, res: Response) => {
+  const token = req.query.token as string;
+  const quizIdString = req.query.quizIdString as string;
+  const quizIds = quizIdString.split(',').map(id => parseInt(id,10));
+  const result = adminQuizTrashDelete(token,quizIds);
+  if('error in reuslt'){
+    if (result.error.includes(token)){
+      return res.status(UNAUTHORIZED).json(result);
+    }
+    else if(result.error.includes(quizIdString)){
+      return res.status(FORBIDDEN).json(result);
+    }
+    else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
+  else{
+    return res.json(result);
+  }
+})
 // other
 app.delete('/v1/clear', (req: Request, res: Response) => {
   return res.json(clear());
