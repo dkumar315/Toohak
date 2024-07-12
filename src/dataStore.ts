@@ -39,7 +39,7 @@ export type ErrorObject = { error: string };
 export interface Data {
   users: User[];
   quizzes: Quiz[];
-  trashedQuizzes: Quiz[]; // added
+  trashedQuizzes: Quiz[];
   sessions: Sessions;
 }
 
@@ -64,7 +64,6 @@ export interface Quiz {
   numQuestions: number;
   questions: Question[];
   duration: number; // in seconds
-
 }
 
 export interface Question {
@@ -91,19 +90,6 @@ export interface Sessions {
 export interface Session {
   userId: number;
   token: string;
-}
-
-export interface Restore {
-  users: User[];
-  quizzes: Quiz[];
-  trashedQuizzes: Quiz[];
-  sessions: Sessions;
-}
-
-export interface QuizTransfer {
-  token: string;
-  quizId: number;
-  userEmail: string;
 }
 
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY
