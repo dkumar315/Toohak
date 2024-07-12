@@ -30,7 +30,7 @@ export interface TokenReturn {
  * @param {string} nameFirst - user's first name
  * @param {string} nameLast - user's last name
  *
- * @return {number} token - unique identifier for a user
+ * @return {string} token - unique identifier for a user
  * @return {object} error - if email, password, nameFirst, nameLast invalid
  */
 export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string): TokenReturn | ErrorObject {
@@ -81,7 +81,7 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
 * @param {string} email - user's email
 * @param {string} password - user's matching password
 *
-* @return {number} token - unique identifier for a user
+* @return {string} token - unique identifier for a user
 * @return {object} error - if email or password invalid
 */
 export function adminAuthLogin(email: string, password: string): TokenReturn | ErrorObject {
@@ -211,7 +211,7 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
   const userIndex: number = findUser(userId);
   const user: User = data.users[userIndex];
 
-  //  check whether oldPassword matches the user's password
+  // check whether oldPassword matches the user's password
   if (user.password !== oldPassword) return { error: `Invalid oldPassword ${oldPassword}.` };
 
   // check newPassword meets requirements or not used before
@@ -259,7 +259,7 @@ function addSession(authUserId: number, token: string): void {
  *
  * @param {string} token - unique identifier for a user
  *
- * @return {number} userId - corresponding userId of a token, -1 if token invalid
+ * @return {number} userId - corresponding userId of a token
  */
 export function findUserId(token: string): number {
   const data: Data = getData();
