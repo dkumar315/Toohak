@@ -1,5 +1,5 @@
 import {
-  getData, setData, Data, Question, QuizTransfer,
+  getData, setData, Data, Quiz, Question,
   EmptyObject, ErrorObject, INVALID
 } from './dataStore';
 import { findUserId } from './auth';
@@ -27,31 +27,22 @@ export interface QuizInfoReturn {
   duration: number,
 }
 
-export interface Quiz {
+export interface QuizViewTrashReturn {
+  quizzes: Array<
+    {
+      quizId: number;
+      name: string;
+    }
+  >;
+}
+
+export interface QuizTransfer {
+  token: string;
   quizId: number;
-  creatorId: number;
-  name: string;
-  description: string;
-  timeCreated: number;
-  timeLastEdited: number;
-  numQuestions: number;
-  questions: Question[];
-  duration: number;
-  trashed?: boolean;
+  userEmail: string;
 }
 
-export function validateQuizId(quizId: number): true | ErrorObject {
-  const data: Data = getData();
-
-  const quiz: Quiz | undefined = data.quizzes.find(quiz => quiz.quizId === quizId);
-  if (!quiz) {
-    return { error: `QuizId ${quizId} is not valid.` };
-  }
-
-  return true;
-}
-
-export function validateOwnership(authUserId: number, quizId: number): true | ErrorObject {
+export function validateQuiz(authUserId: number, quizId: number): true | ErrorObject {
   const data: Data = getData();
 
   const quiz: Quiz | undefined = data.quizzes.find(quiz => quiz.quizId === quizId);
@@ -155,12 +146,7 @@ export function adminQuizRemove(token: string, quizId: number): EmptyObject | Er
     return { error: `Invalid token ${token}.` };
   }
 
-  const quizValidation = validateQuizId(quizId);
-  if (quizValidation !== true) {
-    return quizValidation;
-  }
-
-  const ownershipValidation = validateOwnership(authUserId, quizId);
+  const ownershipValidation = validateQuiz(authUserId, quizId);
   if (ownershipValidation !== true) {
     return ownershipValidation;
   }
@@ -168,9 +154,6 @@ export function adminQuizRemove(token: string, quizId: number): EmptyObject | Er
   const data: Data = getData();
 
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
-  if (quizIndex === INVALID) {
-    return { error: `${quizIndex} does not exist` };
-  }
   const [deletedQuiz] = data.quizzes.splice(quizIndex, 1);
   data.trashedQuizzes.push(deletedQuiz);
 
@@ -194,22 +177,14 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
     return { error: `Invalid token ${token}.` };
   }
 
-  const quizValidation = validateQuizId(quizId);
-  if (quizValidation !== true) {
-    return quizValidation;
-  }
-
-  const ownershipValidation = validateOwnership(authUserId, quizId);
+  const ownershipValidation = validateQuiz(authUserId, quizId);
   if (ownershipValidation !== true) {
     return ownershipValidation;
   }
 
   const data: Data = getData();
 
-  const quiz: Quiz | undefined = data.quizzes.find(quiz => quiz.quizId === quizId);
-  if (!quiz) {
-    return { error: `Quiz with ID ${quizId} not found` };
-  }
+  const quiz: Quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
 
   return {
     quizId: quiz.quizId,
@@ -238,12 +213,7 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
     return { error: `Invalid token ${token}.` };
   }
 
-  const quizValidation = validateQuizId(quizId);
-  if (quizValidation !== true) {
-    return quizValidation;
-  }
-
-  const ownershipValidation = validateOwnership(authUserId, quizId);
+  const ownershipValidation = validateQuiz(authUserId, quizId);
   if (ownershipValidation !== true) {
     return ownershipValidation;
   }
@@ -254,13 +224,8 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
 
   name = name.trim();
 
-  for (const letter of name) {
-    if (!((letter >= 'A' && letter <= 'Z') ||
-      (letter >= 'a' && letter <= 'z') ||
-      (letter >= '0' && letter <= '9') ||
-      (letter === ' '))) {
-      return { error: `Name ${name} contains invalid characters, only alphanumeric and spaces allowed` };
-    }
+  if (!/^[a-zA-Z0-9 ]+$/.test(name)) {
+    return { error: `Name ${name} contains invalid characters, only alphanumeric and spaces allowed` };
   }
 
   if (name.length < MIN_NAME_LENGTH) {
@@ -280,14 +245,7 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
     return { error: `Name ${name} is already used by the current logged-in user for another quiz.` };
   }
 
-  const quiz: Quiz | undefined = data.quizzes.find(q => q.quizId === quizId);
-  if (!quiz) {
-    return { error: `Quiz ${quizId} not found` };
-  }
-
-  if (quiz.creatorId !== authUserId) {
-    return { error: `Quiz ID ${quizId} does not refer to a quiz that this user owns` };
-  }
+  const quiz: Quiz = data.quizzes.find(q => q.quizId === quizId);
 
   quiz.name = name;
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
@@ -311,12 +269,7 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
     return { error: `Invalid token ${token}.` };
   }
 
-  const quizValidation = validateQuizId(quizId);
-  if (quizValidation !== true) {
-    return quizValidation;
-  }
-
-  const ownershipValidation = validateOwnership(authUserId, quizId);
+  const ownershipValidation = validateQuiz(authUserId, quizId);
   if (ownershipValidation !== true) {
     return ownershipValidation;
   }
@@ -327,10 +280,7 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
 
   const data: Data = getData();
 
-  const quiz: Quiz | undefined = data.quizzes.find(q => q.quizId === quizId);
-  if (!quiz) {
-    return { error: `Quiz ${quizId} not found in the datastore` };
-  }
+  const quiz: Quiz = data.quizzes.find(q => q.quizId === quizId);
 
   quiz.description = description;
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
@@ -392,12 +342,7 @@ export function adminQuizTransfer(transferData: QuizTransfer): EmptyObject | Err
     return { error: `Invalid token ${token}.` };
   }
 
-  const quizValidation = validateQuizId(quizId);
-  if (quizValidation !== true) {
-    return quizValidation;
-  }
-
-  const ownershipValidation = validateOwnership(authUserId, quizId);
+  const ownershipValidation = validateQuiz(authUserId, quizId);
   if (ownershipValidation !== true) {
     return ownershipValidation;
   }
@@ -420,10 +365,7 @@ export function adminQuizTransfer(transferData: QuizTransfer): EmptyObject | Err
     return { error: `Quiz with name ${data.quizzes[quizId - 1].name} already exists for the new owner.` };
   }
 
-  const quiz: Quiz | undefined = data.quizzes.find(q => q.quizId === quizId);
-  if (!quiz) {
-    return { error: `Quiz ${quizId} not found in the datastore` };
-  }
+  const quiz: Quiz = data.quizzes.find(q => q.quizId === quizId);
 
   quiz.creatorId = newOwnerId;
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
