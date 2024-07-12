@@ -1,1 +1,1 @@
-{"users":[{"userId":1,"nameFirst":"Jane","nameLast":"Smith","email":"jane@example.com","password":"MyPassw0rd","numSuccessfulLogins":1,"numFailedPasswordsSinceLastLogin":1}],"quizzes":[],"sessions":{"globalCounter":1,"sessionIds":[{"userId":1,"token":"1"}]}}
+{"users":[],"quizzes":[],"trashedQuizzes":[],"sessions":{"globalCounter":0,"questionCounter":0,"sessionIds":[]}}
