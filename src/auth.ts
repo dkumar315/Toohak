@@ -116,7 +116,7 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
  * @param {string} email - unique email for a login user
  * @param {string} password - password for a login user
  *
- * @return {object} empty object
+ * @return {object} empty object - if valid
  * @return {object} error - if token is empty or invalid
  */
 export function adminAuthLogout(token: string): EmptyObject | ErrorObject {
@@ -168,8 +168,8 @@ export function adminUserDetails(token: string): UserDetailReturn | ErrorObject 
  * @param {string} nameFirst - user's first name
  * @param {string} nameLast - user's last name
  *
- * @return {object} empty object
- * @return {object} error - if authUserId, email, or names invalid
+ * @return {object} empty object - if valid
+ * @return {object} error - if authUserId, email, or names are invalid
  */
 export function adminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string): EmptyObject | ErrorObject {
   const data: Data = getData();
@@ -179,7 +179,7 @@ export function adminUserDetailsUpdate(token: string, email: string, nameFirst: 
   const userIndex: number = findUser(userId);
   const user: User = data.users[userIndex];
 
-  // check email, nameFirst, nameLast whether is valid
+  // check whether email, nameFirst, nameLast are valid
   if (!isValidEmail(email, userIndex)) return { error: `Invalid email ${email}.` };
   if (!isValidName(nameFirst)) return { error: `Invalid nameFirst ${nameFirst}.` };
   if (!isValidName(nameLast)) return { error: `Invalid nameLast ${nameLast}.` };
@@ -204,7 +204,7 @@ export function adminUserDetailsUpdate(token: string, email: string, nameFirst: 
  * @return {object} error - if token or passwords invalid
  */
 export function adminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string) : EmptyObject | ErrorObject {
-  // check the authUserId whether is valid and find its userDetails
+  // check whether token valid
   const userId = findUserId(token);
   if (userId === INVALID) return { error: `Invalid token ${token}.` };
 
@@ -212,10 +212,10 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
   const userIndex: number = findUser(userId);
   const user: User = data.users[userIndex];
 
-  //  check the oldPassword whether is valid and match the user password
+  //  check whether oldPassword matches the user's password
   if (user.password !== oldPassword) return { error: `Invalid oldPassword ${oldPassword}.` };
 
-  // check the newPassword whether is valid and not used before
+  // check newPassword meets requirements or not used before
   user.passwordHistory = user.passwordHistory || [];
   if (oldPassword === newPassword || !isValidPassword(newPassword) ||
     user.passwordHistory.includes(newPassword)) {
@@ -231,7 +231,7 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
 }
 
 /**
- * Generate a token that is unique
+ * Generate a token that is globally unique
  *
  * @return {string} token - unique identifier of a login user
  */
@@ -262,7 +262,7 @@ function addSession(authUserId: number, token: string): void {
  *
  * @return {number} userId - corresponding userId of a token, -1 if token invalid
  */
-function findUserId(token: string): number {
+export function findUserId(token: string): number {
   const data: Data = getData();
   const session: Session = data.sessions.sessionIds.find(session =>
     session.token === token
@@ -291,7 +291,7 @@ function findUser(authUserId: number): number {
  * @param {number} userIndex - unique identifier for a user,
  * set to -1 if it is new user
  *
- * @return {boolean} true if email is valid and not used by others
+ * @return {boolean} true - if email is valid and not used by others
  */
 function isValidEmail(email: string, userIndex: number): boolean {
   const data: Data = getData();
@@ -309,7 +309,7 @@ function isValidEmail(email: string, userIndex: number): boolean {
  *
  * @param {string} name - nameFirst or nameLast of a user
  *
- * @return {boolean} true iif contains letters, spaces, hyphens, or apostrophes
+ * @return {boolean} true - if contains letters, spaces, hyphens, or apostrophes
  */
 function isValidName(name: string): boolean {
   const pattern = new RegExp(`^[a-zA-Z\\s-']{${NAME_MIN_LEN},${NAME_MAX_LEN}}$`);
@@ -322,7 +322,7 @@ function isValidName(name: string): boolean {
  *
  * @param {string} password - nameFirst or nameLast of a user
  *
- * @return {boolean} true iif len > 8 && contains >= 1 (letter & integer)
+ * @return {boolean} true - if len > 8 && contains >= 1 (letter & integer)
  */
 function isValidPassword(password: string): boolean {
   const stringPattern = /[a-zA-Z]/;
