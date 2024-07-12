@@ -261,6 +261,7 @@ app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   return res.json(result);
 });
 
+// adminQuizQuestion
 // Create quiz question
 app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid as string);
@@ -357,7 +358,7 @@ app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request,
   return res.json(result);
 });
 
-// clear
+// other
 // Reset the state of the application back to the start.
 app.delete('/v1/clear', (req: Request, res: Response) => {
   return res.json(clear());

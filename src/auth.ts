@@ -1,8 +1,7 @@
 import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
-import { Data, User, Session, ErrorObject, EmptyObject } from './dataStore';
+import { Data, User, Session, INVALID, ErrorObject, EmptyObject } from './dataStore';
 
-const INVALID: number = -1;
 const NAME_MIN_LEN: number = 2;
 const NAME_MAX_LEN: number = 20;
 const PASSWORD_MIN_LEN: number = 8;
@@ -276,7 +275,7 @@ export function findUserId(token: string): number {
  *
  * @param {number} authUserId - unique identifier for a user
  *
- * @return {number} userIndex - corresponding index of the user with given authUserId
+ * @return {number} userIndex - corresponding index of user given authUserId
  */
 function findUser(authUserId: number): number {
   const data: Data = getData();
