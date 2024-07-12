@@ -115,7 +115,6 @@ app.put('/v1/admin/user/details', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-
 // Update the password of this admin user
 app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   const { token, oldPassword, newPassword } = req.body;
