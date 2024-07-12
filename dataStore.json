@@ -1,5 +1,1 @@
-<<<<<<< HEAD
-{"users":[{"userId":1,"nameFirst":"Akshat","nameLast":"Mishra","email":"Akshat123mish@gmail.com","password":"Ak12shat","numSuccessfulLogins":1,"numFailedPasswordsSinceLastLogin":0}],"quizzes":[{"quizId":1,"creatorId":1,"name":"Mirror Mirror on the wall","description":"I love disney cartoons","timeCreated":1720704538,"timeLastEdited":1720704538,"numQuestions":0,"questions":[],"duration":0,"isTrashed":false}],"sessions":{"globalCounter":1,"questionCounter":0,"sessionIds":[{"userId":1,"token":"1"}]}}
-=======
 {"users":[],"quizzes":[],"trashedQuizzes":[],"sessions":{"globalCounter":0,"questionCounter":0,"sessionIds":[]}}
->>>>>>> e459295e12ad3123867b2103dca98023014a0c7d

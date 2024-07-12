@@ -100,6 +100,10 @@ export function requestQuizRestore(token: string, quizId: number): ApiResponse<E
   return requestHelper('POST', `/v1/admin/quiz/${quizId}/restore`, { token });
 }
 
+export function requestQuizEmptyTrash(token: string, quizIds: string): ApiResponse<EmptyObject> {
+  return requestHelper('DELETE', '/v1/admin/quiz/trash/empty', { token, quizIds });
+}
+
 export function requestQuizTransfer(transferData: QuizTransfer): ApiResponse<EmptyObject> {
   return requestHelper('POST', `/v1/admin/quiz/${transferData.quizId}/transfer`, transferData);
 }
