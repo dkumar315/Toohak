@@ -130,7 +130,10 @@ export function requestAdminQuizTrash(token: string): ResQuizTrash | ErrorObject
   const res = requestHelper<QuizTrashReturn>('GET', '/v1/admin/quiz/trash', { token }) as ResQuizTrash | ErrorObjectNumber;
   return res;
 }
-
+export function requestQuizTrashDelete(token: string, quizIds: number[]): ApiResponse<EmptyObject> {
+  return requestHelper('DELETE', 
+                       'v1/admin/quiz/trash/empty', { token, quizIds: quizIds.map(id => id.toString()).join(',')});
+}
 // ============== other ========================================================
 export function requestClear(): ApiResponse<EmptyObject> {
   return requestHelper('DELETE', '/v1/clear', {});
