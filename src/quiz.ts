@@ -375,5 +375,5 @@ export function adminQuizRestore(token: string, quizId: number): EmptyObject | E
   data.trashedQuizzes.splice(trashedQuizIndex, 1);
 
   setData(data);
-  return {}; // Return an appropriate response
+  return {}; 
 }

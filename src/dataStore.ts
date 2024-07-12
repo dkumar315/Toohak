@@ -39,7 +39,7 @@ export type ErrorObject = { error: string };
 export interface Data {
   users: User[];
   quizzes: Quiz[];
-  trashedQuizzes: Quiz[]; // added
+  trashedQuizzes: Quiz[]; 
   sessions: Sessions;
 }
 
