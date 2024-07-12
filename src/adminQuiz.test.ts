@@ -10,6 +10,8 @@ beforeEach(() => {
   requestClear();
 });
 
+afterAll(() => requestClear());
+
 describe('adminQuizList', () => {
   test('requestQuizList returns error when token is not valid', () => {
     const result = requestQuizList('789') as ResError;
