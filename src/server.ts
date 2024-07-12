@@ -368,6 +368,7 @@ app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request,
 });
 
 // other
+// Reset the state of the application back to the start
 app.delete('/v1/clear', (req: Request, res: Response) => {
   return res.json(clear());
 });
