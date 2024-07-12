@@ -100,6 +100,12 @@ export interface Restore {
   sessions: Sessions;
 }
 
+export interface QuizTransfer {
+  token: string;
+  quizId: number;
+  userEmail: string;
+}
+
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY
 
 // YOU SHOULDNT NEED TO MODIFY THE FUNCTIONS BELOW IN ITERATION 1

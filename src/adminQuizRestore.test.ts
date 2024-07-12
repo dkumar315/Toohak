@@ -2,7 +2,7 @@ import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
 import {
   ERROR, authRegister, requestAuthLogout,
   quizCreate, validQuizInfo, requestQuizRemove,
-  restoreQuiz, requestClear,
+  requestRestoreQuiz, requestClear,
   ResError, ResEmpty, ResQuizId, ResQuizInfo,
 } from './functionRequest';
 
@@ -34,7 +34,7 @@ afterAll(() => requestClear());
 describe('testing adminQuizRestore POST /v1/admin/quiz/{quizId}/restore', () => {
   describe('test1.0 valid returns (valid token and quizId)', () => {
     test('test1.1 valid restore of a removed quiz', () => {
-      const result = restoreQuiz(token, quizId) as ResEmpty;
+      const result = requestRestoreQuiz(token, quizId) as ResEmpty;
       expect(result).toMatchObject({});
       expect(result.status).toStrictEqual(OK);
       const quizInfo = validQuizInfo(token, quizId) as ResQuizInfo;
@@ -45,7 +45,7 @@ describe('testing adminQuizRestore POST /v1/admin/quiz/{quizId}/restore', () => 
   describe('test2.0 invalid returns', () => {
     test('test2.1 quiz name of the restored quiz is already used by another active quiz', () => {
       quizCreate(token, 'Test Quiz', 'This is another test quiz.') as ResQuizId;
-      const result = restoreQuiz(token, quizId) as ResError;
+      const result = requestRestoreQuiz(token, quizId) as ResError;
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(BAD_REQUEST);
     });
@@ -54,13 +54,13 @@ describe('testing adminQuizRestore POST /v1/admin/quiz/{quizId}/restore', () => 
       const newQuizCreateResponse = quizCreate(token, 'Test Quiz', 'This is another test quiz.') as ResQuizId;
       const newQuizId = newQuizCreateResponse.quizId;
 
-      const result = restoreQuiz(token, newQuizId) as ResError;
+      const result = requestRestoreQuiz(token, newQuizId) as ResError;
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(BAD_REQUEST);
     });
 
     test('test2.3 token is empty', () => {
-      const result = restoreQuiz('', quizId) as ResError;
+      const result = requestRestoreQuiz('', quizId) as ResError;
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(UNAUTHORIZED);
     });
@@ -68,7 +68,7 @@ describe('testing adminQuizRestore POST /v1/admin/quiz/{quizId}/restore', () => 
     test('test2.4 valid token is provided, but user is not an owner of this quiz or quiz doesn\'t exist', () => {
       const newTokenResponse = authRegister('anotheremail@gmail.com', 'anotherpassw0rd', 'anotherFirst', 'anotherLast');
       const newToken: string = newTokenResponse.token;
-      const result = restoreQuiz(newToken, quizId) as ResError;
+      const result = requestRestoreQuiz(newToken, quizId) as ResError;
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(FORBIDDEN);
     });
@@ -76,21 +76,21 @@ describe('testing adminQuizRestore POST /v1/admin/quiz/{quizId}/restore', () => 
 
   describe('test3.0 edge cases', () => {
     test('test3.1 restoring a quiz multiple times', () => {
-      restoreQuiz(token, quizId);
-      const result = restoreQuiz(token, quizId) as ResError;
+      requestRestoreQuiz(token, quizId);
+      const result = requestRestoreQuiz(token, quizId) as ResError;
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(BAD_REQUEST);
     });
 
     test('test3.2 restoring a quiz that never existed', () => {
-      const result = restoreQuiz(token, quizId + otherQuizId) as ResError;
+      const result = requestRestoreQuiz(token, quizId + otherQuizId) as ResError;
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(BAD_REQUEST);
     });
 
     test('test3.3 restoring a quiz with a token from a user who is no longer active', () => {
       requestAuthLogout(token);
-      const result = restoreQuiz(token, quizId) as ResError;
+      const result = requestRestoreQuiz(token, quizId) as ResError;
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(UNAUTHORIZED);
     });
