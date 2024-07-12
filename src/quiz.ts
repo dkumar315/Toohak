@@ -104,8 +104,10 @@ export function adminQuizCreate(token: string, name: string, description: string
     return { error: 'Description is more than 100 characters in length.' };
   }
 
+  data.sessions.quizCounter += 1;
+
   const newQuiz: Quiz = {
-    quizId: data.quizzes.length + 1,
+    quizId: data.sessions.quizCounter,
     creatorId: authUserId,
     name,
     description,
@@ -294,12 +296,9 @@ export function adminQuizViewTrash(token: string): QuizListReturn | ErrorObject 
   }
 
   const data = getData();
-  const trashedquizArray: { quizId: number; name: string }[] = [];
-  for (const quiz of data.trashedQuizzes) {
-    if (quiz.creatorId === authUserId) {
-      trashedquizArray.push({ quizId: quiz.quizId, name: quiz.name });
-    }
-  }
+  const trashedquizArray: { quizId: number; name: string }[] = data.trashedQuizzes
+    .filter(quiz => quiz.creatorId === authUserId)
+    .map(({ quizId, name }) => ({ quizId, name }));
 
   return { quizzes: trashedquizArray };
 }
