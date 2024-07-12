@@ -87,8 +87,10 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
     });
 
     test('test3.2 transferring a quiz with maximum data length', () => {
-      const longName = 'Q'.repeat(30); // Assuming 30 is max length
-      const longDescription = 'D'.repeat(100); // Assuming 100 is max length
+      // Assuming 30 is max length
+      const longName = 'Q'.repeat(30);
+      // Assuming 100 is max length
+      const longDescription = 'D'.repeat(100);
       const maxQuizCreateResponse = requestQuizCreate(token, longName, longDescription);
       if ('quizId' in maxQuizCreateResponse) {
         const maxQuizId = maxQuizCreateResponse.quizId;
@@ -111,7 +113,8 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
     });
 
     test('test3.4 transferring a quiz that never existed', () => {
-      const nonExistentQuizId = 9999; // Assuming this ID does not exist
+      // Assuming this ID does not exist
+      const nonExistentQuizId = 9999;
       const transferData: QuizTransfer = { token, quizId: nonExistentQuizId, userEmail: 'johnsmith@gmail.com' };
       const result = requestQuizTransfer(transferData);
       expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
