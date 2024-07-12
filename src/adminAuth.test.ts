@@ -114,3 +114,26 @@ describe('adminAuthLogin', () => {
     expect(result.error).toStrictEqual(`Invalid password ${password}.`);
   });
 });
+
+describe('adminAuthLogin', () => {
+  test('Test for Valid Login', () => {
+    result = requestAuthLogin('jane@example.com', 'MyPassw0rd');
+    expect(result).toStrictEqual({ status: OK, token: expect.any(String) });
+  });
+
+  // emails
+  const emails = [' ', '123', 'fakejane@example.com'];
+  test.each(emails)('Test for invalid email', (email) => {
+    result = requestAuthLogin(email, 'MyPassw0rd');
+    expect(result).toStrictEqual(ERROR);
+    expect(result.error).toStrictEqual(`Invalid email ${email}.`);
+  });
+
+  // passwords
+  const passwords = ['Pass1', 'MyPassword', '123456789', 'Invalid Password', ' '];
+  test.each(passwords)('Test for invalid password', (password) => {
+    result = requestAuthLogin('jane@example.com', password);
+    expect(result).toStrictEqual(ERROR);
+    expect(result.error).toStrictEqual(`Invalid password ${password}.`);
+  });
+});
