@@ -27,15 +27,6 @@ export interface QuizInfoReturn {
   duration: number,
 }
 
-export interface QuizViewTrashReturn {
-  quizzes: Array<
-    {
-      quizId: number;
-      name: string;
-    }
-  >;
-}
-
 export interface QuizTransfer {
   token: string;
   quizId: number;
@@ -287,6 +278,30 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
 
   setData(data);
   return {};
+}
+
+/**
+ * This function restores a quiz from the trash back to active quizzes.
+ *
+ * @param {string} token - ID of the authorised user
+ *
+ * @return {QuizListReturn | ErrorObject} - Returns the info of trashed quiz, or an error object if unsuccessful
+ */
+export function adminQuizViewTrash(token: string): QuizListReturn | ErrorObject {
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return { error: `Invalid token ${token}.` };
+  }
+
+  const data = getData();
+  const trashedquizArray: { quizId: number; name: string }[] = [];
+  for (const quiz of data.trashedQuizzes) {
+    if (quiz.creatorId === authUserId) {
+      trashedquizArray.push({ quizId: quiz.quizId, name: quiz.name });
+    }
+  }
+
+  return { quizzes: trashedquizArray };
 }
 
 /**
