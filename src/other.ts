@@ -9,6 +9,7 @@ export function clear(): EmptyObject {
   const data: Data = {
     users: [],
     quizzes: [],
+    trashedQuizzes: [],
     sessions: {
       globalCounter: 0,
       questionCounter: 0,

@@ -52,6 +52,8 @@ beforeEach(() => {
   requestClear();
 });
 
+afterAll(() => requestClear());
+
 describe('adminQuizQuestionDelete', () => {
   let user: ResToken;
   let quiz: ResQuizId;

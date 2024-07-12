@@ -4,9 +4,9 @@ const SERVER_URL: string = `${config.url}:${config.port}`;
 
 // ============== interfaces ===================================================
 import { StatusCodes } from 'http-status-codes';
-import { EmptyObject, ErrorObject, ErrorObjectNumber } from './dataStore';
+import { EmptyObject, ErrorObject } from './dataStore';
 import { TokenReturn, UserDetailReturn } from './auth';
-import { QuizListReturn, QuizCreateReturn, QuizInfoReturn, QuizTrashReturn } from './quiz';
+import { QuizListReturn, QuizCreateReturn, QuizInfoReturn, QuizTransfer } from './quiz';
 import { QuestionBody, QuestionIdReturn, NewQuestionIdReturn } from './quizQuestion';
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
@@ -96,6 +96,14 @@ export function requestQuizDescriptionUpdate(token: string, quizId: number,
     { token, description });
 }
 
+export function requestQuizRestore(token: string, quizId: number): ApiResponse<EmptyObject> {
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/restore`, { token });
+}
+
+export function requestQuizTransfer(transferData: QuizTransfer): ApiResponse<EmptyObject> {
+  return requestHelper('POST', `/v1/admin/quiz/${transferData.quizId}/transfer`, transferData);
+}
+
 // ============== adminQuizQuestion ============================================
 export function requestQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): ApiResponse<QuestionIdReturn> {
@@ -126,14 +134,6 @@ export function requestQuizQuestionDuplicate(token: string, quizId: number,
     `/v1/admin/quiz/${quizId}/question/${questionId}/duplicate`, { token });
 }
 
-export function requestAdminQuizTrash(token: string): ResQuizTrash | ErrorObjectNumber {
-  const res = requestHelper<QuizTrashReturn>('GET', '/v1/admin/quiz/trash', { token }) as ResQuizTrash | ErrorObjectNumber;
-  return res;
-}
-export function requestQuizTrashDelete(token: string, quizIds: number[]): ApiResponse<EmptyObject> {
-  return requestHelper('DELETE', 
-                       'v1/admin/quiz/trash/empty', { token, quizIds: quizIds.map(id => id.toString()).join(',')});
-}
 // ============== other ========================================================
 export function requestClear(): ApiResponse<EmptyObject> {
   return requestHelper('DELETE', '/v1/clear', {});
@@ -147,7 +147,6 @@ export type ResQuizId = ResValid<QuizCreateReturn>;
 export type ResQuizInfo = ResValid<QuizInfoReturn>;
 export type ResQuestionId = ResValid<QuestionIdReturn>;
 export type ResNewQuestionId = ResValid<NewQuestionIdReturn>;
-export type ResQuizTrash = ResValid<QuizTrashReturn>;
 
 export const authRegister = (email: string, password: string,
   nameFirst: string, nameLast: string): ResToken =>
@@ -162,6 +161,3 @@ export const validQuizInfo = (token: string, quizId: number): ResQuizInfo =>
 export const questionCreate = (token: string, quizId: number,
   questionBody: QuestionBody): ResQuestionId =>
   requestQuizQuestionCreate(token, quizId, questionBody) as ResQuestionId;
-
-export const adminQuizTrash = (token: string): ResQuizTrash =>
-  requestAdminQuizTrash(token) as ResQuizTrash;
