@@ -96,6 +96,10 @@ export function requestQuizDescriptionUpdate(token: string, quizId: number,
     { token, description });
 }
 
+export function requestQuizViewTrash(token: string): ApiResponse<QuizListReturn> {
+  return requestHelper('GET', '/v1/admin/quiz/trash', { token });
+}
+
 export function requestQuizRestore(token: string, quizId: number): ApiResponse<EmptyObject> {
   return requestHelper('POST', `/v1/admin/quiz/${quizId}/restore`, { token });
 }
