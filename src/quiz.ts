@@ -324,7 +324,7 @@ export function adminQuizTrashEmpty(token: string, quizIds: string): EmptyObject
   }
 
   setData(data);
-  return {};
+  return {};
 }
 
 /**
@@ -412,4 +412,3 @@ export function adminQuizTransfer(transferData: QuizTransfer): EmptyObject | Err
   setData(data);
   return {};
 }
-

@@ -72,6 +72,6 @@ describe('testing adminQuizTrashEmpty DELETE /v1/admin/quiz/trash/empty', () => 
       const result = requestQuizEmptyTrash(token, `[${quizId}]`) as ResError;
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(UNAUTHORIZED);
-    });
-  });
+    });
+  });
 });
