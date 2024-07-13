@@ -20,10 +20,13 @@ tests:
     - kill -SIGINT %1
     # - cat $SERVER_LOG
     - npm run report2
+    - cat coverage/lcov.info
+    - grep -A 5 "<div class='pad1'>" coverage/lcov-report/index.html || echo "No coverage report found"
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
     paths: 
       - coverage/
+    expose_as: 'Coverage Report'
     expire_in: 3 days
 
 # typecheck:
