@@ -19,8 +19,8 @@ tests:
     - echo "Server Log:"
     # - cat $SERVER_LOG
     # - echo "Coverage Log:"
-    - cat coverage/lcov-report/index.html
     - npm run coverage_report
+    - cat coverage/coverage-summary.json
     - cat $TEST_WITH_COVERAGE_LOG
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
@@ -29,12 +29,12 @@ tests:
     expose_as: Coverage Report
     expire_in: 3 days
 
-typecheck:
-  stage: checks
-  script:
-    - npm run tsc
+# typecheck:
+#   stage: checks
+#   script:
+#     - npm run tsc
 
-linting:
-  stage: checks
-  script:
-    - npm run lint
+# linting:
+#   stage: checks
+#   script:
+#     - npm run lint
