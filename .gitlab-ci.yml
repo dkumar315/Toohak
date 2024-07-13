@@ -14,12 +14,7 @@ tests:
     - npm run coverage >& $SERVER_LOG &
     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
     - time npm run test >& $TEST_LOG|| (cat $SERVER_LOG && exit 1)
-    # - kill -SIGINT %1 >> "${COVERAGE_LOG}" 2>&1
-    - if jobs %1 &>/dev/null; then
-        kill -SIGINT %1 >> "${SERVER_LOG}" 2>&1 || echo "Failed to kill server process" >> "${SERVER_LOG}"
-      else
-        echo "Server process not found" >> "${SERVER_LOG}"
-      fi
+    - kill -SIGINT %1 >> "${SERVER_LOG}" 2>&1
     - sleep 2
     - echo "Server Log:"
     - cat $SERVER_LOG
