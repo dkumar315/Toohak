@@ -61,42 +61,43 @@ tests:
     - TEST_WITH_COVERAGE_LOG=$(mktemp)
     - npm run coverage >& $SERVER_LOG &
     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
-    - time npm run test >& $TEST_WITH_COVERAGE_LOG || (cat $SERVER_LOG && exit 1)
-    - kill -SIGINT %1
+    # - timeout -s SIGINT 180s
+    - time npm t >& $TEST_WITH_COVERAGE_LOG || (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
+    - kill -SIGINT %1 >& $SERVER_LOG
     - sleep 2
-    - cat $SERVER_LOG
-    - ls -la coverage 
-  artifacts:
-    when: always
-    paths:
-      - coverage/
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: coverage/
+    - echo ""
+    # - cat $SERVER_LOG
+    - cat $TEST_WITH_COVERAGE_LOG
+    - npm run coverage_report
+    - echo ""
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
+  artifacts:
+    paths:
+       - coverage/
+    expose_as: Coverage Report
+    expire_in: 3 days
 
-# tests2:
-#   stage: checks
-#   script:
-#     - SERVER_LOG=$(mktemp)
-#     - TEST_WITH_COVERAGE_LOG=$(mktemp)
-#     - npm run start >& $SERVER_LOG &
-#     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
-#     # - timeout -s SIGINT 180s
-#     - time npm run coverage_pipeline >& $TEST_WITH_COVERAGE_LOG || (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
-#     - kill -SIGINT %1 >& $SERVER_LOG
-#     - sleep 2
-#     - echo ""
-#     # - cat $SERVER_LOG
-#     - cat $TEST_WITH_COVERAGE_LOG
-#     - echo ""
-#   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
-#   artifacts:
-#     paths:
-#        - coverage/
-#     expose_as: Coverage Report
-#     expire_in: 3 days
+tests2:
+  stage: checks
+  script:
+    - SERVER_LOG=$(mktemp)
+    - TEST_WITH_COVERAGE_LOG=$(mktemp)
+    - npm run start >& $SERVER_LOG &
+    - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
+    # - timeout -s SIGINT 180s
+    - time npm run coverage_pipeline >& $TEST_WITH_COVERAGE_LOG || (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
+    - kill -SIGINT %1 >& $SERVER_LOG
+    - sleep 2
+    - echo ""
+    # - cat $SERVER_LOG
+    - cat $TEST_WITH_COVERAGE_LOG
+    - echo ""
+  coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
+  artifacts:
+    paths:
+       - coverage/
+    expose_as: Coverage Report
+    expire_in: 3 days
 
 # tests3:
 #   stage: checks
