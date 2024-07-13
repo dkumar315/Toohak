@@ -9,18 +9,13 @@ before_script:
 tests:
   stage: checks
   script:
-    - COVERAGE_LOG=$(mktemp) # rename from SERVER_LOG
-    - TEST_LOG=$(mktemp)
-    - npm run coverage >& $COVERAGE_LOG &
-    - timeout 10s grep -q "§ Server started on port" <(tail -f $COVERAGE_LOG) || (cat $COVERAGE_LOG && exit 1)
-    - sleep 2
-    - timeout -s SIGINT 180s time npm run test >& $TEST_LOG || (cat $COVERAGE_LOG && exit 1)
+    - SERVER_LOG=$(mktemp)
+    - npm run coverage >& $SERVER_LOG &
+    - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
+    - timeout -s SIGINT 180s time npm run test || (cat $SERVER_LOG && exit 1)
     - kill -SIGINT %1
     - sleep 2
-    - echo "Test Log:"
-    - cat $TEST_LOG
-    - echo "Coverage Log:"
-    - cat $COVERAGE_LOG
+    - cat $SERVER_LOG
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
     paths:
