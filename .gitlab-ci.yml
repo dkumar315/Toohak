@@ -16,13 +16,11 @@ tests:
     - npm run coverage >& $SERVER_LOG &
     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
     # - timeout -s SIGINT 180s
-    - time npm run coverage_pipeline >& $TEST_WITH_COVERAGE_LOG || (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
+    - time npm t >& $TEST_WITH_COVERAGE_LOG || (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
     - kill -SIGINT %1
     - cat $SERVER_LOG
     - cat $TEST_WITH_COVERAGE_LOG
-    - echo ""
-    - cat $coverage/lcov.info
-    - ls coverage/lcov-report
+    - npm run coverage_report
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
     paths: 
