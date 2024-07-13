@@ -12,12 +12,8 @@
     "cleanup-sync-request": "pkill -f node_modules/sync-rpc/lib/worker.js > /dev/null 2>&1",
     "coverage": "nyc --reporter=text --reporter=lcov ts-node -T src/server.ts",
     "coverage_pipeline": "nyc --reporter=text --reporter=lcov npm run test",
-    "coverage_pipeline2": "nyc --reporter=text --reporter=lcov jest",
-    "coverage_report": "nyc report --reporter=text-lcov > coverage.lcov && nyc report --reporter=text",
-    "coverage_report2": "nyc report --reporter=text",
-    "coverage_pipelineA": "npx jest --coverage",
-    "coverage_pipelineB": "npm test -- --coverage",
-    "coverage_pipelineC": "npm run test --coverage",
+    "coverage_report": "nyc report --reporter=text",
+    "report_2": "nyc report --reporter=text-lcov > coverage.lcov && nyc report --reporter=text && cat coverage.lcov",
     "posttest": "npm run cleanup-sync-request || true"
   },
   "dependencies": {
