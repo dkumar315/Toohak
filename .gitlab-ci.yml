@@ -22,6 +22,7 @@ tests:
     - cat $TEST_WITH_COVERAGE_LOG
     - echo ""
     - cat $coverage/lcov.info
+    - ls coverage/lcov-report
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
     paths: 
