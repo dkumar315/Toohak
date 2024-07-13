@@ -27,9 +27,8 @@ tests:
     - cat $coverage/lcov.info
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
-    reports:
-      coverage_report:
-        path: coverage/
+    paths: 
+      - coverage/
     expire_in: 3 days
 
 # typecheck:
