@@ -18,16 +18,17 @@ tests:
     # - timeout -s SIGINT 180s
     - time npm t >& $TEST_WITH_COVERAGE_LOG|| (cat $SERVER_LOG && exit 1)
     - npm run coverage_pipeline >& $TEST_WITH_COVERAGE_LOG2 || (cat $TEST_WITH_COVERAGE_LOG && exit 1)
-    - npm run coverage2 >& $TEST_WITH_COVERAGE_LOG3 || (cat $TEST_WITH_COVERAGE_LOG && cat $COVERAGE_LOG2 && exit 1)
     - kill -SIGINT %1 >& $SERVER_LOG
     - sleep 2
     - echo ""
+    - ls -R coverage
     - npm run coverage_report
     - cat coverage/coverage-summary.json
     - cat $TEST_WITH_COVERAGE_LOG
     - cat $TEST_WITH_COVERAGE_LOG2
     - cat $TEST_WITH_COVERAGE_LOG3
     # - cat $SERVER_LOG
+    - echo ""
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
     paths:
