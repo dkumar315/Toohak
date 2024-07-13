@@ -64,7 +64,9 @@ tests:
     - kill -SIGINT %1
     - sleep 2
     - cat $SERVER_LOG
+    - ls -la coverage 
   artifacts:
+    when: always
     paths:
       - coverage/
     reports:
