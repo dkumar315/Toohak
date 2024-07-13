@@ -20,6 +20,7 @@ tests:
     - kill -SIGINT %1
     # - cat $SERVER_LOG
     - npm run coverage_report
+    - cat coverage/lcov.info || echo "lcov.info not found"
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
     paths: 
