@@ -25,9 +25,10 @@ tests:
     - echo ""
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
-    paths:
-       - coverage/
-    expose_as: Coverage Report
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/clover.xml
     expire_in: 3 days
 
 # typecheck:
