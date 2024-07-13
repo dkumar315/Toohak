@@ -70,9 +70,9 @@ tests:
     reports:
       coverage_report:
         coverage_format: cobertura
-        path: coverage/lcov.info
-  # coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
-  coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
+        path: coverage/
+  coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
+  # coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
 
 # tests2:
 #   stage: checks
