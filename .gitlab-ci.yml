@@ -19,7 +19,7 @@ tests:
     - sleep 2
     - echo ""
     - npm run coverage_report
-    - cat coverage/coverage-summary.json
+    - ls
     - cat $TEST_WITH_COVERAGE_LOG
     - cat $TEST_WITH_COVERAGE_LOG2
     - cat $TEST_WITH_COVERAGE_LOG3
@@ -40,7 +40,7 @@ tests3:
     - npm run start >& $SERVER_LOG &
     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
     # - timeout -s SIGINT 180s
-    - nyc --reporter=text --reporter=lcov jest >& $TEST_WITH_COVERAGE_LOG|| (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
+    - npm run coverage_pipeline3 >& $TEST_WITH_COVERAGE_LOG|| (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
     - kill -SIGINT %1 >& $SERVER_LOG
     - sleep 2
     - echo ""
