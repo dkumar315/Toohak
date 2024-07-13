@@ -19,7 +19,7 @@ tests:
     - time npm run coverage_pipeline || (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
     - kill -SIGINT %1
     # - cat $SERVER_LOG
-    - npm run coverage_report
+    # - npm run coverage_report
     - cat coverage/lcov.info
     - grep -A 5 "<div class='pad1'>" coverage/lcov-report/index.html || echo "No coverage report found"
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
