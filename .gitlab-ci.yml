@@ -13,10 +13,10 @@ tests:
   script:
     - SERVER_LOG=$(mktemp)
     - TEST_WITH_COVERAGE_LOG=$(mktemp)
-    - npm run coverage >& $SERVER_LOG &
+    - npm run start >& $SERVER_LOG &
     # - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
     # - timeout -s SIGINT 180s
-    - time npm run test || (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
+    - time npm run coverage_pipeline || (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
     - kill -SIGINT %1
     # - cat $SERVER_LOG
     - npm run coverage_report
