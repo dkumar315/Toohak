@@ -29,28 +29,50 @@ before_script:
 #     expose_as: Coverage Report
 #     expire_in: 3 days
 
+# tests:
+#   stage: checks
+#   script:
+#     - SERVER_LOG=$(mktemp)
+#     - TEST_WITH_COVERAGE_LOG=$(mktemp)
+#     - npm run coverage >& $SERVER_LOG &
+#     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
+#     # - timeout -s SIGINT 180s
+#     - time npm test --coverage >& $TEST_WITH_COVERAGE_LOG || (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
+#     - kill -SIGINT %1 >& $SERVER_LOG
+#     - sleep 2
+#     - echo ""
+#     # - cat $SERVER_LOG
+#     - cat $TEST_WITH_COVERAGE_LOG
+#     - npm run coverage_report
+#     - echo ""
+#   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
+#   artifacts:
+#     paths:
+#        - coverage/
+#     expose_as: Coverage Report
+#     expire_in: 3 days
+
 tests:
   stage: checks
+  except:
+    - iteration2/vic/dryRun
   script:
     - SERVER_LOG=$(mktemp)
-    - TEST_WITH_COVERAGE_LOG=$(mktemp)
     - npm run coverage >& $SERVER_LOG &
     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
-    # - timeout -s SIGINT 180s
-    - time npm test --coverage >& $TEST_WITH_COVERAGE_LOG || (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
-    - kill -SIGINT %1 >& $SERVER_LOG
+    - timeout -s SIGINT 180s npm run test || (cat $SERVER_LOG && exit 1)
+    - kill -SIGINT %1
     - sleep 2
-    - echo ""
-    # - cat $SERVER_LOG
-    - cat $TEST_WITH_COVERAGE_LOG
-    - npm run coverage_report
-    - echo ""
-  coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
+    - cat $SERVER_LOG
   artifacts:
     paths:
-       - coverage/
-    expose_as: Coverage Report
-    expire_in: 3 days
+      - coverage/
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/lcov.info
+  # coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
+  coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
 
 # tests2:
 #   stage: checks
