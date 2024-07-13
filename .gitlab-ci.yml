@@ -14,12 +14,12 @@ tests:
     - npm run coverage >& $SERVER_LOG &
     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
     - time npm run test >& $TEST_LOG|| (cat $SERVER_LOG && exit 1)
-    - kill -SIGINT %1
+    - kill -SIGINT %1 >& $COVERAGE_LOG
     - sleep 2
     - echo "Test Log:"
     - cat $TEST_LOG
     - echo "Coverage Log:"
-    - cat $SERVER_LOG
+    - cat $COVERAGE_LOG
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
     paths:
