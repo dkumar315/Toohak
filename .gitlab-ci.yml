@@ -23,12 +23,12 @@ tests:
     - cat $SERVER_LOG
     - cat $TEST_WITH_COVERAGE_LOG
     - echo ""
-    - ls coverage
+    - cat $coverage/lcov-report
+    - cat $coverage/lcov.info
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
     reports:
       coverage_report:
-        coverage_format: cobertura
         path: coverage/
     expire_in: 3 days
 
