@@ -9,14 +9,17 @@ before_script:
 tests:
   stage: checks
   script:
-    - COVERAGE_LOG=$(mktemp) # rename from SERVER_LOG
+    - SERVER_LOG=$(mktemp)
     - TEST_LOG=$(mktemp)
-    - npm run coverage >& $COVERAGE_LOG &
-    - timeout 10s grep -q "§ Server started on port" <(tail -f $COVERAGE_LOG) || (cat $COVERAGE_LOG && exit 1)
+    - npm run coverage >& $SERVER_LOG &
+    - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
+    # - timeout -s SIGINT 180s 
+    - time npm test >& $TEST_LOG|| (cat $SERVER_LOG && exit 1)
+    - kill -SIGINT %1 >> "${SERVER_LOG}" 2>&1
+    - npx nyc report --reporter=text-lcov > coverage.lcov
     - sleep 2
-    - timeout -s SIGINT 180s time npm run test >& $TEST_LOG || (cat $COVERAGE_LOG && exit 1)
-    - kill -SIGINT %1
-    - sleep 2
+    - echo "Server Log:"
+    - cat $SERVER_LOG
     - echo "Test Log:"
     - cat $TEST_LOG
     - echo "Coverage Log:"
