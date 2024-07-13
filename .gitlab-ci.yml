@@ -20,7 +20,7 @@ tests:
     - kill -SIGINT %1
     # - cat $SERVER_LOG
     - cat $TEST_WITH_COVERAGE_LOG
-    - nyc report --reporter=text
+    - npm run coverage_report
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
     paths: 
