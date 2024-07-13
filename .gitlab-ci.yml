@@ -23,6 +23,7 @@ tests:
     - cat $SERVER_LOG
     - cat $TEST_WITH_COVERAGE_LOG
     - echo ""
+    - ls coverage
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
     reports:
