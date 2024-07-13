@@ -58,9 +58,10 @@ tests:
     - iteration2/vic/dryRun
   script:
     - SERVER_LOG=$(mktemp)
+    - TEST_WITH_COVERAGE_LOG=$(mktemp)
     - npm run coverage >& $SERVER_LOG &
     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
-    - time npm run test || (cat $SERVER_LOG && exit 1)
+    - time npm run test >& $TEST_WITH_COVERAGE_LOG || (cat $SERVER_LOG && exit 1)
     - kill -SIGINT %1
     - sleep 2
     - cat $SERVER_LOG
@@ -73,8 +74,7 @@ tests:
       coverage_report:
         coverage_format: cobertura
         path: coverage/
-  coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
-  # coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
+  coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
 
 # tests2:
 #   stage: checks
