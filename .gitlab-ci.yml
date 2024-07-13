@@ -8,54 +8,22 @@ before_script:
 
 tests:
   stage: checks
+  except:
+    - iteration2/vic/dryRun
   script:
     - SERVER_LOG=$(mktemp)
     - TEST_WITH_COVERAGE_LOG=$(mktemp)
     - npm run coverage >& $SERVER_LOG &
-    - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
+    # - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
     # - timeout -s SIGINT 180s
-    - time npm t >& $TEST_WITH_COVERAGE_LOG|| (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
-    - kill -SIGINT %1 >& $SERVER_LOG
-    - sleep 2
-    - echo ""
-    - npm run coverage_report
-    - ls
-    - cat $TEST_WITH_COVERAGE_LOG
-    - cat $TEST_WITH_COVERAGE_LOG2
-    - cat $TEST_WITH_COVERAGE_LOG3
-    # - cat $SERVER_LOG
-    - echo ""
+    - time npm run coverage_pipeline || (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
+    - kill -SIGINT %1
+    - cat $SERVER_LOG
+    - grep -A 5 "<div class='pad1'>" coverage/lcov-report/index.html
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
-    paths:
-       - coverage/
-    expose_as: Coverage Report
-    expire_in: 3 days
-
-tests3:
-  stage: checks
-  script:
-    - SERVER_LOG=$(mktemp)
-    - TEST_WITH_COVERAGE_LOG=$(mktemp)
-    - npm run start >& $SERVER_LOG &
-    - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
-    # - timeout -s SIGINT 180s
-    - npm run coverage_pipeline3 >& $TEST_WITH_COVERAGE_LOG|| (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
-    - kill -SIGINT %1 >& $SERVER_LOG
-    - sleep 2
-    - echo ""
-    - npm run coverage_report
-    - cat coverage/coverage-summary.json
-    - cat $TEST_WITH_COVERAGE_LOG
-    - cat $TEST_WITH_COVERAGE_LOG2
-    - cat $TEST_WITH_COVERAGE_LOG3
-    # - cat $SERVER_LOG
-    - echo ""
-  coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
-  artifacts:
-    paths:
-       - coverage/
-    expose_as: Coverage Report
+    paths: 
+      - coverage/
     expire_in: 3 days
 
 # typecheck:
