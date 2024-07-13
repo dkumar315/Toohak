@@ -13,7 +13,7 @@ tests:
     - TEST_LOG=$(mktemp)
     - npm run coverage >& $SERVER_LOG &
     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
-    - time npm run test >& $TEST_LOG|| (cat $SERVER_LOG && exit 1)
+    - time npm test >& $TEST_LOG|| (cat $SERVER_LOG && exit 1)
     - kill -SIGINT %1 >> "${SERVER_LOG}" 2>&1
     - sleep 2
     - echo "Server Log:"
@@ -21,7 +21,7 @@ tests:
     - echo "Test Log:"
     - cat $TEST_LOG
     - echo "Coverage Log:"
-    - ls -la coverage/ || echo "coverage/ directory not found"
+    - ls -la
     - cat $COVERAGE_LOG
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
