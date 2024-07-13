@@ -19,7 +19,7 @@ tests:
     - echo "Test Log:"
     - cat $TEST_LOG
     - echo "Coverage Log:"
-    - cat $COVERAGE_LOG
+    - cat $SERVER_LOG
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
     paths:
