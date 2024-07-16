@@ -1,10 +1,14 @@
 import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
-import { Data, User, Session, INVALID, ErrorObject, EmptyObject } from './dataStore';
+import {
+  Data, User, Session, INVALID, ErrorObject, EmptyObject
+} from './dataStore';
 
-const NAME_MIN_LEN: number = 2;
-const NAME_MAX_LEN: number = 20;
-const PASSWORD_MIN_LEN: number = 8;
+enum UserLimits {
+  NAME_MIN_LEN = 2,
+  NAME_MAX_LEN = 20,
+  PASSWORD_MIN_LEN = 8;
+}
 
 export interface UserDetails {
   userId: number;
@@ -202,9 +206,10 @@ export function adminUserDetailsUpdate(token: string, email: string, nameFirst: 
  * @return {object} empty object
  * @return {object} error - if token or passwords invalid
  */
-export function adminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string) : EmptyObject | ErrorObject {
+export function adminUserPasswordUpdate(token: string, oldPassword: string,
+  newPassword: string) : EmptyObject | ErrorObject {
   // check whether token valid
-  const userId = findUserId(token);
+  const userId: number = findUserId(token);
   if (userId === INVALID) return { error: `Invalid token ${token}.` };
 
   const data: Data = getData();
@@ -212,7 +217,9 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
   const user: User = data.users[userIndex];
 
   // check whether oldPassword matches the user's password
-  if (user.password !== oldPassword) return { error: `Invalid oldPassword ${oldPassword}.` };
+  if (user.password !== oldPassword) {
+    return { error: `Invalid oldPassword ${oldPassword}.` };
+  }
 
   // check newPassword meets requirements or not used before
   user.passwordHistory = user.passwordHistory || [];
@@ -311,7 +318,7 @@ function isValidEmail(email: string, userIndex: number): boolean {
  * @return {boolean} true - if contains letters, spaces, hyphens, or apostrophes
  */
 function isValidName(name: string): boolean {
-  const pattern = new RegExp(`^[a-zA-Z\\s-']{${NAME_MIN_LEN},${NAME_MAX_LEN}}$`);
+  const pattern: RegExp = new RegExp(`^[a-zA-Z\\s-']{${UserLimits.NAME_MIN_LEN},${UserLimits.NAME_MAX_LEN}}$`);
   return pattern.test(name);
 }
 
@@ -324,10 +331,10 @@ function isValidName(name: string): boolean {
  * @return {boolean} true - if len > 8 && contains >= 1 (letter & integer)
  */
 function isValidPassword(password: string): boolean {
-  const stringPattern = /[a-zA-Z]/;
-  const numberPattern = /[0-9]/;
+  const stringPattern: RegExp = /[a-zA-Z]/;
+  const numberPattern: RegExp = /[0-9]/;
 
-  if (password.length < PASSWORD_MIN_LEN || !stringPattern.test(password) ||
+  if (password.length < UserLimits.PASSWORD_MIN_LEN || !stringPattern.test(password) ||
     !numberPattern.test(password)) {
     return false;
   }
