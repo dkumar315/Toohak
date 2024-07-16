@@ -290,17 +290,17 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
  *
  * @return {EmptyObject | ErrorObject} - Returns an empty object if successful, or an error object if unsuccessful
  */
-export function adminQuizTrashEmpty(token: string, quizIds: string): EmptyObject | ErrorObject {
+export function adminQuizTrashEmpty(token: string, quizIds: number[]): EmptyObject | ErrorObject {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     return { error: 'Invalid token.' };
   }
 
   // Parse quizIds into an array of numbers
-  const parsedQuizIds: number[] = JSON.parse(quizIds);
+  // const parsedQuizIds: number[] = JSON.parse(quizIds);
   const data: Data = getData();
 
-  for (const quizId of parsedQuizIds) {
+  for (const quizId of quizIds) {
     const quizIndex = data.trashedQuizzes.findIndex(quiz => quiz.quizId === quizId);
 
     if (quizIndex === INVALID) {

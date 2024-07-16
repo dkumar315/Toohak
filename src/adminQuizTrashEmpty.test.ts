@@ -9,6 +9,7 @@ let token: string;
 let otherToken: string;
 let quizId: number;
 let otherQuizId: number;
+let deleteQuizIds: number[];
 
 beforeEach(() => {
   requestClear();
@@ -26,6 +27,8 @@ beforeEach(() => {
 
   requestQuizRemove(token, quizId);
   requestQuizRemove(otherToken, otherQuizId);
+
+  deleteQuizIds = [quizId];
 });
 
 afterAll(() => requestClear());
@@ -33,7 +36,7 @@ afterAll(() => requestClear());
 describe('testing adminQuizTrashEmpty DELETE /v1/admin/quiz/trash/empty', () => {
   describe('test1.0 valid returns (valid token and quizIds)', () => {
     test('test1 valid empty trash for removed quizzes', () => {
-      const result = requestQuizEmptyTrash(token, `[${quizId}]`) as ResEmpty;
+      const result = requestQuizEmptyTrash(token, deleteQuizIds) as ResEmpty;
       expect(result).toMatchObject({});
       expect(result.status).toStrictEqual(OK);
     });
@@ -41,19 +44,21 @@ describe('testing adminQuizTrashEmpty DELETE /v1/admin/quiz/trash/empty', () => 
 
   describe('test2.0 invalid returns', () => {
     test('test2.1 one or more of the Quiz IDs is not currently in the trash', () => {
-      const result = requestQuizEmptyTrash(token, `[${quizId}, 999]`) as ResError;
+      deleteQuizIds.push(999);
+      const result = requestQuizEmptyTrash(token, deleteQuizIds) as ResError;
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(BAD_REQUEST);
     });
 
     test('test2.2 token is empty', () => {
-      const result = requestQuizEmptyTrash('', `[${quizId}]`) as ResError;
+      const result = requestQuizEmptyTrash('', deleteQuizIds) as ResError;
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(UNAUTHORIZED);
     });
 
     test('test2.3 valid token is provided, but user is not an owner of one or more quizzes', () => {
-      const result = requestQuizEmptyTrash(token, `[${otherQuizId}]`) as ResError;
+      const quizIds = [otherQuizId];
+      const result = requestQuizEmptyTrash(token, quizIds) as ResError;
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(FORBIDDEN);
     });
@@ -61,15 +66,15 @@ describe('testing adminQuizTrashEmpty DELETE /v1/admin/quiz/trash/empty', () => 
 
   describe('test3.0 edge cases', () => {
     test('test3.1 emptying the trash multiple times', () => {
-      requestQuizEmptyTrash(token, `[${quizId}]`);
-      const result = requestQuizEmptyTrash(token, `[${quizId}]`) as ResError;
+      requestQuizEmptyTrash(token, deleteQuizIds);
+      const result = requestQuizEmptyTrash(token, deleteQuizIds) as ResError;
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(BAD_REQUEST);
     });
 
     test('test3.2 emptying the trash with a token from a user who is no longer active', () => {
       requestAuthLogout(token);
-      const result = requestQuizEmptyTrash(token, `[${quizId}]`) as ResError;
+      const result = requestQuizEmptyTrash(token, deleteQuizIds) as ResError;
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(UNAUTHORIZED);
     });
