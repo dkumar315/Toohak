@@ -23,6 +23,20 @@ afterAll(() => requestClear());
 
 describe('testing adminUserDetails (GET /v1/admin/user/details)', () => {
   let result: ResUserDetail | ResError;
+  test('route and type check', () => {
+    result = requestUserDetails(token);
+    expect(
+      typeof result === 'object' && 'user' in result &&
+      typeof result.user === 'object' && 'userId' in result.user &&
+      typeof result.user.userId === 'number' && 'email' in result.user &&
+      result.user.email === email && 'name' in result.user &&
+      result.user.name === nameFirst + ' ' + nameLast &&
+      'numSuccessfulLogins' in result.user &&
+      result.user.numSuccessfulLogins === 1 &&
+      'numFailedPasswordsSinceLastLogin' in result.user &&
+      result.user.numFailedPasswordsSinceLastLogin === 0
+    ).toBe(true);
+  });
   describe('test1: no registered user', () => {
     test('test1.0: invalid token (test with clear())', () => {
       requestClear();

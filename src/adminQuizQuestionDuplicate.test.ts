@@ -42,6 +42,11 @@ afterAll(() => requestClear());
 
 describe('testing adminQuizQuestionDuplicate' +
   '(POST /v1/admin/quiz/{quizid}/question)/{questionid}/duplicate', () => {
+  test('route and trpe check', () => {
+    result = requestQuizQuestionDuplicate(token, quizId, questionId);
+    expect(typeof result === 'object' && 'newQuestionId' in result &&
+    typeof result.newQuestionId === 'number').toBe(true);
+  });
   describe('test1.0 valid token, quizId and questionId', () => {
     test('test1.1 single question in the test', () => {
       result = requestQuizQuestionDuplicate(token, quizId, questionId);
