@@ -38,7 +38,7 @@ import {
   adminQuizList, adminQuizCreate, adminQuizRemove,
   adminQuizInfo, adminQuizNameUpdate,
   adminQuizDescriptionUpdate, adminQuizViewTrash,
-  adminQuizRestore, adminQuizTransfer
+  adminQuizRestore, adminQuizTransfer, adminQuizTrashEmpty
 } from './quiz';
 import {
   adminQuizQuestionCreate, adminQuizQuestionUpdate,
@@ -239,6 +239,24 @@ app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
   const token = req.header('token');
   const quizId = parseInt(req.params.quizid as string);
   const result = adminQuizRestore(token, quizId);
+  if ('error' in result) {
+    if (result.error.includes('Invalid token')) {
+      return res.status(UNAUTHORIZED).json(result);
+    } else if (result.error.includes('does not own')) {
+      return res.status(FORBIDDEN).json(result);
+    } else {
+      return res.status(BAD_REQUEST).json(result);
+    }
+  }
+  return res.json(result);
+});
+
+// Permanently delete specific quizzes currently sitting in the trash
+app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const quizIds = (req.query.quizIds as string[]).map(Number);
+
+  const result = adminQuizTrashEmpty(token, quizIds);
   if ('error' in result) {
     if (result.error.includes('Invalid token')) {
       return res.status(UNAUTHORIZED).json(result);

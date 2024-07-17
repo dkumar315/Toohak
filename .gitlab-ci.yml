@@ -12,7 +12,7 @@ tests:
     - iteration2/vic/dryRun
   script:
     - SERVER_LOG=$(mktemp)
-    - npm run coverage >& $SERVER_LOG &
+    - npm run ts-node-coverage >& $SERVER_LOG &
     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
     - timeout -s SIGINT 180s time npm t || (cat $SERVER_LOG && exit 1)
     - kill -SIGINT %1

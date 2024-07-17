@@ -9,9 +9,10 @@
     "lint-fix": "eslint --fix 'src/**/*.{ts,js}'",
     "start": "ts-node -T src/server.ts",
     "start-dev": "ts-node-dev src/server.ts",
-    "coverage": "nyc --reporter=text --reporter=lcov ts-node -T src/server.ts",
     "cleanup-sync-request": "pkill -f node_modules/sync-rpc/lib/worker.js > /dev/null 2>&1",
-    "posttest": "npm run cleanup-sync-request || true"
+    "posttest": "npm run cleanup-sync-request || true",
+    "ts-node-coverage": "nyc --reporter=text --reporter=lcov ts-node -T src/server.ts",
+    "ts-node-dev": "ts-node-dev -T src/server.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -46,5 +47,10 @@
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3",
     "yaml": "^2.4.5"
-  }
+  },
+    "nyc": {
+        "exclude": [
+            "echo.*"
+        ]
+    }
 }
