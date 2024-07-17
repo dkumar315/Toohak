@@ -11,6 +11,151 @@
 
 [toc]
 
+# Interfaces of iter2 and iter3
+
+exapmle:
+
+![image-20240717204340610](/Users/victoria_mac/Library/Application Support/typora-user-images/image-20240717204340610.png)
+
+## Interfaces
+
+String: token
+
+Integers: 
+
+<table>
+  <tr>
+    <th>Name & Description</th>
+    <th style="width:17%">HTTP Method</th>
+    <th style="width:25%">Data Types</th>
+	<th style="width:32%">Error Returns</th>
+  </tr>
+  <tr>
+    <td>
+      <code>/v1/admin/auth/logout<code>
+      <br /><br />
+        <code>adminAuthLogout</code>
+      <br /><br />
+       Logs out an admin user who has active user session.
+    </td>
+    <td>
+      POST
+      <br /><br />
+    </td>
+    <td>
+      <b>Header Parameters:
+      </b><br />
+      <code>{ token }</code>
+      <br /><br />
+      <b>Return type if no error:
+      </b><br />
+      <code>{}</code>
+    </td>
+    <td>
+	  <b><code>{ error }</code> when any of: </b>
+      <ul>
+		    <li>token is empty(401),</li> 
+        <li>token is invalid (token does not refer to valid logged in user session) (401)</li>
+	  </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>/v1/admin/user/details<code>
+      <br /><br />
+        <code>adminUserDetails</code>
+      <br /><br />
+       Get the details of an admin user.
+    </td>
+    <td>
+      GET
+      <br /><br />
+    </td>
+    <td>
+      <b>Header Parameters:
+      </b><br />
+      <code>{ token }</code>
+      <br /><br />
+      <b>Return Object:
+      </b><br />
+      <code>todo</code>
+    </td>
+    <td>
+	  <b><code>{ error }</code> when any of: </b>
+      <ul>
+		    <li>token is empty (401),</li> 
+        <li>token is invalid (token does not refer to valid logged in user session) (401)</li>
+	  </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>/v1/admin/user/details<code>
+      <br /><br />
+        <code>adminUserDetailsUpdate</code>
+      <br /><br />
+       Update the details of an admin user (non-password)
+    </td>
+    <td>
+      PUT
+      <br /><br />
+    </td>
+    <td>
+      <b>Header Parameters:
+      </b><br />
+      <code>{ token }</code>
+      <br /><br />
+      <b>Body Parameters:
+      </b><br />
+      <code>{ email, nameFirst, nameLast }</code>
+      <br /><br />
+      <b>Return Object:
+      </b><br />
+      <code>{}</code>
+    </td>
+    <td>
+	  <b><code>{ error }</code> when any of: </b>
+      <ul>
+		    <li>token is empty (401),</li> 
+        <li>token is invalid (token does not refer to valid logged in user session) (401)</li>
+	  </ul>
+    </td>
+  </tr>
+   <tr>
+    <td>
+      <code>/v1/admin/user/password<code>
+      <br /><br />
+        <code>adminUserPasswordUpdate</code>
+      <br /><br />
+       Update the password of this admin user
+    </td>
+    <td>
+      PUT
+      <br /><br />
+    </td>
+    <td>
+      <b>Header Parameters:
+      </b><br />
+      <code>{ token }</code>
+      <br /><br />
+      <b>Body Parameters:
+      </b><br />
+      <code>{ oldPassword, newPassword }</code>
+      <br /><br />
+      <b>Return Object:
+      </b><br />
+      <code>{}</code>
+    </td>
+    <td>
+	  <b><code>{ error }</code> when any of: </b>
+      <ul>
+		    <li>token is empty (401),</li> 
+        <li>token is invalid (token does not refer to valid logged in user session) (401)</li>
+	  </ul>
+    </td>
+  </tr>
+</table>
+
 # Planning of New Features
 
 ## General
