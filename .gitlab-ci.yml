@@ -13,20 +13,11 @@ tests:
   script:
     - SERVER_LOG=$(mktemp)
     - TEST_WITH_COVERAGE_LOG=$(mktemp)
-<<<<<<< HEAD
     - npm run start >& $SERVER_LOG &
-    # - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
-    # - timeout -s SIGINT 180s
-    - time npm run coverage_pipeline || (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
-=======
-    - npm run coverage >& $SERVER_LOG &
     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
     - timeout -s SIGINT 180s time npm t || (cat $SERVER_LOG && cat $TEST_WITH_COVERAGE_LOG && exit 1)
->>>>>>> 511cb2f (complete life cycle: token now in header)
     - kill -SIGINT %1
-    # - cat $SERVER_LOG
-    - npm run coverage_report
-    - cat coverage/lcov.info || echo "lcov.info not found"
+    - cat $SERVER_LOG
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
     paths: 
