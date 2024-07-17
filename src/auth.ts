@@ -311,19 +311,23 @@ function addSession(authUserId: number, token: string): void {
 export function findUserId(token: string): number {
   const data: Data = getData();
   if (!data.sessions.keyPair) return INVALID;
-  const decoded = jwt.decode(token);
-  if (!decoded || typeof decoded === 'string' || !decoded.userId) return INVALID;
+  try {
+    const decoded = jwt.decode(token);
+    if (!decoded || typeof decoded === 'string' || !decoded.userId) return INVALID;
 
-  const isValid = jwt.verify(token, data.sessions.keyPair.publicKey,
-    { algorithms: [ALGORITHM] }) as { userId: number };
-  if (!isValid) return INVALID;
+    const isValid = jwt.verify(token, data.sessions.keyPair.publicKey,
+      { algorithms: [ALGORITHM] }) as { userId: number };
+    if (!isValid) return INVALID;
 
-  const session: Session = data.sessions.sessionIds.find(session =>
-    getHashOf(session.token) === getHashOf(token)
-  );
-  if (!session || session.userId !== isValid.userId) return INVALID;
+    const session: Session = data.sessions.sessionIds.find(session =>
+      getHashOf(session.token) === getHashOf(token)
+    );
+    if (!session || session.userId !== isValid.userId) return INVALID;
 
-  return session.userId;
+    return session.userId;
+  } catch (error) {
+    return INVALID;
+  }
 }
 
 /**
