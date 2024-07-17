@@ -271,10 +271,10 @@ describe('testing adminUserDetailsUpdate (PUT /v1/admin/user/details)', () => {
 
       const names: string[] = ['ab', 'abc', 'thisNameNineteenLen', 'thisNameTwentyLength',
         'name has spaces ', '     ', 'ALLUPPERCASE', 'hayden-Smith', 'Hay\'s-name'];
-        test.each(names)('nameFirst = \'%s\'', (validNameFirst) => {
-          result = requestUserDetailsUpdate(token1, email1, validNameFirst, nameLast1);
-          expect(result).toMatchObject(VALID_EMPTY_RETURN);
-        });
+      test.each(names)('nameFirst = \'%s\'', (validNameFirst) => {
+        result = requestUserDetailsUpdate(token1, email1, validNameFirst, nameLast1);
+        expect(result).toMatchObject(VALID_EMPTY_RETURN);
+      });
 
       test.each(names)('nameLast = \'%s\'', (validNameLast) => {
         result = requestUserDetailsUpdate(token1, email1, nameFirst1, validNameLast);
