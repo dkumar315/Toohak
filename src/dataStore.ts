@@ -86,7 +86,13 @@ export interface Sessions {
   globalCounter: number;
   quizCounter: number;
   questionCounter: number;
+  keyPair?: keyPair,
   sessionIds: Session[];
+}
+
+export interface keyPair {
+  privateKey: string;
+  publicKey: string;
 }
 
 export interface Session {

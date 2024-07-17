@@ -1,5 +1,8 @@
 import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 import {
   Data, User, Session, INVALID, ErrorObject, EmptyObject
 } from './dataStore';
@@ -7,8 +10,11 @@ import {
 enum UserLimits {
   NAME_MIN_LEN = 2,
   NAME_MAX_LEN = 20,
-  PASSWORD_MIN_LEN = 8;
+  PASSWORD_MIN_LEN = 8
 }
+type Algorithms = 'HS256' | 'RS256' | 'ES256' | 'PS256';
+const ALGORITHM: Algorithms = 'RS256';
+const TOKEN_EXPIRY = '9999 years';
 
 export interface UserDetails {
   userId: number;
@@ -73,7 +79,7 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
   data.users.push(newUser);
   setData(data);
 
-  const token: string = generateToken();
+  const token: string = generateToken(authUserId);
   addSession(authUserId, token);
 
   return { token: token };
@@ -107,7 +113,7 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
   user.numFailedPasswordsSinceLastLogin = 0;
   setData(data);
 
-  const token: string = generateToken();
+  const token: string = generateToken(user.userId);
   addSession(user.userId, token);
 
   return { token: token };
@@ -174,7 +180,8 @@ export function adminUserDetails(token: string): UserDetailReturn | ErrorObject 
  * @return {object} empty object - if valid
  * @return {object} error - if authUserId, email, or names are invalid
  */
-export function adminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string): EmptyObject | ErrorObject {
+export function adminUserDetailsUpdate(token: string, email: string,
+  nameFirst: string, nameLast: string): EmptyObject | ErrorObject {
   const data: Data = getData();
   const userId: number = findUserId(token);
   if (userId === INVALID) return { error: `Invalid token ${token}.` };
@@ -203,7 +210,7 @@ export function adminUserDetailsUpdate(token: string, email: string, nameFirst: 
  * @param {string} oldPassword - the current password stored requires update
  * @param {string} newPassword - the replacement password submitted by user
  *
- * @return {object} empty object
+ * @return {object} empty object - if valid
  * @return {object} error - if token or passwords invalid
  */
 export function adminUserPasswordUpdate(token: string, oldPassword: string,
@@ -237,15 +244,49 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string,
 }
 
 /**
- * Generate a token that is globally unique
+ * Generate a token that is globally unique, assume token never expire
+ *
+ * @param {string} email - user email, globally unique
+ * @param {string} password - user password
  *
  * @return {string} token - unique identifier of a login user
  */
-function generateToken(): string {
+function generateToken(userId: number): string {
   const data: Data = getData();
   data.sessions.globalCounter += 1;
+
+  if (!data.sessions.keyPair) {
+    const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+      publicKeyEncoding: { type: 'spki', format: 'pem' },
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+    });
+    data.sessions.keyPair = { privateKey, publicKey };
+  }
   setData(data);
-  return String(data.sessions.globalCounter);
+
+  const header = { alg: ALGORITHM, typ: 'JWT' };
+  const payload = {
+    jti: uuidv4(),
+    tokenId: data.sessions.globalCounter,
+    userId: userId,
+    iat: Math.floor(Date.now() / 1000)
+  };
+
+  const token: string = jwt.sign(payload, data.sessions.keyPair.privateKey, {
+    algorithm: ALGORITHM,
+    header,
+    expiresIn: TOKEN_EXPIRY
+  });
+
+  return token;
+}
+
+/**
+ * Return the hash of a string
+ */
+export function getHashOf(plaintext: string): string {
+  return crypto.createHash('sha256').update(plaintext).digest('hex');
 }
 
 /**
@@ -270,10 +311,19 @@ function addSession(authUserId: number, token: string): void {
  */
 export function findUserId(token: string): number {
   const data: Data = getData();
+  if (!data.sessions.keyPair) return INVALID;
+  const decoded = jwt.decode(token);
+  if (!decoded || typeof decoded === 'string' || !decoded.userId) return INVALID;
+
+  const isValid = jwt.verify(token, data.sessions.keyPair.publicKey,
+    { algorithms: [ALGORITHM] }) as { userId: number };
+  if (!isValid) return INVALID;
+
   const session: Session = data.sessions.sessionIds.find(session =>
-    session.token === token
+    getHashOf(session.token) === getHashOf(token)
   );
-  if (!session) return INVALID;
+  if (!session || session.userId !== isValid.userId) return INVALID;
+
   return session.userId;
 }
 
@@ -318,7 +368,9 @@ function isValidEmail(email: string, userIndex: number): boolean {
  * @return {boolean} true - if contains letters, spaces, hyphens, or apostrophes
  */
 function isValidName(name: string): boolean {
-  const pattern: RegExp = new RegExp(`^[a-zA-Z\\s-']{${UserLimits.NAME_MIN_LEN},${UserLimits.NAME_MAX_LEN}}$`);
+  const pattern: RegExp = new RegExp(
+    `^[a-zA-Z\\s-']{${UserLimits.NAME_MIN_LEN},${UserLimits.NAME_MAX_LEN}}$`
+  );
   return pattern.test(name);
 }
 
