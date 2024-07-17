@@ -72,7 +72,7 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
     nameFirst: nameFirst,
     nameLast: nameLast,
     email: email,
-    password: password,
+    password: getHashOf(password),
     numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
   };
@@ -102,7 +102,7 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
   }
 
   const user: User = data.users[userIndex];
-  if (password.localeCompare(user.password) !== 0) {
+  if (getHashOf(password).localeCompare(user.password) !== 0) {
     user.numFailedPasswordsSinceLastLogin += 1;
     setData(data);
     return { error: `Invalid password ${password}.` };
@@ -122,8 +122,7 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
 /**
  * Given an login user's token, remove its corresponding session.
  *
- * @param {string} email - unique email for a login user
- * @param {string} password - password for a login user
+ * @param {string} token - unique identifier of a user
  *
  * @return {object} empty object - if valid
  * @return {object} error - if token is empty or invalid
@@ -224,20 +223,20 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string,
   const user: User = data.users[userIndex];
 
   // check whether oldPassword matches the user's password
-  if (user.password !== oldPassword) {
+  if (user.password !== getHashOf(oldPassword)) {
     return { error: `Invalid oldPassword ${oldPassword}.` };
   }
 
   // check newPassword meets requirements or not used before
   user.passwordHistory = user.passwordHistory || [];
   if (oldPassword === newPassword || !isValidPassword(newPassword) ||
-    user.passwordHistory.includes(newPassword)) {
+    user.passwordHistory.includes(getHashOf(newPassword))) {
     return { error: `Invalid newPassword ${newPassword}.` };
   }
 
   // if all input valid, then update the password
-  user.password = newPassword;
-  user.passwordHistory.push(oldPassword);
+  user.password = getHashOf(newPassword);
+  user.passwordHistory.push(getHashOf(oldPassword));
   setData(data);
 
   return {};
@@ -268,9 +267,9 @@ function generateToken(userId: number): string {
   const header = { alg: ALGORITHM, typ: 'JWT' };
   const payload = {
     jti: uuidv4(),
-    tokenId: data.sessions.globalCounter,
     userId: userId,
-    iat: Math.floor(Date.now() / 1000)
+    tokenId: data.sessions.globalCounter,
+    issueAt: Math.floor(Date.now() / 1000)
   };
 
   const token: string = jwt.sign(payload, data.sessions.keyPair.privateKey, {
