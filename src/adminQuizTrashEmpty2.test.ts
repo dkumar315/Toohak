@@ -3,7 +3,7 @@ import {
   ERROR, authRegister, requestAuthLogout,
   quizCreate, requestQuizRemove, requestQuizEmptyTrash,
   requestClear, ResError, ResEmpty, ResQuizId,
-} from './functionRequest';
+} from './functionRequest2';
 
 let token: string;
 let otherToken: string;

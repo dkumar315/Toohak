@@ -6,7 +6,7 @@ const SERVER_URL: string = `${config.url}:${config.port}`;
 import { StatusCodes } from 'http-status-codes';
 import { EmptyObject, ErrorObject } from './dataStore';
 import { TokenReturn, UserDetailReturn } from './auth';
-import { QuizListReturn, QuizCreateReturn, QuizInfoReturn, QuizTransfer } from './quiz';
+import { QuizListReturn, QuizCreateReturn, QuizInfoReturn, QuizTransfer } from './quiz2';
 import { QuestionBody, QuestionIdReturn, NewQuestionIdReturn } from './quizQuestion';
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
@@ -102,6 +102,10 @@ export function requestQuizViewTrash(token: string): ApiResponse<QuizListReturn>
 
 export function requestQuizRestore(token: string, quizId: number): ApiResponse<EmptyObject> {
   return requestHelper('POST', `/v1/admin/quiz/${quizId}/restore`, { token });
+}
+
+export function requestQuizEmptyTrash(token: string, quizIds: string): ApiResponse<EmptyObject> {
+  return requestHelper('DELETE', '/v1/admin/quiz/trash/empty', { token, quizIds });
 }
 
 export function requestQuizTransfer(transferData: QuizTransfer): ApiResponse<EmptyObject> {

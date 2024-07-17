@@ -36,7 +36,6 @@ export type Colour = Colours[keyof Colours];
 // interfaces
 export type EmptyObject = Record<string, never>;
 export type ErrorObject = { error: string };
-export type ErrorObjectNumber = {error: string, status: number};
 
 export interface Data {
   users: User[];
