@@ -17,6 +17,8 @@ exapmle:
 
 ![image-20240717204340610](/Users/victoria_mac/Library/Application Support/typora-user-images/image-20240717204340610.png)
 
+https://www.w3schools.com/html/tryit.asp?filename=tryhtml_editor
+
 ## Interfaces
 
 String: token
@@ -403,7 +405,8 @@ Integers:
   </tr>
   <tr>
     <td>
-      <code>/v1/admin/quiz/:quizid/question</code>
+      <code>/v1/admin/quiz/:quizid
+        /question</code>
       <br /><br />
       <code>adminQuizQuestionCreate</code>
       <br /><br />
@@ -438,8 +441,8 @@ Integers:
   </tr>
   <tr>
     <td>
-      <code>/v1/admin/quiz/:quizid/question
-      /:questionid</code>
+      <code>/v1/admin/quiz/:quizid
+        /question/:questionid</code>
       <br /><br />
       <code>adminQuizQuestionUpdate</code>
       <br /><br />
@@ -475,8 +478,8 @@ Integers:
   </tr>
   <tr>
     <td>
-      <code>/v1/admin/quiz/:quizid/question
-      /:questionid</code>
+      <code>/v1/admin/quiz/:quizid
+        /question/:questionid</code>
       <br /><br />
       <code>adminQuizQuestionDelete</code>
       <br /><br />
@@ -512,8 +515,8 @@ Integers:
   </tr>
   <tr>
     <td>
-      <code>/v1/admin/quiz/:quizid/question
-      /:questionid/move</code>
+      <code>/v1/admin/quiz/:quizid
+        /question/:questionid/move</code>
       <br /><br />
       <code>adminQuizQuestionMove</code>
       <br /><br />
@@ -550,7 +553,7 @@ Integers:
   <tr>
     <td>
       <code>/v1/admin/quiz/:quizid/question
-      /:questionid/duplicate</code>
+        /:questionid/duplicate</code>
       <br /><br />
       <code>adminQuizQuestionDuplicate</code>
       <br /><br />
@@ -578,6 +581,42 @@ Integers:
         <li>user is not the owner of this quiz (403)</li>
         <li>question ID is invalid (400)</li>
       </ul>
+    </td>
+  </tr>
+</table>
+
+## other
+
+<table>
+  <tr>
+    <th>Name & Description</th>
+    <th style="width:17%">HTTP Method</th>
+    <th style="width:25%">Data Types</th>
+	<th style="width:32%">Error Returns</th>
+  </tr>
+  <tr>
+    <td>
+      <code>/v1/clear</code>
+      <br /><br />
+        <code>clear</code>
+      <br /><br />
+       Reset the state of the application back to the start.
+    </td>
+    <td>
+      GET
+      <br /><br />
+    </td>
+    <td>
+      <b>Query Parameters:
+      </b><br />
+      <code>{}</code>
+      <br /><br />
+      <b>Return Object:
+      </b><br />
+      <code>{}</code>
+    </td>
+    <td>
+	  N/A
     </td>
   </tr>
 </table>
