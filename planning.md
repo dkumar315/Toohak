@@ -105,14 +105,16 @@ Integers:
       <b>Header Parameters:</b><br />
       <code>{ token }</code>
       <br /><br />
+			<b>Body Parameters:</b><br />
+      <code>{}</code>
+      <br /><br />
       <b>Return Object:</b><br />
       <code>{}</code>
     </td>
     <td>
       <b><code>{ error }</code> when any of: </b>
       <ul>
-        <li>Token is empty (401)</li>
-        <li>Token is invalid (401)</li>
+        <li>Token is empty or invalid (401)</li>
       </ul>
     </td>
   </tr>
@@ -142,6 +144,10 @@ Integers:
       </b><br />
       <code>{ token }</code>
       <br /><br />
+      <b>Query Parameters:
+      </b><br />
+      <code>{}</code>
+      <br /><br />
       <b>Return Object:
       </b><br />
       <code>{ user }</code>
@@ -149,8 +155,7 @@ Integers:
     <td>
 	  <b><code>{ error }</code> when any of: </b>
       <ul>
-		    <li>token is empty (401),</li> 
-        <li>token is invalid (token does not refer to valid logged in user session) (401)</li>
+		    <li>token is empty or invalid (401)</li>
 	  </ul>
     </td>
   </tr>
@@ -182,8 +187,7 @@ Integers:
     <td>
 	  <b><code>{ error }</code> when any of: </b>
       <ul>
-		    <li>token is empty (401),</li> 
-        <li>token is invalid (token does not refer to valid logged in user session) (401)</li>
+		    <li>token is empty or invalid (401)</li>
         <li>email is not in a valid email format (400)</li>
         <li>nameFirst is empty (400)</li>
         <li>nameLast is empty (400)</li>
@@ -218,8 +222,7 @@ Integers:
     <td>
 	  <b><code>{ error }</code> when any of: </b>
       <ul>
-		    <li>token is empty (401),</li> 
-        <li>token is invalid (token does not refer to valid logged in user session) (401)</li>
+		    <li>token is empty or invalid (401)</li>
         <li>oldPassword is not the correct old password (400)</li>
         <li>newPassword is less than 8 characters long (400)</li>
         <li>newPassword contains no numbers (400)</li>
@@ -255,6 +258,10 @@ Integers:
       <b>Header Parameters:</b><br />
       <code>{ token }</code>
       <br /><br />
+      <b>Query Parameters:
+      </b><br />
+      <code>{}</code>
+			<br /><br />
       <b>Return Object:</b><br />
       <code>{ quizzes }</code>
     </td>
@@ -483,6 +490,10 @@ Integers:
       <b>Header Parameters:</b><br />
       <code>{ token }</code>
       <br /><br />
+      <b>Query Parameters:
+      </b><br />
+      <code>{}</code>
+			<br /><br />
       <b>Path Parameters:</b><br />
       <code>{ quizid, questionid }</code>
       <br /><br />
