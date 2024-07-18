@@ -1,9 +1,9 @@
 # ShortReport
 
-| Date:    | Term2 2024, Week 8 - Week 10, July 14th - August 2nd |
-| -------- | ---------------------------------------------------- |
-| Teams:   | T13B_EGGS                                            |
-| Authors: |                                                      |
+| Date:                                        | Term2 2024, Week 8 - Week 10, July 14th - August 2nd         |
+| -------------------------------------------- | ------------------------------------------------------------ |
+| **Team:**                                    | T13B_EGGS, Group ID 583819                                   |
+| **Authors:**<br /> (name in ascending order) | **Akshat** Mishra (z5461265), <br />**Devaansh** Kumar(z5474396), <br />**Krish** Patel (z5508882), <br />**Shilpa** Balaji(z5421391), <br />Yuhua(**Victoria**) Zheng (z5411307) |
 
 ## OverView
 

@@ -1,10 +1,10 @@
 Group:
 | zID      | Name          |
-| Z5508882 | Krish Patel   |
-| Z5421391 | Shilpa Balaji |
-| Z5474396 | Devaansh Kumar|
-| Z5461265 | Akshat Mishra |
-| Z5411307 | Yuhua Zheng   |
+| z5508882 | Krish Patel   |
+| z5421391 | Shilpa Balaji |
+| z5474396 | Devaansh Kumar|
+| z5461265 | Akshat Mishra |
+| z5411307 | Yuhua Zheng   |
 
 
 
