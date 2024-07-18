@@ -283,6 +283,44 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
 }
 
 /**
+ * This function permanently deletes specific quizzes currently sitting in the trash.
+ *
+ * @param {string} token - Token representing the user session
+ * @param {number[]} quizIds - A JSONified array of quiz ID numbers
+ *
+ * @return {EmptyObject | ErrorObject} - Returns an empty object if successful, or an error object if unsuccessful
+ */
+export function adminQuizTrashEmpty(token: string, quizIds: number[]): EmptyObject | ErrorObject {
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return { error: 'Invalid token.' };
+  }
+
+  // Parse quizIds into an array of numbers
+  // const parsedQuizIds: number[] = JSON.parse(quizIds);
+  const data: Data = getData();
+
+  for (const quizId of quizIds) {
+    const quizIndex = data.trashedQuizzes.findIndex(quiz => quiz.quizId === quizId);
+
+    if (quizIndex === INVALID) {
+      return { error: `Quiz ID ${quizId} is not currently in the trash.` };
+    }
+
+    const quiz = data.trashedQuizzes[quizIndex];
+
+    if (quiz.creatorId !== authUserId) {
+      return { error: `User ID ${authUserId} does not own Quiz ID ${quizId} or quiz does not exist.` };
+    }
+
+    data.trashedQuizzes.splice(quizIndex, 1);
+  }
+
+  setData(data);
+  return {};
+}
+
+/**
  * This function restores a quiz from the trash back to active quizzes.
  *
  * @param {string} token - ID of the authorised user
@@ -375,7 +413,8 @@ export function adminQuizTransfer(transferData: QuizTransfer): EmptyObject | Err
     return { error: 'Cannot transfer quiz to the current owner.' };
   }
 
-  if (data.quizzes.some(quiz => quiz.creatorId === newOwnerId && quiz.name === data.quizzes[quizId - 1].name)) {
+  if (data.quizzes.some(quiz => quiz.creatorId === newOwnerId &&
+    quiz.name === data.quizzes[quizId - 1].name)) {
     return { error: `Quiz with name ${data.quizzes[quizId - 1].name} already exists for the new owner.` };
   }
 
