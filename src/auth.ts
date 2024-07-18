@@ -320,7 +320,7 @@ export function findUserId(token: string): number {
     if (!isValid) return INVALID;
 
     const session: Session = data.sessions.sessionIds.find(session =>
-      getHashOf(session.token) === getHashOf(token)
+      session.token === token
     );
     if (!session || session.userId !== isValid.userId) return INVALID;
 
