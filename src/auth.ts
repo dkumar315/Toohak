@@ -133,7 +133,7 @@ export function adminAuthLogout(token: string): EmptyObject | ErrorObject {
     session.token === token
   );
 
-  if (sessionIndex === INVALID) return { error: `Invalid token ${token}.` };
+  if (sessionIndex === INVALID) throw new Error(`Invalid token ${token}.`);
   data.sessions.sessionIds.splice(sessionIndex, 1);
 
   setData(data);
@@ -150,7 +150,7 @@ export function adminAuthLogout(token: string): EmptyObject | ErrorObject {
  */
 export function adminUserDetails(token: string): UserDetailReturn | ErrorObject {
   const userId: number = findUserId(token);
-  if (userId === INVALID) return { error: `Invalid token ${token}.` };
+  if (userId === INVALID) throw new Error(`Invalid token ${token}.`);
 
   const data: Data = getData();
   const userIndex: number = findUser(userId);
@@ -189,9 +189,9 @@ export function adminUserDetailsUpdate(token: string, email: string,
   const user: User = data.users[userIndex];
 
   // check whether email, nameFirst, nameLast are valid
-  if (!isValidEmail(email, userIndex)) return { error: `Invalid email ${email}.` };
-  if (!isValidName(nameFirst)) return { error: `Invalid nameFirst ${nameFirst}.` };
-  if (!isValidName(nameLast)) return { error: `Invalid nameLast ${nameLast}.` };
+  if (!isValidEmail(email, userIndex)) throw new Error(`Invalid email ${email}.`);
+  if (!isValidName(nameFirst)) throw new Error(`Invalid nameFirst ${nameFirst}.`);
+  if (!isValidName(nameLast)) throw new Error(`Invalid nameLast ${nameLast}.`);
 
   // update userDetails
   user.email = email;
@@ -216,7 +216,7 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string,
   newPassword: string) : EmptyObject | ErrorObject {
   // check whether token valid
   const userId: number = findUserId(token);
-  if (userId === INVALID) return { error: `Invalid token ${token}.` };
+  if (userId === INVALID) throw new Error(`Invalid token ${token}.`)throw new Error(;
 
   const data: Data = getData();
   const userIndex: number = findUser(userId);
@@ -224,14 +224,14 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string,
 
   // check whether oldPassword matches the user's password
   if (user.password !== getHashOf(oldPassword)) {
-    return { error: `Invalid oldPassword ${oldPassword}.` };
+    throw new Error(`Invalid oldPassword ${oldPassword}.`)throw new Error(;
   }
 
   // check newPassword meets requirements or not used before
   user.passwordHistory = user.passwordHistory || [];
   if (oldPassword === newPassword || !isValidPassword(newPassword) ||
     user.passwordHistory.includes(getHashOf(newPassword))) {
-    return { error: `Invalid newPassword ${newPassword}.` };
+    throw new Error(`Invalid newPassword ${newPassword}.`)throw new Error(;
   }
 
   // if all input valid, then update the password
