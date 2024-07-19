@@ -183,7 +183,7 @@ export function adminUserDetailsUpdate(token: string, email: string,
   nameFirst: string, nameLast: string): EmptyObject | ErrorObject {
   const data: Data = getData();
   const userId: number = findUserId(token);
-  if (userId === INVALID) return { error: `Invalid token ${token}.` };
+  if (userId === INVALID) throw new Error(`Invalid token ${token}.`);
 
   const userIndex: number = findUser(userId);
   const user: User = data.users[userIndex];
@@ -310,7 +310,7 @@ function addSession(authUserId: number, token: string): void {
  */
 export function findUserId(token: string): number {
   const data: Data = getData();
-  if (!data.sessions.keyPair) return INVALID;
+  if (token === '' || !data.sessions.keyPair) return INVALID;
   try {
     const decoded = jwt.decode(token);
     if (!decoded || typeof decoded === 'string' || !decoded.userId) return INVALID;
