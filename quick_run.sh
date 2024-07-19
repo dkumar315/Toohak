@@ -26,7 +26,7 @@ function start {
     echo -e "${RED} ✖ Server failed to start${NC}"
     echo "$SERVER_LOG" | grep -E 'Error:' | sed -E "s/^/  /;s/(Error:)/${RED}\1${NC}/"
     # if geting error of address already in use, you can run below in the terminal:
-    # `lsof -i :3200`
+    # `lsof -i :3200`, where 3200 is th port number
     # `kill -9 <PID>` note to replace <PID> which from previous command
     rm server.log
     return 1
