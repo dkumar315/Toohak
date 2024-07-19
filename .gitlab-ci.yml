@@ -21,7 +21,7 @@ tests:
     - cat $TEST_LOG
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
   artifacts:
-    paths: 
+    paths:
       - coverage/
     expose_as: 'Coverage Report'
     expire_in: 3 days
