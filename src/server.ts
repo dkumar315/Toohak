@@ -52,11 +52,11 @@ import { clear } from './other';
 //
 // Example get request
 app.get('/echo', (req: Request, res: Response) => {
-  const result = echo(req.query.echo as string);
-  if ('error' in result) {
-    res.status(BAD_REQUEST).json(result);
-  } else {
+  try {
+    const result = echo(req.query.echo as string);
     res.json(result);
+  } catch (e) {
+    res.status(BAD_REQUEST).json({ error: e.message });
   }
 });
 
@@ -83,53 +83,57 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
 
 // Logs out an admin user who has active user session
 app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
-  const token = req.header('token');
-  const result = adminAuthLogout(token);
-  if ('error' in result) {
-    return res.status(UNAUTHORIZED).json(result);
+  try {
+    const token = req.header('token');
+    const result = adminAuthLogout(token);
+    res.json(result);
+  } catch (error) {
+    res.status(UNAUTHORIZED).json({ error: error.message });
   }
-  return res.json(result);
 });
 
 // adminUser
 // Get the details of an admin user
 app.get('/v1/admin/user/details', (req: Request, res: Response) => {
-  const token = req.header('token');
-  const result = adminUserDetails(token);
-  if ('error' in result) {
-    return res.status(UNAUTHORIZED).json(result);
+  try {
+    const token = req.header('token');
+    const result = adminUserDetails(token);
+    res.json(result);
+  } catch (error) {
+    res.status(UNAUTHORIZED).json({ error: error.message });
   }
-  return res.json(result);
 });
 
 // Update the details of an admin user (non-password)
 app.put('/v1/admin/user/details', (req: Request, res: Response) => {
-  const token = req.header('token');
-  const { email, nameFirst, nameLast } = req.body;
-  const result = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
-  if ('error' in result) {
-    if (result.error.includes('token')) {
-      return res.status(UNAUTHORIZED).json(result);
+  try {
+    const token = req.header('token');
+    const { email, nameFirst, nameLast } = req.body;
+    const result = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
+    res.json(result);
+  } catch (error) {
+    if (error.message.includes('token')) {
+      return res.status(UNAUTHORIZED).json({ error: error.message });
     } else {
-      return res.status(BAD_REQUEST).json(result);
+      return res.status(BAD_REQUEST).json({ error: error.message });
     }
   }
-  return res.json(result);
 });
 
 // Update the password of this admin user
 app.put('/v1/admin/user/password', (req: Request, res: Response) => {
-  const token = req.header('token');
-  const { oldPassword, newPassword } = req.body;
-  const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
-  if ('error' in result) {
-    if (result.error.includes('token')) {
-      return res.status(UNAUTHORIZED).json(result);
+  try {
+    const token = req.header('token');
+    const { oldPassword, newPassword } = req.body;
+    const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
+    res.json(result);
+  } catch (error) {
+    if (error.message.includes('token')) {
+      return res.status(UNAUTHORIZED).json({ error: error.message });
     } else {
-      return res.status(BAD_REQUEST).json(result);
+      return res.status(BAD_REQUEST).json({ error: error.message });
     }
   }
-  return res.json(result);
 });
 
 // adminQuiz

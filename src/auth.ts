@@ -216,7 +216,7 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string,
   newPassword: string) : EmptyObject | ErrorObject {
   // check whether token valid
   const userId: number = findUserId(token);
-  if (userId === INVALID) throw new Error(`Invalid token ${token}.`)throw new Error(;
+  if (userId === INVALID) throw new Error(`Invalid token ${token}.`);
 
   const data: Data = getData();
   const userIndex: number = findUser(userId);
@@ -224,14 +224,14 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string,
 
   // check whether oldPassword matches the user's password
   if (user.password !== getHashOf(oldPassword)) {
-    throw new Error(`Invalid oldPassword ${oldPassword}.`)throw new Error(;
+    throw new Error(`Invalid oldPassword ${oldPassword}.`);
   }
 
   // check newPassword meets requirements or not used before
   user.passwordHistory = user.passwordHistory || [];
   if (oldPassword === newPassword || !isValidPassword(newPassword) ||
     user.passwordHistory.includes(getHashOf(newPassword))) {
-    throw new Error(`Invalid newPassword ${newPassword}.`)throw new Error(;
+    throw new Error(`Invalid newPassword ${newPassword}.`);
   }
 
   // if all input valid, then update the password
