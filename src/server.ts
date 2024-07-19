@@ -255,7 +255,6 @@ app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
 app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   const token = req.header('token');
   const quizIds = (req.query.quizIds as string[]).map(Number);
-
   const result = adminQuizTrashEmpty(token, quizIds);
   if ('error' in result) {
     if (result.error.includes('Invalid token')) {

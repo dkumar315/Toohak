@@ -286,7 +286,7 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
  * This function permanently deletes specific quizzes currently sitting in the trash.
  *
  * @param {string} token - Token representing the user session
- * @param {string} quizIds - A JSONified array of quiz ID numbers
+ * @param {number[]} quizIds - A JSONified array of quiz ID numbers
  *
  * @return {EmptyObject | ErrorObject} - Returns an empty object if successful, or an error object if unsuccessful
  */
