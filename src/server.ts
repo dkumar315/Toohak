@@ -1,5 +1,5 @@
 import express, { json, Request, Response } from 'express';
-import { echo } from './newecho';
+import { echo, newEcho } from './newecho';
 import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
@@ -50,10 +50,19 @@ import { clear } from './other';
 // Errors are thrown in the following order:
 // 401 (UNAUTHORIZED), then 403 (FORBIDDEN), then 400 (BAD_REQUEST)
 //
-// Example get request
+// Example get request (iter2)
 app.get('/echo', (req: Request, res: Response) => {
+  const result = echo(req.query.echo as string);
+  if ('error' in result) {
+    res.status(BAD_REQUEST).json(result);
+  } else {
+    res.json(result);
+  }
+});
+// Example get request (iter3)
+app.get('/newEcho', (req: Request, res: Response) => {
   try {
-    const result = echo(req.query.echo as string);
+    const result = newEcho(req.query.echo as string);
     res.json(result);
   } catch (e) {
     res.status(BAD_REQUEST).json({ error: e.message });

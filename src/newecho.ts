@@ -13,3 +13,14 @@ function echo(value: string): { value: string } | ErrorMsg {
 }
 
 export { echo };
+
+function newEcho(value: string): { value: string } | ErrorMsg {
+  if (value === 'echo') {
+    throw new Error('You cannot echo the word echo itself');
+  }
+  return {
+    value,
+  };
+}
+
+export { newEcho };

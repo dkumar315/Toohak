@@ -37,6 +37,38 @@ describe('HTTP tests using Jest', () => {
   });
 });
 
+describe('HTTP tests using Jest', () => {
+  test('Test successful newEcho', () => {
+    const res = request(
+      'GET',
+      `${url}:${port}/newEcho`,
+      {
+        qs: {
+          echo: 'Hello',
+        },
+        // adding a timeout will help you spot when your server hangs
+        timeout: 100
+      }
+    );
+    const bodyObj = JSON.parse(res.body as string);
+    expect(bodyObj.value).toEqual('Hello');
+  });
+
+  test('Test invalid echo', () => {
+    const res = request(
+      'GET',
+      `${url}:${port}/newEcho`,
+      {
+        qs: {
+          echo: 'echo',
+        },
+        timeout: 100
+      }
+    );
+    expect(res.statusCode).toStrictEqual(400);
+  });
+});
+
 describe('server functional', () => {
   test('non eist route', () => {
     const res = request('GET', `${url}:${port}/invalid`);
