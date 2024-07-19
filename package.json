@@ -2,9 +2,11 @@
     "scripts": {
         "test": "jest",
         "tsc": "tsc --project tsconfig.json",
+        "auto-tsc": "tsc --watch --noImplicitAny",
         "lint": "eslint 'src/**/*.{ts,js}'",
         "lint-fix": "eslint --fix 'src/**/*.{ts,js}'",
         "start": "ts-node -T src/server.ts",
+        "start-dev": "ts-node-dev src/server.ts",
         "cleanup-sync-request": "pkill -f node_modules/sync-rpc/lib/worker.js > /dev/null 2>&1",
         "posttest": "npm run cleanup-sync-request || true",
         "ts-node-coverage": "nyc --reporter=text --reporter=lcov ts-node -T src/server.ts",
@@ -13,6 +15,7 @@
     "dependencies": {
         "cors": "^2.8.5",
         "express": "^4.19.2",
+        "http-status-codes": "^2.3.0",
         "morgan": "^1.10.0",
         "ts-node": "^10.9.2",
         "validator": "^13.12.0"

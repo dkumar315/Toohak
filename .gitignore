@@ -167,8 +167,11 @@ bower_components
 
 # OS metadata
 .DS_Store
+**/.DS_Store
 Thumbs.db
 
 # Ignore built ts files
 dist/**/*
 
+# dataSave
+./dataStore.json
