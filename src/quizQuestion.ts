@@ -80,7 +80,7 @@ export function adminQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): QuestionIdReturn | ErrorObject {
   // check token, quizId, no questionId, questionBody
   const isValidObj: IsValid = isValidIds({ token, quizId, questionBody });
-  if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
+  if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   // if all valid
   const data: Data = getData();
@@ -106,7 +106,7 @@ export function adminQuizQuestionCreate(token: string, quizId: number,
 export function adminQuizQuestionUpdate(token: string, quizId: number,
   questionId: number, questionBody: QuestionBody): EmptyObject | ErrorObject {
   const isValidObj: IsValid = isValidIds({ token, quizId, questionId, questionBody });
-  if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
+  if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   // if all inputs valid, update the question
   setQuestion(questionBody, isValidObj.quizIndex, isValidObj.questionIndex,
@@ -128,7 +128,7 @@ export function adminQuizQuestionUpdate(token: string, quizId: number,
 export function adminQuizQuestionDelete(token: string, quizId: number,
   questionId: number): EmptyObject | ErrorObject {
   const isValidObj: IsValid = isValidIds({ token, quizId, questionId });
-  if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
+  if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
   const quiz = data.quizzes[isValidObj.quizIndex];
@@ -158,22 +158,18 @@ export function adminQuizQuestionDelete(token: string, quizId: number,
 export function adminQuizQuestionMove(token: string, quizId: number,
   questionId: number, newPosition: number): EmptyObject | ErrorObject {
   const isValidObj: IsValid = isValidIds({ token, quizId, questionId });
-  if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
+  if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
   const quiz = data.quizzes[isValidObj.quizIndex];
 
   if (newPosition < 0 || newPosition >= quiz.questions.length) {
-    return {
-      error: `Invalid newPosition number: ${newPosition}. 
-      It must be between 0 and ${quiz.questions.length - 1}.`
-    };
+    throw new Error(`Invalid newPosition number: ${newPosition}. 
+      It must be between 0 and ${quiz.questions.length - 1}.`);
   }
 
   if (isValidObj.questionIndex === newPosition) {
-    return {
-      error: `The question is already at position ${newPosition}.`
-    };
+    throw new Error(`The question is already at position ${newPosition}.`);
   }
 
   const [movedQuestion] = quiz.questions.splice(isValidObj.questionIndex, 1);
@@ -198,7 +194,7 @@ export function adminQuizQuestionMove(token: string, quizId: number,
 export function adminQuizQuestionDuplicate(token: string, quizId: number,
   questionId: number): NewQuestionIdReturn | ErrorObject {
   const isValidObj: IsValid = isValidIds({ token, quizId, questionId });
-  if (!isValidObj.isValid) return { error: isValidObj.errorMsg };
+  if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   // new question is add after the source question
   const data: Data = getData();
@@ -206,10 +202,8 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number,
 
   const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
   if (quiz.duration > MAX_DURATIONS_SECS) {
-    return {
-      error: `Invalid current quiz durations number: ${quiz.duration} ` +
-      `exceeds ${DurationLimit.MIN_QUIZ_SUM_MINS} minutes.`
-    };
+    throw new Error(`Invalid current quiz durations number: ${quiz.duration} ` +
+      `exceeds ${DurationLimit.MIN_QUIZ_SUM_MINS} minutes.`);
   }
 
   const newQuestionId: number = setQuestion(quiz.questions[questionIndex],
