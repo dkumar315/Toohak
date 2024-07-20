@@ -78,16 +78,20 @@ enum QuestionOperation {
  */
 export function adminQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): QuestionIdReturn | ErrorObject {
-  // check token, quizId, no questionId, questionBody
   const isValidObj: IsValid = isValidIds({ token, quizId, questionBody });
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
-  // if all valid
   const data: Data = getData();
-  const quizIndex : number = isValidObj.quizIndex;
-  const questionId: number = setQuestion(questionBody, quizIndex,
-    data.quizzes[quizIndex].questions.length, QuestionOperation.CREATE);
-  return { questionId: questionId };
+  const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
+  const questionId: number = SetNewQuestionId(data, quiz);
+  const newQuestion: Question = SetQuestionBody(questionBody, questionId);
+
+  quiz.duration += newQuestion.duration;
+  quiz.questions.push(newQuestion);
+  quiz.timeLastEdited = timeStamp();
+  setData(data);
+
+  return { questionId };
 }
 
 /**
@@ -108,9 +112,17 @@ export function adminQuizQuestionUpdate(token: string, quizId: number,
   const isValidObj: IsValid = isValidIds({ token, quizId, questionId, questionBody });
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
-  // if all inputs valid, update the question
-  setQuestion(questionBody, isValidObj.quizIndex, isValidObj.questionIndex,
-    QuestionOperation.UPDATE);
+  const data: Data = getData();
+  const { quizIndex, questionIndex } = isValidObj;
+  const quiz: Quiz = data.quizzes[quizIndex];
+  const oldQuestion: Question = quiz.questions[questionIndex];
+  const newQuestion: Question = SetQuestionBody(questionBody, oldQuestion.questionId);
+
+  quiz.duration += newQuestion.duration - oldQuestion.duration;
+  quiz.questions.splice(questionIndex, 1, newQuestion);
+  quiz.timeLastEdited = timeStamp();
+  setData(data);
+
   return {};
 }
 
@@ -196,18 +208,23 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number,
   const isValidObj: IsValid = isValidIds({ token, quizId, questionId });
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
-  // new question is add after the source question
   const data: Data = getData();
-  const { quizIndex, questionIndex } = isValidObj;
-
   const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
+
   if (quiz.duration > MAX_DURATIONS_SECS) {
     throw new Error(`Invalid current quiz durations number: ${quiz.duration} ` +
       `exceeds ${DurationLimit.MIN_QUIZ_SUM_MINS} minutes.`);
   }
 
-  const newQuestionId: number = setQuestion(quiz.questions[questionIndex],
-    quizIndex, questionIndex + 1, QuestionOperation.DUPLICATE);
+  const newQuestionId: number = SetNewQuestionId(data, quiz);
+  const newQuestion: Question =
+  { ...quiz.questions[isValidObj.questionIndex], questionId: newQuestionId };
+
+  quiz.duration += newQuestion.duration;
+  quiz.questions.splice(isValidObj.questionIndex + 1, 0, newQuestion);
+  quiz.timeLastEdited = timeStamp();
+  setData(data);
+
   return { newQuestionId };
 }
 
@@ -385,9 +402,9 @@ function isValidAnswer(answers: AnswerInput[]): IsValid {
  *
  * @return {object} isValidObj - an object contains errorMsg
  */
-function isValidErrorReturn (errorMsg: string): IsValid {
+const isValidErrorReturn = (errorMsg: string): IsValid => {
   return { isValid: false, errorMsg };
-}
+};
 
 /**
  * Randomly generate a colour for an answer of a question
@@ -454,4 +471,18 @@ function setQuestion(questionBody: QuestionBody | Question, quizIndex: number,
 
   setData(data);
   return questionId;
+}
+
+function SetNewQuestionId(data: Data, quiz: Quiz): number {
+  data.sessions.questionCounter += 1;
+  quiz.numQuestions += 1;
+  setData(data);
+  return data.sessions.questionCounter;
+}
+
+function SetQuestionBody(questionBody: QuestionBody, questionId: number): Question {
+  const { answers: answerBody, ...question } = questionBody;
+  const answers: Answer[] = answerBody.map(({ answer, correct }, index) =>
+    ({ answerId: index + 1, answer, colour: generateRandomColor(), correct }));
+  return { questionId, ...question, answers };
 }
