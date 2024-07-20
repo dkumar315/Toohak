@@ -35,7 +35,8 @@ beforeEach(() => {
       {
         answer: '2 answers minimum',
         correct: true
-      }]
+      }],
+    thumbnailUrl: 'http://google.com/img_path.jpg'
   };
   questionId = questionCreate(token, quizId, questionBody).questionId; // https://url.jpg
 });

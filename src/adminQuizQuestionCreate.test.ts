@@ -15,6 +15,7 @@ const initQuestionBody: QuestionBody = {
   duration: 10,
   points: 8,
   answers: [],
+  thumbnailUrl: 'http://google.com/img_path.jpg'
 };
 
 const trueAnswer1: AnswerInput = {
@@ -246,6 +247,18 @@ describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question'
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
 
+        result = requestQuizQuestionCreate(token, quizId, questionBody);
+        expect(result).toMatchObject({ questionId: expect.any(Number) });
+        expect(result.status).toStrictEqual(OK);
+      });
+    });
+
+    describe('test1.7 thumbnailUrls', () => {
+      const thumbnailUrls: string[] = ['http://.jpg', 'https://xxx.com/image.jpg',
+        'http://xxx.com/image.JPG', 'http://xxx.com/image.png', 'http://.jPg',
+        'https://xxx.com/image.PNG', 'http://xxx.com/image.gif.jpg'];
+      test.each(thumbnailUrls)('invalid email = \'%s\'', (thumbnailUrl) => {
+        questionBody.thumbnailUrl = thumbnailUrl;
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
@@ -527,6 +540,19 @@ describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question'
           expect(result.status).toStrictEqual(BAD_REQUEST);
         });
       });
+
+      describe('test2.99 invalid thumbnailUrls', () => {
+        const thumbnailUrls: string[] = ['', 'http.jpg', 'https://xxx.com/image.jpg.gif',
+          'HTTP://xxx.com/image.jpg', 'HTTPS://xxx.com/image.png',
+          'HTTPS://xxx.com/image.gif', 'https://xxx.com/image.gif',
+          'ftp://xxx.com/image.jpg', 'xxx.com/image.jpg', '.jpg', 'http://'];
+        test.each(thumbnailUrls)('invalid email = \'%s\'', (thumbnailUrl) => {
+          questionBody.thumbnailUrl = thumbnailUrl;
+          result = requestQuizQuestionCreate(token, quizId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+      });
     });
   });
 
@@ -779,7 +805,8 @@ describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question'
         question: 'q',
         duration: -1,
         points: 0,
-        answers: [trueAnswer1]
+        answers: [trueAnswer1],
+        thumbnailUrl: 'http://google.com/img_path.jpg'
       };
 
       result = requestQuizQuestionCreate(token, quizId, invalidQuestionBody);

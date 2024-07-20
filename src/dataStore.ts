@@ -98,6 +98,7 @@ export interface Question {
   duration: number; // in seconds
   points: number;
   answers: Answer[];
+  thumbnailUrl: string;
 }
 
 export interface Answer {
