@@ -85,9 +85,11 @@ export interface Quiz {
   creatorId: number;
   numQuestions: number;
   questionCounter: number;
+  sessionCounter: number;
   questions: Question[];
   duration: number; // in seconds
-  sessions: QuizSeesion[];
+  sessions: QuizSession[];
+  // thumbnailUrl: string;
 }
 
 export interface Question {
@@ -105,24 +107,28 @@ export interface Answer {
   correct: boolean;
 }
 
-export interface QuizSeesion extends Omit<Quiz, 'questions'> {
+export interface QuizSession {
   sessionId: number;
   state: State;
-  autoStartNum: number;
+  atQuestion: number;
   players: Player[];
-  questions: QuestionSession[];
+  autoStartNum: number;
+  metadata: Metadata;
+}
+
+export interface Metadata extends Omit<Quiz, 'questions' | 'sessions'> {
+  questions: QuestionSession[]
 }
 
 export interface QuestionSession extends Question {
-  answerTime: number;
+  playersCorrectList: string[];
+  averageAnswerTime: number;
   percentCorrect: number;
-  players: Player[];
 }
 
 interface Player {
   playerId: number;
   playerName: string;
-  state: string; // enum
   points: number;
   numQuestions: number;
   answerIds: number[];

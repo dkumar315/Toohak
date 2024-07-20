@@ -238,11 +238,9 @@ function isValidIds(params: { token: string, quizId: number, questionId?: number
   }
 
   // check quizId
-  const isValidObj: IsValid = findQuizIndex(quizId, userId);
-  if (!isValidObj.isValid) return isValidObj;
-
   const data: Data = getData();
-  const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
+  const isValidObj: IsValid = findQuizIndex(data.quizzes, quizId, userId);
+  if (!isValidObj.isValid) return isValidObj;
 
   // check questionId
   if (questionId !== undefined) {
@@ -252,6 +250,7 @@ function isValidIds(params: { token: string, quizId: number, questionId?: number
   }
 
   if (questionBody !== undefined) {
+    const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
     let duration: number = quiz.duration;
     if (questionId !== undefined) duration -= quiz.questions[isValidObj.questionIndex].duration;
     const isValidQuestion: IsValid = isValidQuestionBody(questionBody, duration);
@@ -264,6 +263,7 @@ function isValidIds(params: { token: string, quizId: number, questionId?: number
 /**
  * Check if a given quizId is exist and own by the current authorized User
  *
+ * @param {number} quiz - a valid quiz
  * @param {number} quizId - a unique identifier for a valid quiz
  * @param {number} authUserId - a unique identifier for a login user
  *
@@ -272,18 +272,15 @@ function isValidIds(params: { token: string, quizId: number, questionId?: number
  * quizIndex: number - if quizId valid, quizIndex, otherwise index === INVALID
  * errorMsg: string - if quizId not found, or not own by current user
  */
-export function findQuizIndex(quizId: number, authUserId: number): IsValid {
-  const data: Data = getData();
-  const quizIndex: number = data.quizzes.findIndex(quiz =>
-    quiz.quizId === quizId);
-
+export function findQuizIndex(quizzes: Quiz[], quizId: number, authUserId: number): IsValid {
+  const quizIndex: number = quizzes.findIndex((quiz: Quiz) => quiz.quizId === quizId);
   // userId not exist
   if (quizIndex === INVALID) {
     return isValidErrorReturn(`Invalid quizId number: ${quizId} not exists.`);
   }
 
   // user does not own the quiz
-  if (data.quizzes[quizIndex].creatorId !== authUserId) {
+  if (quizzes[quizIndex].creatorId !== authUserId) {
     return isValidErrorReturn(`Invalid quizId number: ${quizId} access denied.`);
   }
 
@@ -392,7 +389,7 @@ function isValidAnswer(answers: AnswerInput[]): IsValid {
  *
  * @return {object} isValidObj - an object contains errorMsg
  */
-const isValidErrorReturn = (errorMsg: string): IsValid => {
+export const isValidErrorReturn = (errorMsg: string): IsValid => {
   return { isValid: false, errorMsg };
 };
 

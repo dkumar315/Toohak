@@ -3,9 +3,9 @@ import {
   authRegister, requestAuthLogout,
   quizCreate, validQuizInfo, requestQuizRemove, requestQuizEmptyTrash,
   questionCreate, requestQuizQuestionDelete,
-  requestQuizSessionCreate,
+  requestQuizSessionCreate, requestQuizQuestionDuplicate,
   requestClear,
-  ResNewSessionId, ResQuizInfo, ERROR, ResError
+  ResSessionId, ResQuizInfo, ERROR, ResError
 } from './functionRequest';
 import {
   QuestionBody
@@ -18,7 +18,7 @@ beforeAll(() => requestClear());
 
 let token: string, quizId: number, questionId: number;
 const autoStartNum: number = SessionLimits.AUTO_START_NUM_MAX - 1;
-let result: ResNewSessionId | ResError;
+let result: ResSessionId | ResError;
 
 beforeEach(() => {
   requestClear();
@@ -46,7 +46,7 @@ afterAll(() => requestClear());
 describe('testing adminQuizSessionCreate POST /v1/admin/quiz/{quizid}/session/start', () => {
   const VALID_CREATE: QuizSessionId = { sessionId: expect.any(Number) };
   test('route and trpe check', () => {
-    result = requestQuizSessionCreate(token, quizId, autoStartNum);
+    result = requestQuizSessionCreate(token, quizId, autoStartNum) as ResSessionId;
     expect(typeof result === 'object' && 'sessionId' in result &&
     typeof result.sessionId === 'number').toBe(true);
   });
@@ -87,11 +87,15 @@ describe('testing adminQuizSessionCreate POST /v1/admin/quiz/{quizid}/session/st
       expect(quizInfo).toStrictEqual(quizInfoUpdate);
     });
 
-    test.skip('test 1.7 check active quizz sessions', () => {
+    test.skip('test 1.7 check active quiz sessions', () => {
       // const sessionId: number = requestQuizSessionCreate(token, quizId, autoStartNum).sessionId;
       // need GET /v1/admin/quiz/{quizid}/sessions
       // const expectList: type = { activeSessions: [ sessionId ], inactiveSessions: [ ] }
       // expect(activeQuizList).toStrictEqual(expectList);
+    });
+
+    test('test 1.8 check moditify of quiz / question not effect running session', () => {
+      requestQuizQuestionDuplicate(token, quizId, questionId);
     });
   });
 
@@ -162,7 +166,7 @@ describe('testing adminQuizSessionCreate POST /v1/admin/quiz/{quizid}/session/st
       test('test 2.2.1 autoStartNum is less than 0', () => {
         const newAutoStartNum: number = -1;
         result = requestQuizSessionCreate(token, quizId, newAutoStartNum);
-        expect(result).toMatchObject(VALID_CREATE);
+        expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
@@ -173,7 +177,7 @@ describe('testing adminQuizSessionCreate POST /v1/admin/quiz/{quizid}/session/st
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test('test 2.2.3 10 active sessions in current quiz', () => {
+      test('test 2.2.3 more than 10 active sessions in current quiz', () => {
         for (let i = 0; i < SessionLimits.ACTIVE_SESSIONS_NUM_MAX; i++) {
           result = requestQuizSessionCreate(token, quizId, autoStartNum);
           expect(result).toMatchObject(VALID_CREATE);
@@ -221,7 +225,7 @@ describe('testing adminQuizSessionCreate POST /v1/admin/quiz/{quizid}/session/st
       });
 
       test('test 2.4.3 quizId not exist (FORBIDDEN) and autoStartNum invalid (BAD_REQUEST)', () => {
-        result = requestQuizSessionCreate(token, quizId, autoStartNum + 1);
+        result = requestQuizSessionCreate(token, quizId + 1, autoStartNum + 1);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });

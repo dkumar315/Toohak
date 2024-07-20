@@ -115,6 +115,7 @@ export function adminQuizCreate(token: string, name: string, description: string
     timeLastEdited: Math.floor(Date.now() / 1000),
     numQuestions: 0,
     questionCounter: 0,
+    sessionCounter: 0,
     questions: [],
     duration: 0,
     sessions: []
