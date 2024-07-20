@@ -1,6 +1,5 @@
 import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
-import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -12,9 +11,13 @@ enum UserLimits {
   NAME_MAX_LEN = 20,
   PASSWORD_MIN_LEN = 8
 }
-type Algorithms = 'HS256' | 'RS256' | 'ES256' | 'PS256';
-const ALGORITHM: Algorithms = 'RS256';
-const TOKEN_EXPIRY = '9999 years';
+
+enum TokenDigits {
+  TIME_LEN = 13,
+  RANDOM_BYTE_LEN = 8,
+  RANDOM_STR_LEN = 16,
+  SECRET = 'SeCret'
+}
 
 export interface UserDetails {
   userId: number;
@@ -43,7 +46,8 @@ export interface TokenReturn {
  * @return {string} token - unique identifier for a user
  * @return {object} error - if email, password, nameFirst, nameLast invalid
  */
-export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string): TokenReturn | ErrorObject {
+export function adminAuthRegister(email: string, password: string,
+  nameFirst: string, nameLast: string): TokenReturn | ErrorObject {
   // Check if email is valid or already exists
   if (!isValidEmail(email, INVALID)) {
     return { error: `Email invalid format or already in use ${email}.` };
@@ -129,13 +133,10 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
  */
 export function adminAuthLogout(token: string): EmptyObject | ErrorObject {
   const data: Data = getData();
-  const sessionIndex: number = data.sessions.sessionIds.findIndex(session =>
-    session.token === token
-  );
-
+  const sessionIndex: number = findSessionIndex(token);
   if (sessionIndex === INVALID) throw new Error(`Invalid token ${token}.`);
-  data.sessions.sessionIds.splice(sessionIndex, 1);
 
+  data.sessions.sessionIds.splice(sessionIndex, 1);
   setData(data);
   return {};
 }
@@ -245,61 +246,59 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string,
 /**
  * Generate a token that is globally unique, assume token never expire
  *
- * @param {string} email - user email, globally unique
- * @param {string} password - user password
+ * @param {string} userId - user identifier for easier debug
  *
  * @return {string} token - unique identifier of a login user
  */
 function generateToken(userId: number): string {
   const data: Data = getData();
   data.sessions.globalCounter += 1;
-
-  if (!data.sessions.keyPair) {
-    const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
-      modulusLength: 2048,
-      publicKeyEncoding: { type: 'spki', format: 'pem' },
-      privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
-    });
-    data.sessions.keyPair = { privateKey, publicKey };
-  }
   setData(data);
 
-  const header = { alg: ALGORITHM, typ: 'JWT' };
-  const payload = {
-    jti: uuidv4(),
-    userId: userId,
-    tokenId: data.sessions.globalCounter,
-    issueAt: Math.floor(Date.now() / 1000)
-  };
-
-  const token: string = jwt.sign(payload, data.sessions.keyPair.privateKey, {
-    algorithm: ALGORITHM,
-    header,
-    expiresIn: TOKEN_EXPIRY
-  });
-
-  return token;
+  const timestamp: string = Date.now().toString();
+  const token: string = data.sessions.globalCounter.toString();
+  return `${timestamp}:${uuidv4()}:${userId}:${token}`;
 }
 
 /**
- * Return the hash of a string
+ * Return a SHA-256 hash of the input string
  */
-export function getHashOf(plaintext: string): string {
+const getHashOf = (plaintext: string): string => {
   return crypto.createHash('sha256').update(plaintext).digest('hex');
-}
+};
 
 /**
  * Generate and push a session
  */
 function addSession(authUserId: number, token: string): void {
-  const data: Data = getData();
+  const salt: string = TokenDigits.SECRET;
+  const hash: string = getHashOf(salt + getHashOf(token));
+  const random: string = crypto.randomBytes(TokenDigits.RANDOM_BYTE_LEN).toString('hex');
+
   const newSession: Session = {
     userId: authUserId,
-    token: token
+    token: `${hash}${random}`
   };
+
+  const data: Data = getData();
   data.sessions.sessionIds.push(newSession);
   setData(data);
 }
+
+/**
+ * Given an admin user's token, find its sessionIndex in data
+ *
+ * @param {string} token - unique identifier for a user
+ *
+ * @return {number} sessionIndex - corresponding session of a token
+ */
+const findSessionIndex = (token: string): number => {
+  const data: Data = getData();
+  return data.sessions.sessionIds.findIndex(session => {
+    const tokenHash: string = session.token.slice(0, -TokenDigits.RANDOM_STR_LEN);
+    return tokenHash === getHashOf(TokenDigits.SECRET + getHashOf(token));
+  });
+};
 
 /**
  * Given an admin user's token, return userId if valid
@@ -310,24 +309,9 @@ function addSession(authUserId: number, token: string): void {
  */
 export function findUserId(token: string): number {
   const data: Data = getData();
-  if (token === '' || !data.sessions.keyPair) return INVALID;
-  try {
-    const decoded = jwt.decode(token);
-    if (!decoded || typeof decoded === 'string' || !decoded.userId) return INVALID;
-
-    const isValid = jwt.verify(token, data.sessions.keyPair.publicKey,
-      { algorithms: [ALGORITHM] }) as { userId: number };
-    if (!isValid) return INVALID;
-
-    const session: Session = data.sessions.sessionIds.find(session =>
-      session.token === token
-    );
-    if (!session || session.userId !== isValid.userId) return INVALID;
-
-    return session.userId;
-  } catch (error) {
-    return INVALID;
-  }
+  const sessionIndex: number = findSessionIndex(token);
+  if (sessionIndex === INVALID) return INVALID;
+  return data.sessions.sessionIds[sessionIndex].userId;
 }
 
 /**
