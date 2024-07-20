@@ -165,6 +165,20 @@ describe('testing adminQuizSessionCreate POST /v1/admin/quiz/{quizid}/session/st
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
+
+      test('test 2.2.5 user is not the owner of the trash quiz', () => {
+        const token2: string = authRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
+        requestQuizRemove(token, quizId);
+        result = requestQuizSessionCreate(token2, quizId, autoStartNum);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(FORBIDDEN);
+
+        const quizId2: number = quizCreate(token2, 'quiz2', 'description').quizId;
+        requestQuizRemove(token, quizId2);
+        result = requestQuizSessionCreate(token, quizId2, autoStartNum);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(FORBIDDEN);
+      });
     });
 
     describe('test 2.3 BAD_REQUEST', () => {

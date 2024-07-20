@@ -60,7 +60,10 @@ function isValidIds(token: string, quizId: number) {
   if (isValidQuiz.isValid) return isValidQuiz;
 
   isValidQuiz = findQuizIndex(data.trashedQuizzes, quizId, authUserId);
-  if (isValidQuiz.isValid) return errorReturn(`Invalid quiz in trash: ${quizId}.`);
+  if (isValidQuiz.isValid) {
+    if (isValidQuiz.errorMsg.includes('access denied')) return isValidQuiz;
+    return errorReturn(`Invalid quiz in trash: ${quizId}.`);
+  }
 
   return isValidQuiz;
 }
