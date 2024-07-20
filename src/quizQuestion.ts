@@ -29,7 +29,7 @@ export enum PointsLimit {
   MAX_NUM = 10,
 }
 
-interface IsValid {
+export interface IsValid {
   isValid: boolean;
   quizIndex?: number;
   questionIndex?: number;
@@ -272,7 +272,7 @@ function isValidIds(params: { token: string, quizId: number, questionId?: number
  * quizIndex: number - if quizId valid, quizIndex, otherwise index === INVALID
  * errorMsg: string - if quizId not found, or not own by current user
  */
-function findQuizIndex(quizId: number, authUserId: number): IsValid {
+export function findQuizIndex(quizId: number, authUserId: number): IsValid {
   const data: Data = getData();
   const quizIndex: number = data.quizzes.findIndex(quiz =>
     quiz.quizId === quizId);

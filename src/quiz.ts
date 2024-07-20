@@ -116,7 +116,8 @@ export function adminQuizCreate(token: string, name: string, description: string
     numQuestions: 0,
     questionCounter: 0,
     questions: [],
-    duration: 0
+    duration: 0,
+    sessions: []
   };
 
   data.quizzes.push(newQuiz);

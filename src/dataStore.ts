@@ -32,6 +32,17 @@ export enum Colours {
 }
 export type Colour = Colours[keyof Colours];
 
+export enum States {
+  LOBBY = 'LOBBY',
+  QUESTION_COUNTDOWN = 'QUESTION_COUNTDOWN',
+  QUESTION_OPEN = 'QUESTION_OPEN',
+  QUESTION_CLOSE = 'QUESTION_CLOSE',
+  ANSWER_SHOW = 'ANSWER_SHOW',
+  FINAL_RESULTS = 'FINAL_RESULTS',
+  END = 'END'
+}
+export type State = States[keyof States];
+
 // interfaces
 export type EmptyObject = Record<string, never>;
 export type ErrorObject = { error: string };
@@ -41,6 +52,17 @@ export interface Data {
   quizzes: Quiz[];
   trashedQuizzes: Quiz[];
   sessions: Sessions;
+}
+
+export interface Sessions {
+  globalCounter: number;
+  quizCounter: number;
+  sessionIds: Session[];
+}
+
+export interface Session {
+  userId: number;
+  token: string;
 }
 
 export interface User {
@@ -65,6 +87,7 @@ export interface Quiz {
   questionCounter: number;
   questions: Question[];
   duration: number; // in seconds
+  sessions: QuizSeesion[];
 }
 
 export interface Question {
@@ -82,21 +105,28 @@ export interface Answer {
   correct: boolean;
 }
 
-export interface Sessions {
-  globalCounter: number;
-  quizCounter: number;
-  keyPair?: keyPair,
-  sessionIds: Session[];
+export interface QuizSeesion extends Omit<Quiz, 'questions'> {
+  sessionId: number;
+  state: State;
+  autoStartNum: number;
+  players: Player[];
+  questions: QuestionSession[];
 }
 
-export interface keyPair {
-  privateKey: string;
-  publicKey: string;
+export interface QuestionSession extends Question {
+  answerTime: number;
+  percentCorrect: number;
+  players: Player[];
 }
 
-export interface Session {
-  userId: number;
-  token: string;
+interface Player {
+  playerId: number;
+  playerName: string;
+  state: string; // enum
+  points: number;
+  numQuestions: number;
+  answerIds: number[];
+  timeTaken: number;
 }
 
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY
