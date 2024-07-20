@@ -67,9 +67,11 @@ export function adminQuizQuestionCreate(token: string, quizId: number,
 
   const data: Data = getData();
   const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
-  const questionId: number = SetNewQuestionId(data, quiz);
+  const questionId: number = quiz.questionCounter + 1;
   const newQuestion: Question = SetQuestionBody(questionBody, questionId);
 
+  quiz.numQuestions += 1;
+  quiz.questionCounter += 1;
   quiz.duration += newQuestion.duration;
   quiz.questions.push(newQuestion);
   quiz.timeLastEdited = timeStamp();
@@ -200,10 +202,12 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number,
       `exceeds ${DurationLimit.MIN_QUIZ_SUM_MINS} minutes.`);
   }
 
-  const newQuestionId: number = SetNewQuestionId(data, quiz);
+  const newQuestionId: number = quiz.questionCounter + 1;
   const newQuestion: Question =
   { ...quiz.questions[isValidObj.questionIndex], questionId: newQuestionId };
 
+  quiz.numQuestions += 1;
+  quiz.questionCounter += 1;
   quiz.duration += newQuestion.duration;
   quiz.questions.splice(isValidObj.questionIndex + 1, 0, newQuestion);
   quiz.timeLastEdited = timeStamp();
@@ -391,21 +395,6 @@ function isValidAnswer(answers: AnswerInput[]): IsValid {
 const isValidErrorReturn = (errorMsg: string): IsValid => {
   return { isValid: false, errorMsg };
 };
-
-/**
- * Set data is a question is added (questionCreate, questionDuplicate)
- *
- * @param {object} data - getData
- * @param {object} quiz - corresponding quiz
- *
- * @return {number} questionId - a new questionId
- */
-function SetNewQuestionId(data: Data, quiz: Quiz): number {
-  data.sessions.questionCounter += 1;
-  quiz.numQuestions += 1;
-  setData(data);
-  return data.sessions.questionCounter;
-}
 
 /**
  * Covert a questionBody to question

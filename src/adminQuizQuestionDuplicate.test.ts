@@ -187,6 +187,7 @@ describe('testing adminQuizQuestionDuplicate' +
         const quizName: string = 'every girl is a princess';
         const quizDescription: string = 'what about every boy';
         const quizId2: number = quizCreate(token, quizName, quizDescription).quizId;
+        questionCreate(token, quizId2, questionBody);
         const questionBody2: QuestionBody = {
           question: 'I want the fancier crown',
           duration: 10,
@@ -204,10 +205,6 @@ describe('testing adminQuizQuestionDuplicate' +
         };
         const questionId2: number = questionCreate(token, quizId2, questionBody2).questionId;
         result = requestQuizQuestionDuplicate(token, quizId, questionId2);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-
-        result = requestQuizQuestionDuplicate(token, quizId2, questionId);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });

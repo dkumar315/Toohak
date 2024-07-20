@@ -10,7 +10,6 @@ let data: Data = {
   sessions: {
     globalCounter: 0,
     quizCounter: 0,
-    questionCounter: 0,
     sessionIds: [],
   },
 };
@@ -63,6 +62,7 @@ export interface Quiz {
   description: string;
   creatorId: number;
   numQuestions: number;
+  questionCounter: number;
   questions: Question[];
   duration: number; // in seconds
 }
@@ -85,7 +85,6 @@ export interface Answer {
 export interface Sessions {
   globalCounter: number;
   quizCounter: number;
-  questionCounter: number;
   keyPair?: keyPair,
   sessionIds: Session[];
 }
