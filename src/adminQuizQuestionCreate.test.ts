@@ -168,7 +168,7 @@ describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question'
         result = requestQuizQuestionCreate(token, quizId, questionBody);
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
-      })
+      });
     });
 
     describe('test1.4 duration - of single and mutiple questions', () => {
