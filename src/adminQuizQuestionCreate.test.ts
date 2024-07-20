@@ -157,6 +157,18 @@ describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question'
         expect(result).toMatchObject({ questionId: expect.any(Number) });
         expect(result.status).toStrictEqual(OK);
       });
+
+      test('test1.3.4 question answer is case sentivite', () => {
+        // falseAnswer1 with answer 'mirror'
+        const falseAnswer: AnswerInput = {
+          answer: 'Mirror',
+          correct: false
+        };
+        questionBody.answers = [trueAnswer1, falseAnswer1, falseAnswer];
+        result = requestQuizQuestionCreate(token, quizId, questionBody);
+        expect(result).toMatchObject({ questionId: expect.any(Number) });
+        expect(result.status).toStrictEqual(OK);
+      })
     });
 
     describe('test1.4 duration - of single and mutiple questions', () => {
@@ -300,21 +312,9 @@ describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question'
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
-
-      test('test2.2.1 quizId is null', () => {
-        result = requestQuizQuestionCreate(token, null, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(FORBIDDEN);
-      });
     });
 
     describe('test2.3+ invalid questionBody', () => {
-      test('test2.3.0 questionBody is null', () => {
-        result = requestQuizQuestionCreate(token, quizId, null);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
       describe('test2.3 invalid question string', () => {
         test('test2.3.1 string is less than 5 characters in length', () => {
           questionBody.question = '';

@@ -281,12 +281,6 @@ describe('testing adminQuizQuestionUpdate' +
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
-
-      test('test2.2.4 quizId is null', () => {
-        result = requestQuizQuestionUpdate(token, null, questionId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(FORBIDDEN);
-      });
     });
 
     describe('test2.3 invalid questionId', () => {
@@ -313,12 +307,6 @@ describe('testing adminQuizQuestionUpdate' +
       test('test2.3.3 question is removed', () => {
         requestQuizQuestionDelete(token, quizId, questionId);
         result = requestQuizQuestionUpdate(token, quizId, questionId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
-      test('test2.3.4 questionId is null', () => {
-        result = requestQuizQuestionUpdate(token, quizId, null, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });

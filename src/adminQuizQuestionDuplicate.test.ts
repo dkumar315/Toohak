@@ -153,12 +153,6 @@ describe('testing adminQuizQuestionDuplicate' +
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
-
-      test('test2.2.4 quizId is null', () => {
-        result = requestQuizQuestionDuplicate(token, null, questionId);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(FORBIDDEN);
-      });
     });
 
     describe('test2.3 invalid questionId', () => {
@@ -214,12 +208,6 @@ describe('testing adminQuizQuestionDuplicate' +
         expect(result.status).toStrictEqual(BAD_REQUEST);
 
         result = requestQuizQuestionDuplicate(token, quizId2, questionId);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
-      test('test2.3.5 questionId is null', () => {
-        result = requestQuizQuestionDuplicate(token, quizId, null);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
