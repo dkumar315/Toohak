@@ -324,9 +324,6 @@ function findQuestionIndex(quizIndex: number, questionId: number): IsValid {
  */
 function isValidQuestionBody(questionBody: QuestionBody,
   quizDuration: number): IsValid {
-  if (questionBody === null) {
-    return isValidErrorReturn('Invalid questionBody object: null.');
-  }
   const { question, duration, points, answers, thumbnailUrl } = questionBody;
   console.log(thumbnailUrl);
 
