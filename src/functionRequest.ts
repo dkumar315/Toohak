@@ -10,6 +10,7 @@ import { QuizListReturn, QuizCreateReturn, QuizInfoReturn, QuizTransfer } from '
 import { QuestionBody, QuestionIdReturn, NewQuestionIdReturn } from './quizQuestion';
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
+type Header = EmptyObject | { token: string };
 export type ResError = {
   status: StatusCodes;
 } & ErrorObject;
@@ -21,7 +22,7 @@ type ApiResponse<T> = ResValid<T> | ResError;
 // ============== helper function ==============================================
 function requestHelper<T>(method: HttpVerb, path: string, payload: object): ApiResponse<T> {
   let res: Response;
-  let headers: null | { token: string } = null;
+  let headers: Header = {};
   if ('token' in payload) {
     headers = { token: payload.token as string };
     delete payload.token;
