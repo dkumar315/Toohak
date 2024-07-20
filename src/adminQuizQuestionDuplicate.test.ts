@@ -20,7 +20,8 @@ const questionBody: QuestionBody = {
       answer: 'Poisoned Apple',
       correct: false
     }
-  ]
+  ],
+  thumbnailUrl: 'http://google.com/img_path.jpg'
 };
 
 const questionDuplicate = (token: string, quizId: number,
@@ -201,7 +202,8 @@ describe('testing adminQuizQuestionDuplicate' +
               answer: 'always do your best',
               correct: true
             }
-          ]
+          ],
+          thumbnailUrl: 'http://google.com/img_path.jpg'
         };
         const questionId2: number = questionCreate(token, quizId2, questionBody2).questionId;
         result = requestQuizQuestionDuplicate(token, quizId, questionId2);

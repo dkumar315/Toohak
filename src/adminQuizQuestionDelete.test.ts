@@ -14,6 +14,7 @@ const initQuestionBody1: QuestionBody = {
   duration: 10,
   points: 10,
   answers: [],
+  thumbnailUrl: 'http://google.com/img_path.jpg'
 };
 
 const initQuestionBody2: QuestionBody = {
@@ -21,6 +22,7 @@ const initQuestionBody2: QuestionBody = {
   duration: 10,
   points: 10,
   answers: [],
+  thumbnailUrl: 'http://google.com/img_path.jpg'
 };
 
 const trueAnswer1: AnswerInput = {

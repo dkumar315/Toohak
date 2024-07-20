@@ -35,13 +35,14 @@ interface IsValid {
   questionIndex?: number;
   errorMsg?: string;
 }
-export type QuestionBody = {
+export interface QuestionBody {
   question: string;
   duration: number;
   points: number;
   answers: AnswerInput[];
+  thumbnailUrl: string;
 }
-export type AnswerInput = {
+export interface AnswerInput {
   answer: string;
   correct: boolean;
 }
@@ -326,7 +327,8 @@ function isValidQuestionBody(questionBody: QuestionBody,
   if (questionBody === null) {
     return isValidErrorReturn('Invalid questionBody object: null.');
   }
-  const { question, duration, points, answers } = questionBody;
+  const { question, duration, points, answers, thumbnailUrl } = questionBody;
+  console.log(thumbnailUrl);
 
   if (question.length < QuestionLimit.MIN_LEN ||
     question.length > QuestionLimit.MAX_LEN) {
@@ -345,6 +347,10 @@ function isValidQuestionBody(questionBody: QuestionBody,
 
   if (points < PointsLimit.MIN_NUM || points > PointsLimit.MAX_NUM) {
     return isValidErrorReturn(`Invalid points number: ${points}.`);
+  }
+
+  if (!isInvalidImgUrl(thumbnailUrl)) {
+    return isValidErrorReturn(`Invalid thumbnailUrl string: ${thumbnailUrl}.`);
   }
 
   return isValidAnswer(answers);
@@ -429,3 +435,18 @@ function generateRandomColor(): Colour {
  * @return {string} timeStamp - unix time in seconds, rounded with Math.floor
  */
 const timeStamp = (): number => Math.floor(Date.now() / 1000);
+
+/**
+ * check if a imgUrl is valid
+ *
+ * @param {string} imgUrl - thumbnail
+ *
+ * @return {boolean} true - if extension and protocol valid
+ * extension is end with .jpg, .jpeg or .png (case insensitive), and
+ * protocol http or https
+ */
+function isInvalidImgUrl(thumbnailUrl: string): boolean {
+  const validExtension = /\.(jpe?g|png)$/i.test(thumbnailUrl);
+  const validProtocol = /^(http:\/\/|https:\/\/)/.test(thumbnailUrl);
+  return validExtension && validProtocol;
+}

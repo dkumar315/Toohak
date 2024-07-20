@@ -73,6 +73,7 @@ export interface Question {
   duration: number; // in seconds
   points: number;
   answers: Answer[];
+  thumbnailUrl: string;
 }
 
 export interface Answer {
@@ -85,13 +86,7 @@ export interface Answer {
 export interface Sessions {
   globalCounter: number;
   quizCounter: number;
-  keyPair?: keyPair,
   sessionIds: Session[];
-}
-
-export interface keyPair {
-  privateKey: string;
-  publicKey: string;
 }
 
 export interface Session {
