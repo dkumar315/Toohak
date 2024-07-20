@@ -35,18 +35,18 @@ interface IsValid {
   questionIndex?: number;
   errorMsg?: string;
 }
-export type QuestionBody {
+export type QuestionBody = {
   question: string;
   duration: number;
   points: number;
   answers: AnswerInput[];
 }
-export type AnswerInput {
+export type AnswerInput = {
   answer: string;
   correct: boolean;
 }
-export type QuestionIdReturn { questionId: number };
-export type NewQuestionIdReturn { newQuestionId: number };
+export type QuestionIdReturn = { questionId: number };
+export type NewQuestionIdReturn = { newQuestionId: number };
 
 /**
  * Create a new stub question for a particular quiz,
@@ -348,7 +348,7 @@ function isValidQuestionBody(questionBody: QuestionBody,
 
 /**
  * check if answers have correct answers, and !isDuplicateAnswer
- * isDuplicateAnswer is CASE SENSITIVE
+ * isDuplicateAnswer is case sentivite
  *
  * @param {array} answers - an array of answer string of questionBody
  *
@@ -384,6 +384,8 @@ function isValidAnswer(answers: AnswerInput[]): IsValid {
 /**
  * Return an object of { isValid, errorMsg } for isValid function when invalid
  *
+ * @param {string} errorMsg - specific error meaasge
+ *
  * @return {object} isValidObj - an object contains errorMsg
  */
 const isValidErrorReturn = (errorMsg: string): IsValid => {
@@ -391,118 +393,13 @@ const isValidErrorReturn = (errorMsg: string): IsValid => {
 };
 
 /**
- * Randomly generate a colour for an answer of a question
- * when a quiz question is created or updated
+ * Set data is a question is added (questionCreate, questionDuplicate)
  *
- * @return {string} color - a name of a random color
+ * @param {object} data - getData
+ * @param {object} quiz - corresponding quiz
+ *
+ * @return {number} questionId - a new questionId
  */
-function generateRandomColor(): Colour {
-  const colours: Colour[] = Object.values(Colours);
-  const randomIndex: number = Math.floor(Math.random() * colours.length);
-  return colours[randomIndex];
-}
-
-/**
- * generate a timeStamp for a quiz when a question is created or updated
- *
- * @return {string} questionId - a name of a random color
- */
-const timeStamp = (): number => Math.floor(Date.now() / 1000);
-
-/**
- * set data to corresponding location, if isCreateNew is true, a new question
- * wil be create, otherwise, it will replace the question in questionIndex
- *
- * @param {object} questionBody - an object contains all info, expect valid
- * @param {number} quizIndex - the index of quiz the question locate
- * @param {number} questionIndex - the index of question in the quiz,
- *                 if isCreate, questionIndex = quiz.questions.length
- * @param {number} isCreate - FALSE if add a new question, otherwise update
- *
- * @return {string} questionId - a global unique identifier of question
- */
-/**
- * Randomly generate a colour for an answer of a question
- * when a quiz question is created or updated
- *
- * @return {string} color - a name of a random color
- */
-function generateRandomColor(): Colour {
-  const colours: Colour[] = Object.values(Colours);
-  const randomIndex: number = Math.floor(Math.random() * colours.length);
-  return colours[randomIndex];
-}
-
-/**
- * generate a timeStamp for a quiz when a question is created or updated
- *
- * @return {string} questionId - a name of a random color
- */
-const timeStamp = (): number => Math.floor(Date.now() / 1000);
-
-/**
- * set data to corresponding location, if isCreateNew is true, a new question
- * wil be create, otherwise, it will replace the question in questionIndex
- *
- * @param {object} questionBody - an object contains all info, expect valid
- * @param {number} quizIndex - the index of quiz the question locate
- * @param {number} questionIndex - the index of question in the quiz,
- *                 if isCreate, questionIndex = quiz.questions.length
- * @param {number} isCreate - FALSE if add a new question, otherwise update
- *
- * @return {string} questionId - a global unique identifier of question
- */
-// type SetCreateQuestion = { questionBody: QuestionBody, quizIndex: number,
-// operation: QuestionOperation.CREATE };
-// type SetUpdateQuestion = { questionBody: Question, quizIndex: number,
-// questionIndex: number, operation: QuestionOperation.UPDATE };
-// type SetDuplicateQuestion = { questionBody: Question, quizIndex: number,
-// questionIndex: number, operation: QuestionOperation.DUPLICATE };
-// type SetQuestionParams = SetCreateQuestion | SetUpdateQuestion | SetDuplicateQuestion;
-// function setQuestion(questionOrBody: QuestionBody | Question, quizIndex: number,
-//   questionIndex: number, operation: QuestionOperation): number {
-//   const data: Data = getData();
-//   const quiz: Quiz = data.quizzes[quizIndex];
-
-//   let duration: number = 0;
-//   let questionId: number = 0;
-//   let newQuestion: Question;
-
-//   switch (operation) {
-//     case QuestionOperation.CREATE:
-//       questionId = SetNewQuestionId(data, quiz);
-//       newQuestion = SetQuestionBody(questionId);
-//       quiz.duration += newQuestion.duration;
-//       quiz.questions.splice(questionIndex, 0, newQuestion);
-
-//     case QuestionOperation.UPDATE:
-//       questionId = quiz.questions[questionIndex].questionId;
-//       newQuestion = SetQuestionBody(questionId);
-//       duration += newQuestion.duration - quiz.questions[questionIndex].duration;
-//       quiz.questions.splice(questionIndex, 1, newQuestion);
-
-//     case QuestionOperation.MOVE:
-//       [newQuestion] = quiz.questions.splice(isValidObj.questionIndex, 1);
-//       quiz.questions.splice(questionIndex, 0, newQuestion);
-
-//     case QuestionOperation.DUPLICATE:
-//       questionId = SetNewQuestionId(data, quiz);
-//       newQuestion = { ...quiz.questions[questionIndex - 1], questionId };
-//       quiz.duration += newQuestion.duration;
-//       quiz.questions.splice(questionIndex, 0, newQuestion);
-
-//     case QuestionOperation.DELETE:
-//       quiz.numQuestions -= 1;
-//       quiz.duration -= quiz.questions[questionIndex].duration;
-//       quiz.questions.splice(questionIndex, 1);
-//   }
-
-//   quiz.timeLastEdited = timeStamp();
-
-//   setData(data);
-//   return questionId;
-// }
-
 function SetNewQuestionId(data: Data, quiz: Quiz): number {
   data.sessions.questionCounter += 1;
   quiz.numQuestions += 1;
@@ -510,9 +407,36 @@ function SetNewQuestionId(data: Data, quiz: Quiz): number {
   return data.sessions.questionCounter;
 }
 
+/**
+ * Covert a questionBody to question
+ *
+ * @param {object} questionBody - input of a question
+ * @param {number} questionId - corresponding questionId
+ *
+ * @return {string} question - a new question
+ */
 function SetQuestionBody(questionBody: QuestionBody, questionId: number): Question {
   const { answers: answerBody, ...question } = questionBody;
   const answers: Answer[] = answerBody.map(({ answer, correct }, index) =>
     ({ answerId: index + 1, answer, colour: generateRandomColor(), correct }));
   return { questionId, ...question, answers };
 }
+
+/**
+ * Randomly generate a colour for an answer of a question
+ * when a quiz question is created or updated
+ *
+ * @return {string} color - a name of a random color
+ */
+function generateRandomColor(): Colour {
+  const colours: Colour[] = Object.values(Colours);
+  const randomIndex: number = Math.floor(Math.random() * colours.length);
+  return colours[randomIndex];
+}
+
+/**
+ * generate a timeStamp for a quiz when a question is changed
+ *
+ * @return {string} timeStamp - unix time in seconds, rounded with Math.floor
+ */
+const timeStamp = (): number => Math.floor(Date.now() / 1000);
