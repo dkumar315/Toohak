@@ -2,10 +2,9 @@ import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
 import {
   authRegister, requestAuthLogout,
   quizCreate, validQuizInfo, requestQuizRemove, requestQuizEmptyTrash,
-  questionCreate, requestQuizQuestionDelete,
-  requestQuizSessionCreate, requestQuizQuestionDuplicate,
-  requestClear,
-  ResSessionId, ResQuizInfo, ERROR, ResError
+  questionCreate, requestQuizQuestionDelete, requestQuizQuestionDuplicate,
+  requestQuizSessionCreate, quizSessionCreate,
+  requestClear, ResSessionId, ResQuizInfo, ERROR, ResError
 } from './functionRequest';
 import {
   QuestionBody
@@ -79,23 +78,28 @@ describe('testing adminQuizSessionCreate POST /v1/admin/quiz/{quizid}/session/st
       expect(result.status).toStrictEqual(BAD_REQUEST);
     });
 
-    test.skip('test 1.5 origin quiz does not moditify', () => {
+    test('test 1.5 origin quiz does not moditify', () => {
       const quizInfo: ResQuizInfo = validQuizInfo(token, quizId);
-      result = requestQuizSessionCreate(token, quizId, autoStartNum);
+      quizSessionCreate(token, quizId, autoStartNum);
       // need PUT /v1/admin/quiz/{quizid}/session/{sessionid}
       const quizInfoUpdate: ResQuizInfo = validQuizInfo(token, quizId);
       expect(quizInfo).toStrictEqual(quizInfoUpdate);
     });
 
     test.skip('test 1.7 check active quiz sessions', () => {
-      // const sessionId: number = requestQuizSessionCreate(token, quizId, autoStartNum).sessionId;
+      // const sessionId: number = quizSessionCreate(token, quizId, autoStartNum).sessionId;
       // need GET /v1/admin/quiz/{quizid}/sessions
       // const expectList: type = { activeSessions: [ sessionId ], inactiveSessions: [ ] }
       // expect(activeQuizList).toStrictEqual(expectList);
     });
 
     test('test 1.8 check moditify of quiz / question not effect running session', () => {
+      quizSessionCreate(token, quizId, autoStartNum);
+      // const sessionInfo1: ResQuizInfo =
       requestQuizQuestionDuplicate(token, quizId, questionId);
+      // need GET /v1/admin/quiz/{quizid}/session/{sessionid}
+      // const sessionInfo2: ResQuizInfo =
+      // expect(sessionInfo1).toStrictEqual(sessionInfo2);
     });
   });
 

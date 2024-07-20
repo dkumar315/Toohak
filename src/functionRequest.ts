@@ -186,3 +186,7 @@ export const validQuizInfo = (token: string, quizId: number): ResQuizInfo =>
 export const questionCreate = (token: string, quizId: number,
   questionBody: QuestionBody): ResQuestionId =>
   requestQuizQuestionCreate(token, quizId, questionBody) as ResQuestionId;
+
+export const quizSessionCreate = (token: string, quizId: number,
+  autoStartNum: number): ResSessionId =>
+  requestQuizSessionCreate(token, quizId, autoStartNum) as ResSessionId;
