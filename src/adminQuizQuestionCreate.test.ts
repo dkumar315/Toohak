@@ -60,6 +60,11 @@ beforeEach(() => {
 afterAll(() => requestClear());
 
 describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question', () => {
+  test('test route and type', () => {
+    result = requestQuizQuestionCreate(token, quizId, questionBody);
+    expect(typeof result === 'object' && 'questionId' in result &&
+      typeof result.questionId === 'number').toBe(true);
+  });
   describe('test1.0 valid returns (valid token and quizId)', () => {
     describe('test1.1 general valid cases, mutiple types of answers', () => {
       test('test1.1 test with 1 correct answer, 3 answers in total', () => {

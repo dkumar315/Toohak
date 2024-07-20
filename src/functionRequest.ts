@@ -21,10 +21,17 @@ type ApiResponse<T> = ResValid<T> | ResError;
 // ============== helper function ==============================================
 function requestHelper<T>(method: HttpVerb, path: string, payload: object): ApiResponse<T> {
   let res: Response;
+  let headers: null | { token: string } = null;
+  if ('token' in payload) {
+    headers = { token: payload.token as string };
+    delete payload.token;
+  }
+
   if (['GET', 'DELETE'].includes(method)) {
-    res = request(method, SERVER_URL + path, { qs: payload });
-  } else { // ['PUT', 'POST']
-    res = request(method, SERVER_URL + path, { json: payload });
+    res = request(method, SERVER_URL + path, { qs: payload, headers });
+  } else {
+    // 'PUT' || 'POST'
+    res = request(method, SERVER_URL + path, { json: payload, headers });
   }
 
   const bodyObject = JSON.parse(res.body.toString());

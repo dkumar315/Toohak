@@ -188,7 +188,7 @@
       "allowTernary": true,
       "allowTaggedTemplates": true
     }],
-    
+
     "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": ["error", { "functions": false, "classes": false, "variables": false }],
     "no-useless-call": "error",
@@ -234,6 +234,7 @@
     "valid-typeof": ["error", { "requireStringLiterals": true }],
     "wrap-iife": ["error", "any", { "functionPrototypeMethods": true }],
     "yield-star-spacing": ["error", "both"],
-    "yoda": ["error", "never"]
+    "yoda": ["error", "never"] // ,
+    // "@typescript-eslint/no-explicit-any": "error"
   }
 }
