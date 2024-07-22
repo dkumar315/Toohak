@@ -58,11 +58,17 @@ export interface Sessions {
   tokenCounter: number;
   quizCounter: number;
   sessionIds: Session[];
+  keyPair?: KeyPair;
 }
 
 export interface Session {
   userId: number;
   token: string;
+}
+
+interface KeyPair {
+  privateKey: string;
+  publicKey: string;
 }
 
 export interface User {
