@@ -8,7 +8,7 @@ let data: Data = {
   quizzes: [],
   trashedQuizzes: [],
   sessions: {
-    globalCounter: 0,
+    tokenCounter: 0,
     quizCounter: 0,
     sessionIds: [],
   },
@@ -55,7 +55,7 @@ export interface Data {
 }
 
 export interface Sessions {
-  globalCounter: number;
+  tokenCounter: number;
   quizCounter: number;
   sessionIds: Session[];
 }

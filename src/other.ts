@@ -11,7 +11,7 @@ export function clear(): EmptyObject {
     quizzes: [],
     trashedQuizzes: [],
     sessions: {
-      globalCounter: 0,
+      tokenCounter: 0,
       quizCounter: 0,
       sessionIds: [],
     },
