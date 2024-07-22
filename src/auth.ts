@@ -50,22 +50,22 @@ export function adminAuthRegister(email: string, password: string,
   nameFirst: string, nameLast: string): TokenReturn | ErrorObject {
   // Check if email is valid or already exists
   if (!isValidEmail(email, INVALID)) {
-    return { error: `Email invalid format or already in use ${email}.` };
+    throw new Error(`Email invalid format or already in use ${email}.`);
   }
 
   // Check nameFirst meets requirements
   if (!isValidName(nameFirst)) {
-    return { error: `Firstname does not meet requirements ${nameFirst}.` };
+    throw new Error(`Firstname does not meet requirements ${nameFirst}.`);
   }
 
   // Check nameLast meets requirements
   if (!isValidName(nameLast)) {
-    return { error: `Lastname does not meet requirements ${nameLast}.` };
+    throw new Error(`Lastname does not meet requirements ${nameLast}.`);
   }
 
   // Check password meets requirements
   if (!isValidPassword(password)) {
-    return { error: `Invalid password ${password}.` };
+    throw new Error(`Invalid password ${password}.`);
   }
 
   const data: Data = getData();
@@ -102,14 +102,14 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
   const data: Data = getData();
   const userIndex: number = data.users.findIndex(user => user.email === email);
   if (userIndex === INVALID) {
-    return { error: `Invalid email ${email}.` };
+    throw new Error(`Invalid email ${email}.`);
   }
 
   const user: User = data.users[userIndex];
   if (getHashOf(password).localeCompare(user.password) !== 0) {
     user.numFailedPasswordsSinceLastLogin += 1;
     setData(data);
-    return { error: `Invalid password ${password}.` };
+    throw new Error(`Invalid password ${password}.`);
   }
 
   // reset numFailedPasswordsSinceLastLogin
