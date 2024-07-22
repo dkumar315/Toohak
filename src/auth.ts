@@ -257,7 +257,6 @@ function generateToken(userId: number): string {
 
   const timestamp: string = Date.now().toString();
   const token: string = data.sessions.globalCounter.toString();
-
   return `${timestamp}:${uuidv4()}:${userId}:${token}`;
 }
 
@@ -272,7 +271,6 @@ const getHashOf = (plaintext: string): string => {
  * Generate and push a session
  */
 function addSession(authUserId: number, token: string): void {
-  console.log(token);
   const salt: string = TokenDigits.SECRET;
   const hash: string = getHashOf(salt + getHashOf(token));
   const random: string = crypto.randomBytes(TokenDigits.RANDOM_BYTE_LEN).toString('hex');

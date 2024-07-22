@@ -13,7 +13,6 @@ export function clear(): EmptyObject {
     sessions: {
       globalCounter: 0,
       quizCounter: 0,
-      questionCounter: 0,
       sessionIds: [],
     },
   };

@@ -303,101 +303,103 @@ app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
 // adminQuizQuestion
 // Create quiz question
 app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
-  const token = req.header('token');
-  const quizId = parseInt(req.params.quizid as string);
-  const { questionBody } = req.body;
+  try {
+    const token = req.header('token');
+    const quizId = parseInt(req.params.quizid as string);
+    const { questionBody } = req.body;
 
-  const result = adminQuizQuestionCreate(token, quizId, questionBody);
-  if ('error' in result) {
-    if (result.error.includes('token')) {
-      return res.status(UNAUTHORIZED).json(result);
-    } else if (result.error.includes('quizId')) {
-      return res.status(FORBIDDEN).json(result);
+    const result = adminQuizQuestionCreate(token, quizId, questionBody);
+    res.json(result);
+  } catch (error) {
+    if (error.message.includes('token')) {
+      return res.status(UNAUTHORIZED).json({ error: error.message });
+    } else if (error.message.includes('quizId')) {
+      return res.status(FORBIDDEN).json({ error: error.message });
     } else {
-      return res.status(BAD_REQUEST).json(result);
+      return res.status(BAD_REQUEST).json({ error: error.message });
     }
   }
-  return res.json(result);
 });
 
 // Update quiz question
 app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
-  const token = req.header('token');
-  const quizId = parseInt(req.params.quizid as string);
-  const questionId = parseInt(req.params.questionid as string);
-  const { questionBody } = req.body;
+  try {
+    const token = req.header('token');
+    const quizId = parseInt(req.params.quizid as string);
+    const questionId = parseInt(req.params.questionid as string);
+    const { questionBody } = req.body;
 
-  const result = adminQuizQuestionUpdate(token, quizId, questionId, questionBody);
-  if ('error' in result) {
-    if (result.error.includes('token')) {
-      return res.status(UNAUTHORIZED).json(result);
-    } else if (result.error.includes('quizId')) {
-      return res.status(FORBIDDEN).json(result);
+    const result = adminQuizQuestionUpdate(token, quizId, questionId, questionBody);
+    res.json(result);
+  } catch (error) {
+    if (error.message.includes('token')) {
+      return res.status(UNAUTHORIZED).json({ error: error.message });
+    } else if (error.message.includes('quizId')) {
+      return res.status(FORBIDDEN).json({ error: error.message });
     } else {
-      return res.status(BAD_REQUEST).json(result);
+      return res.status(BAD_REQUEST).json({ error: error.message });
     }
   }
-  return res.json(result);
 });
 
 // Delete quiz question
 app.delete('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
-  const token = req.header('token');
-  const quizId = parseInt(req.params.quizid as string);
-  const questionId = parseInt(req.params.questionid as string);
+  try {
+    const token = req.header('token');
+    const quizId = parseInt(req.params.quizid as string);
+    const questionId = parseInt(req.params.questionid as string);
 
-  const result = adminQuizQuestionDelete(token, quizId, questionId);
-  if ('error' in result) {
-    if (result.error.includes('token')) {
-      return res.status(UNAUTHORIZED).json(result);
-    } else if (result.error.includes('quizId')) {
-      return res.status(FORBIDDEN).json(result);
+    const result = adminQuizQuestionDelete(token, quizId, questionId);
+    res.json(result);
+  } catch (error) {
+    if (error.message.includes('token')) {
+      return res.status(UNAUTHORIZED).json({ error: error.message });
+    } else if (error.message.includes('quizId')) {
+      return res.status(FORBIDDEN).json({ error: error.message });
     } else {
-      return res.status(BAD_REQUEST).json(result);
+      return res.status(BAD_REQUEST).json({ error: error.message });
     }
   }
-
-  return res.json(result);
 });
 
 // Move quiz question
 app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {
-  const token = req.header('token');
-  const quizId = parseInt(req.params.quizid as string);
-  const questionId = parseInt(req.params.questionid as string);
-  const { newPosition } = req.body;
+  try {
+    const token = req.header('token');
+    const quizId = parseInt(req.params.quizid as string);
+    const questionId = parseInt(req.params.questionid as string);
+    const { newPosition } = req.body;
 
-  const result = adminQuizQuestionMove(token, quizId, questionId, newPosition);
-  if ('error' in result) {
-    if (result.error.includes('token')) {
-      return res.status(UNAUTHORIZED).json(result);
-    } else if (result.error.includes('quizId')) {
-      return res.status(FORBIDDEN).json(result);
+    const result = adminQuizQuestionMove(token, quizId, questionId, newPosition);
+    res.json(result);
+  } catch (error) {
+    if (error.message.includes('token')) {
+      return res.status(UNAUTHORIZED).json({ error: error.message });
+    } else if (error.message.includes('quizId')) {
+      return res.status(FORBIDDEN).json({ error: error.message });
     } else {
-      return res.status(BAD_REQUEST).json(result);
+      return res.status(BAD_REQUEST).json({ error: error.message });
     }
   }
-
-  return res.json(result);
 });
 
 // Duplicate quiz question
 app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request, res: Response) => {
-  const token = req.header('token');
-  const quizId = parseInt(req.params.quizid as string);
-  const questionId = parseInt(req.params.questionid as string);
-
-  const result = adminQuizQuestionDuplicate(token, quizId, questionId);
-  if ('error' in result) {
-    if (result.error.includes('token')) {
-      return res.status(UNAUTHORIZED).json(result);
-    } else if (result.error.includes('quizId')) {
-      return res.status(FORBIDDEN).json(result);
+  try {
+    const token = req.header('token');
+    const quizId = parseInt(req.params.quizid as string);
+    const questionId = parseInt(req.params.questionid as string);
+    const result = adminQuizQuestionDuplicate(token, quizId, questionId);
+    res.json(result);
+  } catch (error) {
+    if (error.message.includes('token')) {
+      return res.status(UNAUTHORIZED).json({ error: error.message });
+    } else if (error.message.includes('quizId')) {
+      return res.status(FORBIDDEN).json({ error: error.message });
     } else {
-      return res.status(BAD_REQUEST).json(result);
+      return res.status(BAD_REQUEST).json({ error: error.message });
     }
   }
-  return res.json(result);
 });
 
 // other

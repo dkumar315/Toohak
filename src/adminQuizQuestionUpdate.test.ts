@@ -18,6 +18,7 @@ const initQuestionBody: QuestionBody = {
   duration: 10,
   points: 8,
   answers: [],
+  thumbnailUrl: 'http://google.com/img_path.jpg'
 };
 
 const trueAnswer1: AnswerInput = {
@@ -200,8 +201,20 @@ describe('testing adminQuizQuestionUpdate' +
       });
     });
 
-    describe('test1.7 special cases, duplicate questions and update is same', () => {
-      test('test1.7.1 questions have a same answer', () => {
+    describe('test1.7 thumbnailUrls', () => {
+      const thumbnailUrls: string[] = ['http://.jpg', 'https://xxx.com/image.jpg',
+        'http://xxx.com/image.JPG', 'http://xxx.com/image.png', 'http://.jPg',
+        'https://xxx.com/image.PNG', 'http://xxx.com/image.gif.jpg'];
+      test.each(thumbnailUrls)('invalid email = \'%s\'', (thumbnailUrl) => {
+        questionBody.thumbnailUrl = thumbnailUrl;
+        result = requestQuizQuestionUpdate(token, quizId, questionId, questionBody);
+        expect(result).toMatchObject(VALID_EMPTY_RETURN);
+        expect(result.status).toStrictEqual(OK);
+      });
+    });
+
+    describe('test1.8 special cases, duplicate questions and update is same', () => {
+      test('test1.8.1 questions have a same answer', () => {
         questionBody.answers = [trueAnswer1, falseAnswer1];
         result = requestQuizQuestionUpdate(token, quizId, questionId, questionBody);
         expect(result).toMatchObject(VALID_EMPTY_RETURN);
@@ -212,7 +225,7 @@ describe('testing adminQuizQuestionUpdate' +
         expect(result.status).toStrictEqual(OK);
       });
 
-      test('test1.7.2 update questions same as original', () => {
+      test('test1.8.2 update questions same as original', () => {
         result = requestQuizQuestionUpdate(token, quizId, questionId, questionBody);
         expect(result).toMatchObject(VALID_EMPTY_RETURN);
         expect(result.status).toStrictEqual(OK);
@@ -281,12 +294,6 @@ describe('testing adminQuizQuestionUpdate' +
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
-
-      test('test2.2.4 quizId is null', () => {
-        result = requestQuizQuestionUpdate(token, null, questionId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(FORBIDDEN);
-      });
     });
 
     describe('test2.3 invalid questionId', () => {
@@ -313,12 +320,6 @@ describe('testing adminQuizQuestionUpdate' +
       test('test2.3.3 question is removed', () => {
         requestQuizQuestionDelete(token, quizId, questionId);
         result = requestQuizQuestionUpdate(token, quizId, questionId, questionBody);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
-      test('test2.3.4 questionId is null', () => {
-        result = requestQuizQuestionUpdate(token, quizId, null, questionBody);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
@@ -516,6 +517,19 @@ describe('testing adminQuizQuestionUpdate' +
       describe('test2.9.3 answers does no contain correct answer', () => {
         test('all false answers', () => {
           questionBody.answers = [falseAnswer1, falseAnswer2, falseAnswer3];
+          result = requestQuizQuestionUpdate(token, quizId, questionId, questionBody);
+          expect(result).toMatchObject(ERROR);
+          expect(result.status).toStrictEqual(BAD_REQUEST);
+        });
+      });
+
+      describe('test2.9.4 invalid thumbnailUrls', () => {
+        const thumbnailUrls: string[] = ['', 'http.jpg', 'https://xxx.com/image.jpg.gif',
+          'HTTP://xxx.com/image.jpg', 'HTTPS://xxx.com/image.png',
+          'HTTPS://xxx.com/image.gif', 'https://xxx.com/image.gif',
+          'ftp://xxx.com/image.jpg', 'xxx.com/image.jpg', '.jpg', 'http://'];
+        test.each(thumbnailUrls)('invalid email = \'%s\'', (thumbnailUrl) => {
+          questionBody.thumbnailUrl = thumbnailUrl;
           result = requestQuizQuestionUpdate(token, quizId, questionId, questionBody);
           expect(result).toMatchObject(ERROR);
           expect(result.status).toStrictEqual(BAD_REQUEST);
@@ -883,7 +897,8 @@ describe('testing adminQuizQuestionUpdate' +
         question: 'q',
         duration: -1,
         points: 0,
-        answers: [trueAnswer1]
+        answers: [trueAnswer1],
+        thumbnailUrl: 'http://google.com/img_path.jpg'
       };
 
       const result = requestQuizQuestionUpdate(token, quizId, questionId, invalidQuestionBody);

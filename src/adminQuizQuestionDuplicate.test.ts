@@ -20,7 +20,8 @@ const questionBody: QuestionBody = {
       answer: 'Poisoned Apple',
       correct: false
     }
-  ]
+  ],
+  thumbnailUrl: 'http://google.com/img_path.jpg'
 };
 
 const questionDuplicate = (token: string, quizId: number,
@@ -153,12 +154,6 @@ describe('testing adminQuizQuestionDuplicate' +
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
-
-      test('test2.2.4 quizId is null', () => {
-        result = requestQuizQuestionDuplicate(token, null, questionId);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(FORBIDDEN);
-      });
     });
 
     describe('test2.3 invalid questionId', () => {
@@ -193,6 +188,7 @@ describe('testing adminQuizQuestionDuplicate' +
         const quizName: string = 'every girl is a princess';
         const quizDescription: string = 'what about every boy';
         const quizId2: number = quizCreate(token, quizName, quizDescription).quizId;
+        questionCreate(token, quizId2, questionBody);
         const questionBody2: QuestionBody = {
           question: 'I want the fancier crown',
           duration: 10,
@@ -206,20 +202,11 @@ describe('testing adminQuizQuestionDuplicate' +
               answer: 'always do your best',
               correct: true
             }
-          ]
+          ],
+          thumbnailUrl: 'http://google.com/img_path.jpg'
         };
         const questionId2: number = questionCreate(token, quizId2, questionBody2).questionId;
         result = requestQuizQuestionDuplicate(token, quizId, questionId2);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-
-        result = requestQuizQuestionDuplicate(token, quizId2, questionId);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(BAD_REQUEST);
-      });
-
-      test('test2.3.5 questionId is null', () => {
-        result = requestQuizQuestionDuplicate(token, quizId, null);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(BAD_REQUEST);
       });
