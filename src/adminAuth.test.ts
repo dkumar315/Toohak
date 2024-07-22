@@ -85,7 +85,7 @@ describe('adminAuthRegister', () => {
       test.each(nameLasts)('Test for invalid namelast', (nameLast) => {
         result = requestAuthRegister('test@example.com', 'MyPassw0rd', 'Jane', nameLast);
         expect(result).toStrictEqual(ERROR);
-        if('error' in result) {
+        if ('error' in result) {
           expect(result.error).toStrictEqual(`Lastname does not meet requirements ${nameLast}.`);
         }
       });
