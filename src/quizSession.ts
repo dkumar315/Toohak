@@ -14,8 +14,6 @@ export enum SessionLimits {
 
 export type QuizSessionId = { sessionId: number };
 
-// todo: undefined behaviour: forum #1214
-//
 /**
  * copies a quiz, and start a new session of a quiz
  *
@@ -51,6 +49,15 @@ export function adminQuizSessionCreate(token: string, quizId: number,
   return { sessionId };
 }
 
+/**
+ * check if a given token and quiz
+ *
+ * @param {string} token - a unique identifier for a login user
+ * @param {number} quizId - a unique identifier for a valid quiz
+ *
+ * @return {object} quizId - unique identifier for a qiz of a user
+ * @return {object} error - token, quizId, or questionBody invalid
+ */
 function isValidIds(token: string, quizId: number) {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) return errorReturn(`Invalid token string: ${token}.`);
@@ -61,7 +68,6 @@ function isValidIds(token: string, quizId: number) {
 
   isValidQuiz = findQuizIndex(data.trashedQuizzes, quizId, authUserId);
   if (isValidQuiz.isValid) {
-    if (isValidQuiz.errorMsg.includes('access denied')) return isValidQuiz;
     return errorReturn(`Invalid quiz in trash: ${quizId}.`);
   }
 
