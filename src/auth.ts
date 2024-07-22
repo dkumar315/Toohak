@@ -1,5 +1,6 @@
 import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
+import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -12,12 +13,15 @@ enum UserLimits {
   PASSWORD_MIN_LEN = 8
 }
 
-enum TokenDigits {
-  TIME_LEN = 13,
+enum Serect {
   RANDOM_BYTE_LEN = 8,
   RANDOM_STR_LEN = 16,
-  SECRET = 'SeCret'
+  SALT = 'SeCret'
 }
+
+type Algorithms = 'HS256' | 'RS256' | 'ES256' | 'PS256';
+const ALGORITHM: Algorithms = 'RS256';
+const TOKEN_EXPIRY = '9999 years';
 
 export interface UserDetails {
   userId: number;
@@ -46,8 +50,7 @@ export interface TokenReturn {
  * @return {string} token - unique identifier for a user
  * @return {object} error - if email, password, nameFirst, nameLast invalid
  */
-export function adminAuthRegister(email: string, password: string,
-  nameFirst: string, nameLast: string): TokenReturn | ErrorObject {
+export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string): TokenReturn | ErrorObject {
   // Check if email is valid or already exists
   if (!isValidEmail(email, INVALID)) {
     throw new Error(`Email invalid format or already in use ${email}.`);
@@ -76,7 +79,7 @@ export function adminAuthRegister(email: string, password: string,
     nameFirst: nameFirst,
     nameLast: nameLast,
     email: email,
-    password: getHashOf(password),
+    password: storedHash(hashPassword(password)),
     numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
   };
@@ -106,7 +109,7 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
   }
 
   const user: User = data.users[userIndex];
-  if (getHashOf(password).localeCompare(user.password) !== 0) {
+  if (hashPassword(password).localeCompare(vertifyPassword(user.password)) !== 0) {
     user.numFailedPasswordsSinceLastLogin += 1;
     setData(data);
     throw new Error(`Invalid password ${password}.`);
@@ -133,10 +136,13 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
  */
 export function adminAuthLogout(token: string): EmptyObject | ErrorObject {
   const data: Data = getData();
-  const sessionIndex: number = findSessionIndex(token);
-  if (sessionIndex === INVALID) throw new Error(`Invalid token ${token}.`);
+  const sessionIndex: number = data.sessions.sessionIds.findIndex(session =>
+    session.token === token
+  );
 
+  if (sessionIndex === INVALID) throw new Error(`Invalid token ${token}.`);
   data.sessions.sessionIds.splice(sessionIndex, 1);
+
   setData(data);
   return {};
 }
@@ -224,20 +230,20 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string,
   const user: User = data.users[userIndex];
 
   // check whether oldPassword matches the user's password
-  if (user.password !== getHashOf(oldPassword)) {
+  if (vertifyPassword(user.password) !== hashPassword(oldPassword)) {
     throw new Error(`Invalid oldPassword ${oldPassword}.`);
   }
 
   // check newPassword meets requirements or not used before
   user.passwordHistory = user.passwordHistory || [];
   if (oldPassword === newPassword || !isValidPassword(newPassword) ||
-    user.passwordHistory.includes(getHashOf(newPassword))) {
+    user.passwordHistory.some(oldPassword =>
+      vertifyPassword(oldPassword) === hashPassword(newPassword))) {
     throw new Error(`Invalid newPassword ${newPassword}.`);
   }
 
-  // if all input valid, then update the password
-  user.password = getHashOf(newPassword);
-  user.passwordHistory.push(getHashOf(oldPassword));
+  user.passwordHistory.push(user.password);
+  user.password = storedHash(hashPassword(newPassword));
   setData(data);
 
   return {};
@@ -246,56 +252,72 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string,
 /**
  * Generate a token that is globally unique, assume token never expire
  *
- * @param {string} userId - user identifier for easier debug
+ * @param {string} email - user email, globally unique
+ * @param {string} password - user password
  *
  * @return {string} token - unique identifier of a login user
  */
 function generateToken(userId: number): string {
-  const timestamp: string = Date.now().toString();
   const data: Data = getData();
-  const tokenId: number = ++data.sessions.tokenCounter;
+
+  if (!data.sessions.keyPair) {
+    const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+      publicKeyEncoding: { type: 'spki', format: 'pem' },
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+    });
+    data.sessions.keyPair = { privateKey, publicKey };
+  }
   setData(data);
-  return `${timestamp}:${uuidv4()}:${userId}:${tokenId}`;
+
+  const header = { alg: ALGORITHM, typ: 'JWT' };
+  const payload = {
+    jti: uuidv4(),
+    userId: userId,
+    tokenId: ++data.sessions.tokenCounter,
+    issueAt: Math.floor(Date.now() / 1000)
+  };
+
+  const token: string = jwt.sign(payload, data.sessions.keyPair.privateKey, {
+    algorithm: ALGORITHM,
+    header,
+    expiresIn: TOKEN_EXPIRY
+  });
+
+  return token;
 }
 
 /**
- * Return a SHA-256 hash of the input string
+ * Return the hash of a string
  */
-const getHashOf = (plaintext: string): string => {
+export function getHashOf(plaintext: string): string {
   return crypto.createHash('sha256').update(plaintext).digest('hex');
-};
+}
 
 /**
  * Generate and push a session
  */
 function addSession(authUserId: number, token: string): void {
-  const salt: string = TokenDigits.SECRET;
-  const hash: string = getHashOf(salt + getHashOf(token));
-  const random: string = crypto.randomBytes(TokenDigits.RANDOM_BYTE_LEN).toString('hex');
-
+  const data: Data = getData();
   const newSession: Session = {
     userId: authUserId,
-    token: `${hash}${random}`
+    token: token
   };
-
-  const data: Data = getData();
   data.sessions.sessionIds.push(newSession);
   setData(data);
 }
 
-/**
- * Given an admin user's token, find its sessionIndex in data
- *
- * @param {string} token - unique identifier for a user
- *
- * @return {number} sessionIndex - corresponding session of a token
- */
-const findSessionIndex = (token: string): number => {
-  const data: Data = getData();
-  return data.sessions.sessionIds.findIndex(session => {
-    const tokenHash: string = session.token.slice(0, -TokenDigits.RANDOM_STR_LEN);
-    return tokenHash === getHashOf(TokenDigits.SECRET + getHashOf(token));
-  });
+const hashPassword = (password: string): string => {
+  return getHashOf(Serect.SALT + getHashOf(password));
+};
+
+const storedHash = (hashPassword: string): string => {
+  const random: string = crypto.randomBytes(Serect.RANDOM_BYTE_LEN).toString('hex');
+  return `${hashPassword}${random}`;
+};
+
+const vertifyPassword = (hashPassword: string): string => {
+  return hashPassword.slice(0, -Serect.RANDOM_STR_LEN);
 };
 
 /**
@@ -307,9 +329,24 @@ const findSessionIndex = (token: string): number => {
  */
 export function findUserId(token: string): number {
   const data: Data = getData();
-  const sessionIndex: number = findSessionIndex(token);
-  if (sessionIndex === INVALID) return INVALID;
-  return data.sessions.sessionIds[sessionIndex].userId;
+  if (token === '' || !data.sessions.keyPair) return INVALID;
+  try {
+    const decoded = jwt.decode(token);
+    if (!decoded || typeof decoded === 'string' || !decoded.userId) return INVALID;
+
+    const isValid = jwt.verify(token, data.sessions.keyPair.publicKey,
+      { algorithms: [ALGORITHM] }) as { userId: number };
+    if (!isValid) return INVALID;
+
+    const session: Session = data.sessions.sessionIds.find(session =>
+      session.token === token
+    );
+    if (!session || session.userId !== isValid.userId) return INVALID;
+
+    return session.userId;
+  } catch (error) {
+    return INVALID;
+  }
 }
 
 /**
