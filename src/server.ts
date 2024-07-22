@@ -68,15 +68,15 @@ app.get('/newecho', (req: Request, res: Response) => {
 });
 
 // Example get request (iter3)
-app.get('/newecho', (req: Request, res: Response) => {
-  let result: ReturnType<typeof newEcho>;
-  try {
-    result = newEcho(req.query.echo as string);
-    res.json(result);
-  } catch (error: unknown) {
-    res.status(BAD_REQUEST).json({ error: error.message });
-  }
-});
+// app.get('/newecho', (req: Request, res: Response) => {
+//   let result: ReturnType<typeof newEcho>;
+//   try {
+//     result = newEcho(req.query.echo as string);
+//     res.json(result);
+//   } catch (error: unknown) {
+//     res.status(BAD_REQUEST).json({ error: error.message });
+//   }
+// });
 
 // Example get request (iter2)
 app.get('/echo', (req: Request, res: Response) => {
@@ -187,7 +187,7 @@ app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
 // Permanently delete specific quizzes currently sitting in the trash
 app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   const token: string = req.header('token');
-  const quizIds: number = (req.query.quizIds as string[]).map(Number);
+  const quizIds: number[] = (req.query.quizIds as string[]).map(Number);
   return res.json(adminQuizTrashEmpty(token, quizIds));
 });
 
