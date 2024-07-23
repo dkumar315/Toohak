@@ -48,6 +48,7 @@ describe('clear test', () => {
       description: 'Quiz on Testing',
       numQuestions: 0,
       questions: [],
+      thumbnailUrl: '',
       duration: 0,
       status: 200
     });
