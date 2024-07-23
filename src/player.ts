@@ -1,5 +1,5 @@
 import {
-  setData, getData, States, Data,
+  setData, getData, States, Data, INVALID,
   QuizSession, Player, ErrorObject
 } from './dataStore';
 
@@ -22,21 +22,26 @@ export type PlayerId = { playerId: number };
  * @return {object} playerId - unique identifier for a guest player
  * @return {object} errorObject - session, session state or namw input invalid
  */
-export const playerJoin = (sessionId: number, name: string): PlayerId | ErrorObject => {
-  const session: QuizSession = findSession(sessionId);
-  if (!session) { throw new Error(`Invalid sessionId number: ${sessionId}.`); }
+export const playerJoin = (sessionId: number, name: string):
+PlayerId | ErrorObject => {
+  const sessionIndex: number = findSession(sessionId);
+  if (sessionIndex === INVALID) {
+    throw new Error(`Invalid sessionId number: ${sessionId}.`);
+  }
 
+  const data: Data = getData();
+  const session: QuizSession = data.quizSessions[sessionIndex];
   if (session.state !== States.LOBBY) {
     throw new Error(`Invalid state ${session.state}, sessionId: ${sessionId}.`);
   }
 
-  name = name || generateName(session.players);
-  if (isExistName(name, session.players)) {
+  if (name === '') {
+    name = generateName(session.players);
+  } else if (isExistName(name, session.players)) {
     throw new Error(`Invalid name string: ${name} exists in current session.`);
   }
 
   // addPlayer
-  const data: Data = getData();
   const playerId: number = ++data.sessions.playerCounter;
   const newPlayer: Player = {
     playerId,
@@ -51,9 +56,9 @@ export const playerJoin = (sessionId: number, name: string): PlayerId | ErrorObj
   return { playerId };
 };
 
-const findSession = (sessionId: number): QuizSession | undefined => {
+const findSession = (sessionId: number): number => {
   const data: Data = getData();
-  return data.quizSessions.find((session: QuizSession) =>
+  return data.quizSessions.findIndex((session: QuizSession) =>
     session.sessionId === sessionId);
 };
 

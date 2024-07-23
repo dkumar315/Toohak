@@ -1,33 +1,21 @@
-import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
+import { OK, BAD_REQUEST } from './dataStore';
+import { QuestionBody } from './quizQuestion';
+import { PlayerId } from './player';
 import {
-  authRegister, requestAuthLogout,
-  quizCreate, validQuizInfo, requestQuizRemove, requestQuizEmptyTrash,
-  questionCreate, requestQuizQuestionDelete, requestQuizQuestionDuplicate,
-  requestQuizSessionCreate, quizSessionCreate, requestPlayerJoin,
-  requestClear, ResSessionId, ResQuizInfo, ERROR, ResError, ResPlayerId
+  authRegister, quizCreate, requestQuizRemove, requestQuizEmptyTrash,
+  questionCreate, quizSessionCreate, requestPlayerJoin, requestClear,
+  ERROR, ResError, ResPlayerId
 } from './functionRequest';
-import {
-  QuestionBody
-} from './quizQuestion';
-import {
-  SessionLimits, QuizSessionId
-} from './quizSession';
-
-import {
-  PlayerId
-} from './player';
 
 beforeAll(requestClear);
 
-let token: string, quizId: number, questionId: number, sessionId: number;
-const autoStartNum: number = SessionLimits.AUTO_START_NUM_MAX - 1;
+let token: string, quizId: number, sessionId: number;
 let result: ResPlayerId | ResError;
-
 const validPlayerAdd: PlayerId = { playerId: expect.any(Number) };
 
 beforeEach(() => {
   requestClear();
-  token = authRegister('e@gmail.com', 'Passw0rd', 'nameFirst', 'nameLast').token;
+  token = authRegister('e@mail.com', 'Passw0rd', 'nameFirst', 'nameLast').token;
   quizId = quizCreate(token, 'time to start a kahoot', 'test you skill').quizId;
   const questionBody: QuestionBody = {
     question: `question of quiz ${quizId}`,
@@ -44,7 +32,7 @@ beforeEach(() => {
       }],
     thumbnailUrl: 'http://google.com/img_path.jpg'
   };
-  questionId = questionCreate(token, quizId, questionBody).questionId;
+  questionCreate(token, quizId, questionBody);
   sessionId = quizSessionCreate(token, quizId, 10).sessionId;
 });
 
@@ -86,11 +74,15 @@ describe('testing playerJoin POST /v1/player/join', () => {
 
   describe('test 2.0 invalid inputs', () => {
     test('test 2.1 sessionId not exist / incorrect format', () => {
+      result = requestPlayerJoin(sessionId - 1, 'name');
+      expect(result).toMatchObject(ERROR);
+      expect(result.status).toStrictEqual(BAD_REQUEST);
+
       result = requestPlayerJoin(sessionId + 1, 'name');
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(BAD_REQUEST);
     });
-    test.skip('test 2.2 sessionId refer to session with other than LOBBY state', () => {
+    test.skip('test 2.2 session not in LOBBY state', () => {
       // requires update session state
     });
     test('test 2.3 name of user is used in the session', () => {
@@ -105,7 +97,7 @@ describe('testing playerJoin POST /v1/player/join', () => {
   });
   describe('test 3.0 player data setup correctly', () => {
     test.skip('test 3.1 playerInfo: player initial state', () => {
-      // require player Info
+      // require player Info & sessionInfo
     });
   });
 });
