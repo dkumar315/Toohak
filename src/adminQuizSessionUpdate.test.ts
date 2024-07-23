@@ -13,7 +13,7 @@ import {
 
 beforeAll(() => requestClear());
 
-let token: string, quizId: number, questionId: number, sessionId: number;
+let token: string, quizId: number, sessionId: number;
 const autoStartNum: number = SessionLimits.AUTO_START_NUM_MAX - 1;;
 let result: ResEmpty | ResError;
 
@@ -36,7 +36,7 @@ beforeEach(() => {
       }],
     thumbnailUrl: 'http://google.com/img_path.jpg'
   };
-  questionId = questionCreate(token, quizId, questionBody).questionId;
+  questionCreate(token, quizId, questionBody);
   sessionId = quizSessionCreate(token, quizId, autoStartNum).sessionId;
 });
 
