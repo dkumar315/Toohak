@@ -25,6 +25,7 @@ export interface QuizInfoReturn {
   numQuestions: number,
   questions: Question[],
   duration: number,
+  thumbnailUrl: string,
 }
 
 export interface QuizTransfer {
@@ -33,16 +34,18 @@ export interface QuizTransfer {
   userEmail: string;
 }
 
+
+
 export function validateQuiz(authUserId: number, quizId: number): true | ErrorObject {
   const data: Data = getData();
 
   const quiz: Quiz | undefined = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (!quiz) {
-    return { error: `QuizId ${quizId} does not exist.` };
+    return { error: `Invalid Quiz quizId ${quizId} does not exist.` };
   }
 
   if (quiz.creatorId !== authUserId) {
-    return { error: `UserId ${authUserId} does not own QuizId ${quizId}.` };
+    return { error: `UserId ${authUserId} does not own quizId ${quizId}.` };
   }
 
   return true;
@@ -118,7 +121,8 @@ export function adminQuizCreate(token: string, name: string, description: string
     sessionCounter: 0,
     questions: [],
     duration: 0,
-    sessions: []
+    sessions: [],
+    thumbnailUrl: ''
   };
 
   data.quizzes.push(newQuiz);
@@ -191,6 +195,7 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
     numQuestions: quiz.numQuestions,
     questions: quiz.questions,
     duration: quiz.duration,
+    thumbnailUrl: quiz.thumbnailUrl,
   };
 }
 
@@ -428,4 +433,40 @@ export function adminQuizTransfer(transferData: QuizTransfer): EmptyObject | Err
 
   setData(data);
   return {};
+}
+export function updateQuizThumbnail(
+  quizId: number,
+  imgUrl: string,
+  token: string
+): true | ErrorObject {
+  const authUserId = findUserId(token);
+
+  if (authUserId === INVALID) {
+    return { error: 'Invalid token' };
+  }
+
+  const validation = validateQuiz(authUserId, quizId);
+  if (validation !== true) {
+    return validation;
+  }
+
+  if (!imgUrl.startsWith('http://') && !imgUrl.startsWith('https://')) {
+    return { error: 'The imgUrl does not begin with "http://" or "https://"' };
+  }
+
+  if (!/\.(jpg|jpeg|png)$/i.test(imgUrl)) {
+    return { error: 'The imgUrl does not end with one of the following filetypes: jpg, jpeg, png' };
+  }
+
+  const data = getData();
+  const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+
+  if (quiz) {
+    quiz.thumbnailUrl = imgUrl;
+    quiz.timeLastEdited = Date.now();
+    setData(data);
+    return true;
+  }
+
+  return { error: `QuizId ${quizId} does not exist.` };
 }

@@ -120,7 +120,9 @@ export function requestQuizEmptyTrash(token: string, quizIds: number[]): ApiResp
 export function requestQuizTransfer(transferData: QuizTransfer): ApiResponse<EmptyObject> {
   return requestHelper('POST', `/v1/admin/quiz/${transferData.quizId}/transfer`, transferData);
 }
-
+export function requestUpdateQuizThumbnail(token: string, quizId: number, imgUrl: string): ApiResponse<EmptyObject> {
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/thumbnail`, { token, imgUrl });
+}
 // ============== adminQuizQuestion ============================================
 export function requestQuizQuestionCreate(token: string, quizId: number,
   questionBody: QuestionBody): ApiResponse<QuestionIdReturn> {

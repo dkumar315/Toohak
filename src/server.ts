@@ -38,7 +38,7 @@ import {
   adminQuizList, adminQuizCreate, adminQuizRemove,
   adminQuizInfo, adminQuizNameUpdate,
   adminQuizDescriptionUpdate, adminQuizViewTrash,
-  adminQuizRestore, adminQuizTransfer, adminQuizTrashEmpty
+  adminQuizRestore, adminQuizTransfer, adminQuizTrashEmpty, updateQuizThumbnail
 } from './quiz';
 import {
   adminQuizQuestionCreate, adminQuizQuestionUpdate,
@@ -48,6 +48,7 @@ import {
   adminQuizSessionCreate
 } from './quizSession';
 import { clear } from './other';
+// import { request } from 'http';
 
 // Routes
 // Errors are thrown in the following order:
@@ -422,6 +423,24 @@ app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) =
     } else {
       return res.status(BAD_REQUEST).json({ error: error.message });
     }
+  }
+});
+
+// quizThumbnail
+// Routes
+app.put('/v1/admin/quiz/:quizid/thumbnail', (req: Request, res: Response) => {
+  const token = req.header('token') || '';
+  const quizId = parseInt(req.params.quizid);
+
+  const result = updateQuizThumbnail(quizId, req.body.imgUrl, token);
+  if (result === true) {
+    res.status(200).json({});
+  } else if (result.error.includes('token')) {
+    res.status(UNAUTHORIZED).json(result);
+  } else if (result.error.includes('quizId')) {
+    res.status(FORBIDDEN).json(result);
+  } else {
+    res.status(BAD_REQUEST).json(result);
   }
 });
 

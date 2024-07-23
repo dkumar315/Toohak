@@ -89,7 +89,7 @@ export interface Quiz {
   questions: Question[];
   duration: number; // in seconds
   sessions: QuizSession[];
-  // thumbnailUrl: string;
+  thumbnailUrl: string;
 }
 
 export interface Question {
