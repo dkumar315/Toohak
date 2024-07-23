@@ -14,8 +14,6 @@ export enum SessionLimits {
 
 export type QuizSessionId = { sessionId: number };
 
-// todo: undefined behaviour: forum #1214
-//
 /**
  * copies a quiz, and start a new session of a quiz
  *
@@ -61,7 +59,6 @@ function isValidIds(token: string, quizId: number) {
 
   isValidQuiz = findQuizIndex(data.trashedQuizzes, quizId, authUserId);
   if (isValidQuiz.isValid) {
-    if (isValidQuiz.errorMsg.includes('access denied')) return isValidQuiz;
     return errorReturn(`Invalid quiz in trash: ${quizId}.`);
   }
 
@@ -69,21 +66,24 @@ function isValidIds(token: string, quizId: number) {
 }
 
 function activeSessionsList(quiz: Quiz) {
+  const data: Data = getData();
   const activeSessions: number[] = [];
-  if (quiz.sessions.length === 0) return { activeSessions };
+  if (data.quizSessions.length === 0 || quiz.sessionIds.length === 0) {
+    return { activeSessions };
+  }
 
-  activeSessions.push(...quiz.sessions
-    .filter((session: QuizSession) => session.state !== States.END)
+  activeSessions.push(...data.quizSessions
+    .filter((session: QuizSession) => session.state !== States.END &&
+      quiz.quizId === session.metadata.quizId)
     .map((session: QuizSession) => session.sessionId));
 
   return { activeSessions };
 }
 
 function setNewSession(data: Data, quiz: Quiz, autoStartNum: number): number {
-  quiz.sessionCounter += 1;
-  const { sessions, questions, ...metaQuiz } = quiz;
+  const { sessionIds, questions, questionCounter, ...metaQuiz } = quiz;
   const newSession: QuizSession = {
-    sessionId: quiz.sessionCounter,
+    sessionId: ++data.sessions.quizSessionCounter,
     state: States.LOBBY,
     atQuestion: 0,
     players: [],
@@ -96,9 +96,11 @@ function setNewSession(data: Data, quiz: Quiz, autoStartNum: number): number {
         averageAnswerTime: 0,
         percentCorrect: 0
       }))
-    }
+    },
+    messages: []
   };
-  quiz.sessions.push(newSession);
+  data.quizSessions.push(newSession);
+  quiz.sessionIds.push(newSession.sessionId);
 
   setData(data);
   return newSession.sessionId;

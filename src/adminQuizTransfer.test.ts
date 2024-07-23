@@ -3,9 +3,6 @@ import {
   authRegister, requestAuthLogout, requestQuizCreate,
   requestQuizInfo, requestQuizTransfer, requestClear
 } from './functionRequest';
-import {
-  QuizTransfer
-} from './quiz';
 
 let token: string;
 let otherToken: string;
@@ -29,8 +26,7 @@ afterAll(() => requestClear());
 describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () => {
   describe('test1.0 valid returns (valid token and quizId)', () => {
     test('test1.1 valid transfer of a quiz to another user', () => {
-      const transferData: QuizTransfer = { token, quizId, userEmail: 'johnsmith@gmail.com' };
-      const result = requestQuizTransfer(transferData);
+      const result = requestQuizTransfer(token, quizId, 'johnsmith@gmail.com');
       expect(result).toStrictEqual({ status: OK });
       const quizInfo = requestQuizInfo(otherToken, quizId);
       expect(quizInfo).toMatchObject({ quizId: quizId, name: 'Test Quiz', description: 'This is a test quiz.' });
@@ -39,35 +35,30 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
 
   describe('test2.0 invalid returns', () => {
     test('test2.1 userEmail is not a real user', () => {
-      const transferData: QuizTransfer = { token, quizId, userEmail: 'nonexistentemail@gmail.com' };
-      const result = requestQuizTransfer(transferData);
+      const result = requestQuizTransfer(token, quizId, 'nonexistentemail@gmail.com');
       expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
     });
 
     test('test2.2 userEmail is the current logged in user', () => {
-      const transferData: QuizTransfer = { token, quizId, userEmail: 'krishpatel@gmail.com' };
-      const result = requestQuizTransfer(transferData);
+      const result = requestQuizTransfer(token, quizId, 'krishpatel@gmail.com');
       expect(result).toStrictEqual({ status: FORBIDDEN, error: expect.any(String) });
     });
 
     test('test2.3 quiz ID refers to a quiz that has a name that is already used by the target user', () => {
       requestQuizCreate(otherToken, 'Test Quiz', 'This is another test quiz.');
-      const transferData: QuizTransfer = { token, quizId, userEmail: 'johnsmith@gmail.com' };
-      const result = requestQuizTransfer(transferData);
+      const result = requestQuizTransfer(token, quizId, 'johnsmith@gmail.com');
       expect(result).toStrictEqual({ status: FORBIDDEN, error: expect.any(String) });
     });
 
     test('test2.4 token is empty or invalid (does not refer to valid logged in user session)', () => {
-      const transferData: QuizTransfer = { token: '', quizId, userEmail: 'johnsmith@gmail.com' };
-      const result = requestQuizTransfer(transferData);
+      const result = requestQuizTransfer('', quizId, 'johnsmith@gmail.com');
       expect(result).toStrictEqual({ status: UNAUTHORIZED, error: expect.any(String) });
     });
 
     test('test2.5 valid token is provided, but user is not an owner of this quiz or quiz doesn\'t exist', () => {
       const newToken = authRegister('marleyjhonson@gmail.com', 'Marleyjhonson0123', 'Marley', 'Jhonson').token;
-      const transferData: QuizTransfer = { token: newToken, quizId, userEmail: 'johnsmith@gmail.com' };
-      const result = requestQuizTransfer(transferData);
-      expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
+      const result = requestQuizTransfer(newToken, quizId, 'johnsmith@gmail.com');
+      expect(result).toStrictEqual({ status: FORBIDDEN, error: expect.any(String) });
     });
   });
 
@@ -76,8 +67,7 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
       const minimalQuizCreateResponse = requestQuizCreate(token, 'Min', 'D');
       if ('quizId' in minimalQuizCreateResponse) {
         const minimalQuizId = minimalQuizCreateResponse.quizId;
-        const transferData: QuizTransfer = { token, quizId: minimalQuizId, userEmail: 'johnsmith@gmail.com' };
-        const result = requestQuizTransfer(transferData);
+        const result = requestQuizTransfer(token, minimalQuizId, 'johnsmith@gmail.com');
         expect(result).toStrictEqual({ status: OK });
         const quizInfo = requestQuizInfo(otherToken, minimalQuizId);
         expect(quizInfo).toMatchObject({ quizId: minimalQuizId, name: 'Min', description: 'D' });
@@ -94,8 +84,7 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
       const maxQuizCreateResponse = requestQuizCreate(token, longName, longDescription);
       if ('quizId' in maxQuizCreateResponse) {
         const maxQuizId = maxQuizCreateResponse.quizId;
-        const transferData: QuizTransfer = { token, quizId: maxQuizId, userEmail: 'johnsmith@gmail.com' };
-        const result = requestQuizTransfer(transferData);
+        const result = requestQuizTransfer(token, maxQuizId, 'johnsmith@gmail.com');
         expect(result).toStrictEqual({ status: OK });
         const quizInfo = requestQuizInfo(otherToken, maxQuizId);
         expect(quizInfo).toMatchObject({ quizId: maxQuizId, name: longName, description: longDescription });
@@ -105,33 +94,28 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
     });
 
     test('test3.3 transferring a quiz multiple times', () => {
-      const transferData1: QuizTransfer = { token, quizId, userEmail: 'johnsmith@gmail.com' };
-      requestQuizTransfer(transferData1);
-      const transferData2: QuizTransfer = { token: otherToken, quizId, userEmail: 'marleyjhonson@gmail.com' };
-      const result = requestQuizTransfer(transferData2);
+      requestQuizTransfer(token, quizId, 'johnsmith@gmail.com');
+      const result = requestQuizTransfer(otherToken, quizId, 'marleyjhonson@gmail.com');
       expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
     });
 
     test('test3.4 transferring a quiz that never existed', () => {
       // Assuming this ID does not exist
       const nonExistentQuizId = 9999;
-      const transferData: QuizTransfer = { token, quizId: nonExistentQuizId, userEmail: 'johnsmith@gmail.com' };
-      const result = requestQuizTransfer(transferData);
-      expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
+      const result = requestQuizTransfer(token, nonExistentQuizId, 'johnsmith@gmail.com');
+      expect(result).toStrictEqual({ status: FORBIDDEN, error: expect.any(String) });
     });
 
     test('test3.5 transferring a quiz with an invalid quiz ID format', () => {
       // Assuming an invalid format (e.g., negative or non-numeric)
       const invalidQuizId = -1;
-      const transferData: QuizTransfer = { token, quizId: invalidQuizId, userEmail: 'johnsmith@gmail.com' };
-      const result = requestQuizTransfer(transferData);
-      expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
+      const result = requestQuizTransfer(token, invalidQuizId, 'johnsmith@gmail.com');
+      expect(result).toStrictEqual({ status: FORBIDDEN, error: expect.any(String) });
     });
 
     test('test3.6 transferring a quiz with a token from a user who is no longer active', () => {
       requestAuthLogout(token);
-      const transferData: QuizTransfer = { token, quizId, userEmail: 'johnsmith@gmail.com' };
-      const result = requestQuizTransfer(transferData);
+      const result = requestQuizTransfer(token, quizId, 'johnsmith@gmail.com');
       expect(result).toStrictEqual({ status: UNAUTHORIZED, error: expect.any(String) });
     });
 
@@ -140,8 +124,7 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
       // This would be specific to how your system handles token expiration
       // Simulating by clearing the session or setting token to expired status
       // const expiredToken = expireToken(token); // Hypothetical function
-      const transferData: QuizTransfer = { token: 'expiredToken', quizId, userEmail: 'johnsmith@gmail.com' };
-      const result = requestQuizTransfer(transferData);
+      const result = requestQuizTransfer('expiredToken', quizId, 'johnsmith@gmail.com');
       expect(result).toStrictEqual({ status: UNAUTHORIZED, error: expect.any(String) });
     });
 
@@ -149,14 +132,13 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
       // Simulate heavy load by running multiple requests
       const results = [];
       for (let i = 0; i < 100; i++) {
-        const transferData: QuizTransfer = { token, quizId, userEmail: 'johnsmith@gmail.com' };
-        results.push(requestQuizTransfer(transferData));
+        results.push(requestQuizTransfer(token, quizId, 'johnsmith@gmail.com'));
       }
       results.forEach(result => {
         if (result.status === OK) {
           expect(result).toStrictEqual({ status: OK });
         } else {
-          expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
+          expect(result).toStrictEqual({ status: FORBIDDEN, error: expect.any(String) });
         }
       });
     });
