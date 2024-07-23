@@ -444,6 +444,7 @@ export function updateQuizThumbnail(
   if (authUserId === INVALID) {
     return { error: 'Invalid token' };
   }
+  
 
   const validation = validateQuiz(authUserId, quizId);
   if (validation !== true) {
