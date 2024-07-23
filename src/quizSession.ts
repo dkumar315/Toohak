@@ -49,15 +49,6 @@ export function adminQuizSessionCreate(token: string, quizId: number,
   return { sessionId };
 }
 
-/**
- * check if a given token and quiz
- *
- * @param {string} token - a unique identifier for a login user
- * @param {number} quizId - a unique identifier for a valid quiz
- *
- * @return {object} quizId - unique identifier for a qiz of a user
- * @return {object} error - token, quizId, or questionBody invalid
- */
 function isValidIds(token: string, quizId: number) {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) return errorReturn(`Invalid token string: ${token}.`);
