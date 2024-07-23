@@ -13,13 +13,17 @@ import {
   SessionLimits, QuizSessionId
 } from './quizSession';
 
+import {
+  PlayerId
+} from './player';
+
 beforeAll(requestClear);
 
 let token: string, quizId: number, questionId: number, sessionId: number;
 const autoStartNum: number = SessionLimits.AUTO_START_NUM_MAX - 1;
 let result: ResPlayerId | ResError;
 
-const validPlayerAdd: PlayerId = { palyerId: expect.any(Number) };
+const validPlayerAdd: PlayerId = { playerId: expect.any(Number) };
 
 beforeEach(() => {
   requestClear();

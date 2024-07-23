@@ -244,16 +244,17 @@ function isValidIds(params: { token: string, quizId: number, questionId?: number
   if (!isValidObj.isValid) return isValidObj;
 
   // check questionId
-  if (questionId !== undefined) {
+  if (!questionId) {
     const isValidQuestionId: IsValid = findQuestionIndex(isValidObj.quizIndex, questionId);
     if (!isValidQuestionId.isValid) return isValidQuestionId;
     isValidObj.questionIndex = isValidQuestionId.questionIndex;
   }
 
-  if (questionBody !== undefined) {
+  if (!questionBody) {
     const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
     let duration: number = quiz.duration;
-    if (questionId !== undefined) duration -= quiz.questions[isValidObj.questionIndex].duration;
+
+    if (!questionId) duration -= quiz.questions[isValidObj.questionIndex].duration;
     const isValidQuestion: IsValid = isValidQuestionBody(questionBody, duration);
     if (!isValidQuestion.isValid) return isValidQuestion;
   }
