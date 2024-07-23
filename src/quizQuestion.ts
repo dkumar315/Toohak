@@ -322,7 +322,6 @@ function findQuestionIndex(quizIndex: number, questionId: number): IsValid {
 function isValidQuestionBody(questionBody: QuestionBody,
   quizDuration: number): IsValid {
   const { question, duration, points, answers, thumbnailUrl } = questionBody;
-  console.log(thumbnailUrl);
 
   if (question.length < QuestionLimit.MIN_LEN ||
     question.length > QuestionLimit.MAX_LEN) {
