@@ -14,9 +14,8 @@ tests:
   script:
     - SERVER_LOG=$(mktemp)
     - TEST_LOG=$(mktemp)
-    - npm run ts-node-coverage >& $SERVER_LOG &
+    - npm run start >& $SERVER_LOG &
     - sleep 2
-    - ps -o pid | egrep -q "^\s*${pid}$" || (cat $SERVER_LOG && exit 1)
     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
     - timeout -s SIGINT 180s npm t >& $TEST_LOG || (cat $SERVER_LOG && cat $TEST_LOG && exit 1)
     - kill -SIGINT %1
