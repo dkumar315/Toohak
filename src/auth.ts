@@ -251,13 +251,11 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string,
  * @return {string} token - unique identifier of a login user
  */
 function generateToken(userId: number): string {
-  const data: Data = getData();
-  data.sessions.globalCounter += 1;
-  setData(data);
-
   const timestamp: string = Date.now().toString();
-  const token: string = data.sessions.globalCounter.toString();
-  return `${timestamp}:${uuidv4()}:${userId}:${token}`;
+  const data: Data = getData();
+  const tokenId: number = ++data.sessions.tokenCounter;
+  setData(data);
+  return `${timestamp}:${uuidv4()}:${userId}:${tokenId}`;
 }
 
 /**
