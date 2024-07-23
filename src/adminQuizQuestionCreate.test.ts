@@ -17,36 +17,12 @@ const initQuestionBody: QuestionBody = {
   answers: [],
   thumbnailUrl: 'http://google.com/img_path.jpg'
 };
-
-const trueAnswer1: AnswerInput = {
-  answer: 'Victoria',
-  correct: true
-};
-
-const trueAnswer2: AnswerInput = {
-  answer: 'Snow White',
-  correct: true
-};
-
-const trueAnswer3: AnswerInput = {
-  answer: 'the Wicked Queen',
-  correct: true
-};
-
-const falseAnswer1: AnswerInput = {
-  answer: 'mirror',
-  correct: false
-};
-
-const falseAnswer2: AnswerInput = {
-  answer: 'Poisoned Apple',
-  correct: false
-};
-
-const falseAnswer3: AnswerInput = {
-  answer: 'Prince Florian',
-  correct: false
-};
+const trueAnswer1: AnswerInput = { answer: 'Victoria', correct: true };
+const trueAnswer2: AnswerInput = { answer: 'Snow White', correct: true };
+const trueAnswer3: AnswerInput = { answer: 'the Wicked Queen', correct: true };
+const falseAnswer1: AnswerInput = { answer: 'mirror', correct: false };
+const falseAnswer2: AnswerInput = { answer: 'Poisoned Apple', correct: false };
+const falseAnswer3: AnswerInput = { answer: 'Prince Florian', correct: false };
 
 let token: string, quizId: number, questionBody: QuestionBody;
 let result: ResQuestionId | ResError;
