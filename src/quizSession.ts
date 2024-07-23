@@ -49,15 +49,6 @@ export function adminQuizSessionCreate(token: string, quizId: number,
   return { sessionId };
 }
 
-/**
- * check if a given token and quiz
- *
- * @param {string} token - a unique identifier for a login user
- * @param {number} quizId - a unique identifier for a valid quiz
- *
- * @return {object} quizId - unique identifier for a qiz of a user
- * @return {object} error - token, quizId, or questionBody invalid
- */
 function isValidIds(token: string, quizId: number) {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) return errorReturn(`Invalid token string: ${token}.`);
@@ -75,21 +66,24 @@ function isValidIds(token: string, quizId: number) {
 }
 
 function activeSessionsList(quiz: Quiz) {
+  const data: Data = getData();
   const activeSessions: number[] = [];
-  if (quiz.sessions.length === 0) return { activeSessions };
+  if (data.quizSessions.length === 0 || quiz.sessionIds.length === 0) {
+    return { activeSessions };
+  }
 
-  activeSessions.push(...quiz.sessions
-    .filter((session: QuizSession) => session.state !== States.END)
+  activeSessions.push(...data.quizSessions
+    .filter((session: QuizSession) => session.state !== States.END &&
+      quiz.quizId === session.metadata.quizId)
     .map((session: QuizSession) => session.sessionId));
 
   return { activeSessions };
 }
 
 function setNewSession(data: Data, quiz: Quiz, autoStartNum: number): number {
-  quiz.sessionCounter += 1;
-  const { sessions, questions, ...metaQuiz } = quiz;
+  const { sessionIds, questions, questionCounter, ...metaQuiz } = quiz;
   const newSession: QuizSession = {
-    sessionId: quiz.sessionCounter,
+    sessionId: ++data.sessions.quizSessionCounter,
     state: States.LOBBY,
     atQuestion: 0,
     players: [],
@@ -102,9 +96,11 @@ function setNewSession(data: Data, quiz: Quiz, autoStartNum: number): number {
         averageAnswerTime: 0,
         percentCorrect: 0
       }))
-    }
+    },
+    messages: []
   };
-  quiz.sessions.push(newSession);
+  data.quizSessions.push(newSession);
+  quiz.sessionIds.push(newSession.sessionId);
 
   setData(data);
   return newSession.sessionId;

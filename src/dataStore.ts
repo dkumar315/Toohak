@@ -10,8 +10,11 @@ let data: Data = {
   sessions: {
     tokenCounter: 0,
     quizCounter: 0,
+    quizSessionCounter: 0,
+    playerCounter: 0,
     sessionIds: [],
   },
+  quizSessions: []
 };
 
 // define constants
@@ -52,11 +55,14 @@ export interface Data {
   quizzes: Quiz[];
   trashedQuizzes: Quiz[];
   sessions: Sessions;
+  quizSessions: QuizSession[];
 }
 
 export interface Sessions {
   tokenCounter: number;
   quizCounter: number;
+  playerCounter: number;
+  quizSessionCounter: number;
   sessionIds: Session[];
   keyPair?: KeyPair;
 }
@@ -91,11 +97,10 @@ export interface Quiz {
   creatorId: number;
   numQuestions: number;
   questionCounter: number;
-  sessionCounter: number;
   questions: Question[];
   duration: number; // in seconds
-  sessions: QuizSession[];
   // thumbnailUrl: string;
+  sessionIds: number[];
 }
 
 export interface Question {
@@ -118,12 +123,13 @@ export interface QuizSession {
   sessionId: number;
   state: State;
   atQuestion: number;
-  players: Player[];
   autoStartNum: number;
   metadata: Metadata;
+  messages: Message[];
+  players: Player[]
 }
 
-export interface Metadata extends Omit<Quiz, 'questions' | 'sessions'> {
+export interface Metadata extends Omit<Quiz, 'questions' | 'sessionIds' | 'questionCounter' > {
   questions: QuestionSession[]
 }
 
@@ -133,9 +139,18 @@ export interface QuestionSession extends Question {
   percentCorrect: number;
 }
 
+export interface Message {
+  messageBody: string,
+  playerId: number,
+  playerName: string
+  timeSent: number
+}
+
 interface Player {
   playerId: number;
-  playerName: string;
+  sessionId: number;
+  quizId: number;
+  name: string;
   points: number;
   numQuestions: number;
   answerIds: number[];

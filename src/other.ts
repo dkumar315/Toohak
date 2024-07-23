@@ -13,8 +13,11 @@ export function clear(): EmptyObject {
     sessions: {
       tokenCounter: 0,
       quizCounter: 0,
+      quizSessionCounter: 0,
+      playerCounter: 0,
       sessionIds: [],
     },
+    quizSessions: []
   };
 
   setData(data);
