@@ -45,7 +45,7 @@ import {
   adminQuizQuestionDelete, adminQuizQuestionMove, adminQuizQuestionDuplicate
 } from './quizQuestion';
 import {
-  adminQuizSessionCreate
+  adminQuizSessionCreate, adminQuizSessionUpdate
 } from './quizSession';
 import { clear } from './other';
 
@@ -413,6 +413,25 @@ app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) =
     const quizId = parseInt(req.params.quizid as string);
     const autoStartNum = req.body.autoStartNum;
     const result = adminQuizSessionCreate(token, quizId, autoStartNum);
+    res.json(result);
+  } catch (error) {
+    if (error.message.includes('token')) {
+      return res.status(UNAUTHORIZED).json({ error: error.message });
+    } else if (error.message.includes('quizId')) {
+      return res.status(FORBIDDEN).json({ error: error.message });
+    } else {
+      return res.status(BAD_REQUEST).json({ error: error.message });
+    }
+  }
+});
+
+app.put('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Response) => {
+  try {
+    const token = req.header('token');
+    const quizId = parseInt(req.params.quizid as string);
+    const sessionId = parseInt(req.params.sessionid as string);
+    const action = req.body.action;
+    const result = adminQuizSessionUpdate(token, quizId, sessionId, action);
     res.json(result);
   } catch (error) {
     if (error.message.includes('token')) {
