@@ -47,6 +47,9 @@ import {
 import {
   adminQuizSessionCreate
 } from './quizSession';
+import {
+  playerJoin
+} from './player';
 import { clear } from './other';
 
 // Routes
@@ -422,6 +425,17 @@ app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) =
     } else {
       return res.status(BAD_REQUEST).json({ error: error.message });
     }
+  }
+});
+
+// player
+// Allow a guest player to join a session
+app.post('/v1/player/join', (req: Request, res: Response) => {
+  try {
+    const result = playerJoin(req.body.sessionId, req.body.name);
+    res.json(result);
+  } catch (error) {
+    res.status(BAD_REQUEST).json({ error: error.message });
   }
 });
 
