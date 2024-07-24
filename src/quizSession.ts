@@ -1,8 +1,8 @@
 import {
-  getData, setData, Data, States, INVALID, Quiz, QuizSession
+  getData, setData, Data, States, INVALID, Quiz, QuizSession, UNAUTHORIZED, FORBIDDEN, BAD_REQUEST
 } from './dataStore';
 import {
-  findQuizIndex, IsValid, isValidErrorReturn as errorReturn
+  findQuizIndex, IsValid
 } from './quizQuestion';
 import { findUserId } from './auth';
 
@@ -49,9 +49,52 @@ export function adminQuizSessionCreate(token: string, quizId: number,
   return { sessionId };
 }
 
-function isValidIds(token: string, quizId: number) {
+/**
+ * Retrieves active and inactive session ids for a quiz.
+ *
+ * @param {string} token - A unique identifier for a logged-in user.
+ * @param {number} quizId - A unique identifier for a valid quiz.
+ *
+ * @returns {object} - An object containing arrays of active and inactive session ids.
+ * @returns {number[]} activeSessions - An array of active session ids.
+ * @returns {number[]} inactiveSessions - An array of inactive session ids.
+ * @throws {Error} - Throws an error if the token or quizId is invalid, with an associated status code.
+ */
+export function adminQuizSessionList(token: string, quizId: number) {
+  const isValidObj: IsValid = isValidIds(token, quizId);
+  if (!isValidObj.isValid) {
+    console.log('Error:', isValidObj.errorMsg, 'Status:', isValidObj.status);
+    const error = new Error(isValidObj.errorMsg) as Error & { status: number };
+    error.status = isValidObj.status || BAD_REQUEST;
+    throw error;
+  }
+
+  const data: Data = getData();
+
+  const activeSessions = data.quizSessions
+    .filter(session => session.state !== States.END)
+    .map(session => session.sessionId)
+    .sort((a, b) => a - b);
+
+  const inactiveSessions = data.quizSessions
+    .filter(session => session.state === States.END)
+    .map(session => session.sessionId)
+    .sort((a, b) => a - b);
+
+  return { activeSessions, inactiveSessions };
+}
+
+function isValidIds(token: string, quizId: number): IsValid {
   const authUserId: number = findUserId(token);
-  if (authUserId === INVALID) return errorReturn(`Invalid token string: ${token}.`);
+  if (authUserId === INVALID) {
+    console.log('Invalid token');
+    return { isValid: false, errorMsg: `Invalid token string: ${token}`, status: UNAUTHORIZED };
+  }
+
+  if (quizId <= 0) {
+    console.log('Invalid quizId format');
+    return { isValid: false, errorMsg: `Invalid quizId number: ${quizId}`, status: BAD_REQUEST };
+  }
 
   const data: Data = getData();
   let isValidQuiz: IsValid = findQuizIndex(data.quizzes, quizId, authUserId);
@@ -59,10 +102,12 @@ function isValidIds(token: string, quizId: number) {
 
   isValidQuiz = findQuizIndex(data.trashedQuizzes, quizId, authUserId);
   if (isValidQuiz.isValid) {
-    return errorReturn(`Invalid quiz in trash: ${quizId}.`);
+    console.log('Quiz in trash');
+    return { isValid: false, errorMsg: `Invalid quiz in trash: ${quizId}`, status: FORBIDDEN };
   }
 
-  return isValidQuiz;
+  console.log('Invalid quizId number');
+  return { isValid: false, errorMsg: `Invalid quizId number: ${quizId}`, status: FORBIDDEN };
 }
 
 function activeSessionsList(quiz: Quiz) {
