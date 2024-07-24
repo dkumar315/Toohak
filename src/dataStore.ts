@@ -100,8 +100,8 @@ export interface Quiz {
   questionCounter: number;
   questions: Question[];
   duration: number; // in seconds
-  // thumbnailUrl: string;
   sessionIds: number[];
+  thumbnailUrl: string;
 }
 
 export interface Question {

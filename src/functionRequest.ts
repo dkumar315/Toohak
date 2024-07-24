@@ -176,7 +176,13 @@ export function requestQuizTransfer(
   return requestHelper('POST', `/v1/admin/quiz/${quizId}/transfer`,
     { token, quizId, email });
 }
-
+export function requestUpdateQuizThumbnail(
+  token: string,
+  quizId: number,
+  imgUrl: string
+): ApiResponse<EmptyObject> {
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/thumbnail`, { token, imgUrl });
+}
 // ============== adminQuizQuestion ============================================
 export function requestQuizQuestionCreate(
   token: string,
