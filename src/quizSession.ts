@@ -24,7 +24,6 @@ export type QuizSessionId = { sessionId: number };
  * @return {object} quizId - unique identifier for a qiz of a user
  * @return {object} error - token, quizId, or questionBody invalid
  */
-
 export function adminQuizSessionCreate(token: string, quizId: number,
   autoStartNum: number): QuizSessionId {
   const isValidObj: IsValid = isValidIds(token, quizId);

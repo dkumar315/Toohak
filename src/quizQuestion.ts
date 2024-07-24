@@ -16,7 +16,6 @@ export enum AnswersLimit {
   MAX_STR_LEN = 30
 }
 
-
 export enum DurationLimit {
   MIN_QUESTION_SECS = 1,
   MIN_QUIZ_SUM_MINS = 3,

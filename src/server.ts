@@ -295,7 +295,6 @@ app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
   let message = `Unknown error: ${error}`;
   let statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
 
-  
   if (error instanceof Error) {
     message = error.message;
     if (message.includes('token')) {
