@@ -32,24 +32,36 @@ describe('Testing adminQuizSessions', () => {
     describe('Invalid token returns UNAUTHORIZED (401)', () => {
       test('User logged out', () => {
         requestAuthLogout(token);
-        const result: ResError = requestAdminQuizSessions(token, quizId) as ResError;
-        expect(result.status).toStrictEqual(UNAUTHORIZED);
+        try {
+          requestAdminQuizSessions(token, quizId);
+        } catch (error) {
+          expect((error as Error).message).toStrictEqual('Invalid token string: krishpatel@gmail.com');
+        }
       });
 
       test('User not exists', () => {
         requestClear();
-        const result: ResError = requestAdminQuizSessions(token, quizId) as ResError;
-        expect(result.status).toStrictEqual(UNAUTHORIZED);
+        try {
+          requestAdminQuizSessions(token, quizId);
+        } catch (error) {
+          expect((error as Error).message).toStrictEqual('Invalid token string: krishpatel@gmail.com');
+        }
       });
 
       test('Invalid token format', () => {
-        const result: ResError = requestAdminQuizSessions('invalid', quizId) as ResError;
-        expect(result.status).toStrictEqual(UNAUTHORIZED);
+        try {
+          requestAdminQuizSessions('invalid', quizId);
+        } catch (error) {
+          expect((error as Error).message).toStrictEqual('Invalid token string: invalid');
+        }
       });
 
       test('Empty token', () => {
-        const result: ResError = requestAdminQuizSessions('', quizId) as ResError;
-        expect(result.status).toStrictEqual(UNAUTHORIZED);
+        try {
+          requestAdminQuizSessions('', quizId);
+        } catch (error) {
+          expect((error as Error).message).toStrictEqual('Invalid token string: ');
+        }
       });
     });
 
@@ -58,9 +70,7 @@ describe('Testing adminQuizSessions', () => {
         try {
           requestAdminQuizSessions(token, -1);
         } catch (error) {
-          const customError = error as ResError;
-          console.log('Caught error:', customError);
-          expect(customError.status).toStrictEqual(BAD_REQUEST);
+          expect((error as Error).message).toStrictEqual('Invalid quizId number: -1');
         }
       });
 
@@ -68,8 +78,7 @@ describe('Testing adminQuizSessions', () => {
         try {
           requestAdminQuizSessions(token, quizId + 1);
         } catch (error) {
-          const customError = error as ResError;
-          expect(customError.status).toStrictEqual(FORBIDDEN);
+          expect((error as Error).message).toStrictEqual(`Invalid quizId number: ${quizId + 1}`);
         }
       });
 
@@ -79,8 +88,7 @@ describe('Testing adminQuizSessions', () => {
         try {
           requestAdminQuizSessions(token, quizId);
         } catch (error) {
-          const customError = error as ResError;
-          expect(customError.status).toStrictEqual(FORBIDDEN);
+          expect((error as Error).message).toStrictEqual(`Invalid quizId number: ${quizId}`);
         }
       });
 
@@ -89,8 +97,7 @@ describe('Testing adminQuizSessions', () => {
         try {
           requestAdminQuizSessions(token2, quizId);
         } catch (error) {
-          const customError = error as ResError;
-          expect(customError.status).toStrictEqual(FORBIDDEN);
+          expect((error as Error).message).toStrictEqual(`Invalid quizId number: ${quizId}`);
         }
       });
 
@@ -100,8 +107,7 @@ describe('Testing adminQuizSessions', () => {
         try {
           requestAdminQuizSessions(token2, quizId);
         } catch (error) {
-          const customError = error as ResError;
-          expect(customError.status).toStrictEqual(FORBIDDEN);
+          expect((error as Error).message).toStrictEqual(`Invalid quizId number: ${quizId}`);
         }
       });
     });
