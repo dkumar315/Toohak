@@ -48,7 +48,8 @@ import {
   adminQuizQuestionDelete, adminQuizQuestionMove, adminQuizQuestionDuplicate
 } from './quizQuestion';
 import {
-  adminQuizSessionCreate
+  adminQuizSessionCreate,
+  adminQuizSessionList
 } from './quizSession';
 import {
   playerJoin
@@ -258,6 +259,13 @@ app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) =
   res.json(adminQuizSessionCreate(token, quizId, req.body.autoStartNum));
 });
 
+// Get active and inactive session ids for a quiz
+app.get('/v1/admin/quiz/:quizid/sessions', (req: Request, res: Response) => {
+  const token = req.header('token');
+  const quizId = parseInt(req.params.quizid as string);
+  res.json(adminQuizSessionList(token, quizId));
+});
+
 // ====================================================================
 //                          player
 // ====================================================================
@@ -271,6 +279,7 @@ app.post('/v1/player/join', (req: Request, res: Response) => {
 //                          other
 // ====================================================================
 
+// other
 // Reset the state of the application back to the start
 app.delete('/v1/clear', (req: Request, res: Response) => {
   res.json(clear());
@@ -324,7 +333,7 @@ app.use((req: Request, res: Response) => {
 // start server
 const server = app.listen(PORT, HOST, () => {
   // DO NOT CHANGE THIS LINE
-  console.log(`⚡️ Server started on port ${PORT} at ${HOST}`);
+  console.log(`⚡ Server started on port ${PORT} at ${HOST}`);
 });
 
 // For coverage, handle Ctrl+C gracefully
