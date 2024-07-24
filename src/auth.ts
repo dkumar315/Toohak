@@ -277,14 +277,10 @@ function generateToken(userId: number): string {
 }
 
 /**
- * Return the hash of a string
- */
-export function getHashOf(plaintext: string): string {
-  return crypto.createHash('sha256').update(plaintext).digest('hex');
-}
-
-/**
- * Generate and push a session
+ * Save the session into data
+ *
+ * @param {number} authUserId - a unique identifier of a user
+ * @param {string} token - a unique identifier of user activitives
  */
 function addSession(authUserId: number, token: string): void {
   const data: Data = getData();
@@ -296,15 +292,47 @@ function addSession(authUserId: number, token: string): void {
   setData(data);
 }
 
+/**
+ * Process a hash for storing
+ *
+ * @param {string} plaintext - the text to be hash
+ *
+ * @return {string} hash - the hash of the text
+ */
+export function getHashOf(plaintext: string): string {
+  return crypto.createHash('sha256').update(plaintext).digest('hex');
+}
+
+/**
+ * Return for processing a password
+ *
+ * @param {string} plaintext - a unique identifier of a user
+ *
+ * @return {string} processedHash - the storing part of hash
+ */
 const hashPassword = (plaintext: string): string => {
   return getHashOf(Secret.SALT + getHashOf(plaintext));
 };
 
+/**
+ * Return the hash string for storing
+ *
+ * @param {string} plaintext - a unique identifier of a user
+ *
+ * @return {string} storeData - the storing part of hash + random
+ */
 const storedHash = (hash: string): string => {
   const random: string = crypto.randomBytes(Secret.RANDOM_BYTE_LEN).toString('hex');
   return `${hashPassword(hash)}${random}`;
 };
 
+/**
+ * Return the hash string before processing
+ *
+ * @param {string} storeData - the storing hash
+ *
+ * @return {string} processedHash - the storing part of hash
+ */
 const vertifyPassword = (storedHash: string): string => {
   return storedHash.slice(0, -Secret.RANDOM_STR_LEN);
 };

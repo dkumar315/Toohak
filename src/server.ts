@@ -40,7 +40,7 @@ import {
 } from './auth';
 import {
   adminQuizList, adminQuizCreate, adminQuizRemove, adminQuizInfo,
-  adminQuizNameUpdate, adminQuizDescriptionUpdate,
+  adminQuizNameUpdate, adminQuizDescriptionUpdate, updateQuizThumbnail,
   adminQuizViewTrash, adminQuizRestore, adminQuizTransfer, adminQuizTrashEmpty
 } from './quiz';
 import {
@@ -50,7 +50,11 @@ import {
 import {
   adminQuizSessionCreate
 } from './quizSession';
+import {
+  playerJoin
+} from './player';
 import { clear } from './other';
+// import { request } from 'http';
 
 // ====================================================================
 // ============= ROUTES ARE DEFINED BELOW THIS LINE ===================
@@ -242,6 +246,11 @@ app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request,
   res.json(adminQuizQuestionDuplicate(token, quizId, questionId));
 });
 
+app.put('/v1/admin/quiz/:quizid/thumbnail', (req: Request, res: Response) => {
+  const token = req.header('token') || '';
+  const quizId = parseInt(req.params.quizid);
+  res.json(updateQuizThumbnail(quizId, req.body.imgUrl, token));
+});
 // ====================================================================
 //                          adminQuizSession
 // ====================================================================
@@ -251,6 +260,15 @@ app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) =
   const token: string = req.header('token');
   const quizId: number = parseInt(req.params.quizid as string);
   res.json(adminQuizSessionCreate(token, quizId, req.body.autoStartNum));
+});
+
+// ====================================================================
+//                          player
+// ====================================================================
+
+//
+app.post('/v1/player/join', (req: Request, res: Response) => {
+  res.json(playerJoin(req.body.sessionId, req.body.name));
 });
 
 // ====================================================================

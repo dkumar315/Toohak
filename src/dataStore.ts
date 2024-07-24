@@ -100,8 +100,8 @@ export interface Quiz {
   questionCounter: number;
   questions: Question[];
   duration: number; // in seconds
-  // thumbnailUrl: string;
   sessionIds: number[];
+  thumbnailUrl: string;
 }
 
 export interface Question {
@@ -147,13 +147,10 @@ export interface Message {
   timeSent: number
 }
 
-interface Player {
+export interface Player {
   playerId: number;
-  sessionId: number;
-  quizId: number;
   name: string;
   points: number;
-  numQuestions: number;
   answerIds: number[];
   timeTaken: number;
 }
