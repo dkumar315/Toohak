@@ -102,6 +102,10 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
 
 // Logs out an admin user who has active user session
 app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
+  res.json(adminAuthLogout(req.body.token));
+});
+
+app.post('/v2/admin/auth/logout', (req: Request, res: Response) => {
   res.json(adminAuthLogout(req.header('token')));
 });
 

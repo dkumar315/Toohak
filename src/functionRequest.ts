@@ -70,10 +70,16 @@ export function requestAuthLogin(
   return requestHelper('POST', '/v1/admin/auth/login', { email, password });
 }
 
+export function requestAuthLogoutV1(
+  token: string
+): ApiResponse<EmptyObject> {
+  return requestHelper('POST', '/v1/admin/auth/logout', { token }, {});
+}
+
 export function requestAuthLogout(
   token: string
 ): ApiResponse<EmptyObject> {
-  return requestHelper('POST', '/v1/admin/auth/logout', { token });
+  return requestHelper('POST', '/v2/admin/auth/logout', {}, { token });
 }
 
 // ============== adminUser ====================================================
