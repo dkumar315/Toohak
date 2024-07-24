@@ -24,7 +24,7 @@ describe('Testing adminQuizSessions', () => {
     test('Valid request returns active and inactive sessions', () => {
       const result: ResQuizSessions = requestAdminQuizSessions(token, quizId) as ResQuizSessions;
       expect(result).toMatchObject(VALID_RESPONSE);
-      expect(result.status).toBe(OK);
+      expect(result.status).toStrictEqual(OK);
     });
   });
 
@@ -33,34 +33,34 @@ describe('Testing adminQuizSessions', () => {
       test('User logged out', () => {
         requestAuthLogout(token);
         const result: ResError = requestAdminQuizSessions(token, quizId) as ResError;
-        expect(result.status).toBe(UNAUTHORIZED);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
 
       test('User not exists', () => {
         requestClear();
         const result: ResError = requestAdminQuizSessions(token, quizId) as ResError;
-        expect(result.status).toBe(UNAUTHORIZED);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
 
       test('Invalid token format', () => {
         const result: ResError = requestAdminQuizSessions('invalid', quizId) as ResError;
-        expect(result.status).toBe(UNAUTHORIZED);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
 
       test('Empty token', () => {
         const result: ResError = requestAdminQuizSessions('', quizId) as ResError;
-        expect(result.status).toBe(UNAUTHORIZED);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
     });
 
     describe('Invalid quizId returns FORBIDDEN (403)', () => {
       test('Invalid quizId format', () => {
         try {
-          // const result: ResError = requestAdminQuizSessions(token, -1) as ResError;
+          requestAdminQuizSessions(token, -1);
         } catch (error) {
           const customError = error as ResError;
           console.log('Caught error:', customError);
-          expect(customError.status).toBe(BAD_REQUEST);
+          expect(customError.status).toStrictEqual(BAD_REQUEST);
         }
       });
 
@@ -69,7 +69,7 @@ describe('Testing adminQuizSessions', () => {
           requestAdminQuizSessions(token, quizId + 1);
         } catch (error) {
           const customError = error as ResError;
-          expect(customError.status).toBe(FORBIDDEN);
+          expect(customError.status).toStrictEqual(FORBIDDEN);
         }
       });
 
@@ -80,7 +80,7 @@ describe('Testing adminQuizSessions', () => {
           requestAdminQuizSessions(token, quizId);
         } catch (error) {
           const customError = error as ResError;
-          expect(customError.status).toBe(FORBIDDEN);
+          expect(customError.status).toStrictEqual(FORBIDDEN);
         }
       });
 
@@ -90,7 +90,7 @@ describe('Testing adminQuizSessions', () => {
           requestAdminQuizSessions(token2, quizId);
         } catch (error) {
           const customError = error as ResError;
-          expect(customError.status).toBe(FORBIDDEN);
+          expect(customError.status).toStrictEqual(FORBIDDEN);
         }
       });
 
@@ -101,7 +101,7 @@ describe('Testing adminQuizSessions', () => {
           requestAdminQuizSessions(token2, quizId);
         } catch (error) {
           const customError = error as ResError;
-          expect(customError.status).toBe(FORBIDDEN);
+          expect(customError.status).toStrictEqual(FORBIDDEN);
         }
       });
     });
