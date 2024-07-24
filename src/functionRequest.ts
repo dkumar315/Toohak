@@ -240,7 +240,7 @@ export function requestQuizSessionCreate(
 }
 
 export function requestAdminQuizSessions(
-  token: string, quizId: number): 
+  token: string, quizId: number):
   ApiResponse<{ activeSessions: number[], inactiveSessions: number[] }> {
   return requestHelper('GET', `/v1/admin/quiz/${quizId}/sessions`, { token });
 }
