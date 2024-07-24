@@ -34,6 +34,8 @@ export interface IsValid {
   quizIndex?: number;
   questionIndex?: number;
   errorMsg?: string;
+  status?: number;
+
 }
 export interface QuestionBody {
   question: string;
