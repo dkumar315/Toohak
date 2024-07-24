@@ -50,6 +50,9 @@ import {
 import {
   adminQuizSessionCreate
 } from './quizSession';
+import {
+  playerJoin
+} from './player';
 import { clear } from './other';
 // import { request } from 'http';
 
@@ -253,6 +256,15 @@ app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) =
   const token: string = req.header('token');
   const quizId: number = parseInt(req.params.quizid as string);
   res.json(adminQuizSessionCreate(token, quizId, req.body.autoStartNum));
+});
+
+// ====================================================================
+//                          player
+// ====================================================================
+
+//
+app.post('/v1/player/join', (req: Request, res: Response) => {
+  res.json(playerJoin(req.body.sessionId, req.body.name));
 });
 
 // ====================================================================

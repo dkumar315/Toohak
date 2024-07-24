@@ -147,13 +147,10 @@ export interface Message {
   timeSent: number
 }
 
-interface Player {
+export interface Player {
   playerId: number;
-  sessionId: number;
-  quizId: number;
   name: string;
   points: number;
-  numQuestions: number;
   answerIds: number[];
   timeTaken: number;
 }

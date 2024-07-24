@@ -9,6 +9,7 @@ import { TokenReturn, UserDetailReturn } from './auth';
 import { QuizListReturn, QuizCreateReturn, QuizInfoReturn } from './quiz';
 import { QuestionBody, QuestionIdReturn, NewQuestionIdReturn } from './quizQuestion';
 import { QuizSessionId } from './quizSession';
+import { PlayerId } from './player';
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
 type Header = EmptyObject | { token: string };
@@ -238,6 +239,13 @@ export function requestQuizSessionCreate(
     { token, autoStartNum });
 }
 
+// ============== player =======================================================
+export function requestPlayerJoin(
+  sessionId: number, name: string
+): ApiResponse<PlayerId> {
+  return requestHelper('POST', '/v1/player/join', { sessionId, name });
+}
+
 // ============== other ========================================================
 export function requestClear(): ApiResponse<EmptyObject> {
   return requestHelper('DELETE', '/v1/clear', {});
@@ -252,6 +260,7 @@ export type ResQuizInfo = ResValid<QuizInfoReturn>;
 export type ResQuestionId = ResValid<QuestionIdReturn>;
 export type ResNewQuestionId = ResValid<NewQuestionIdReturn>;
 export type ResSessionId = ResValid<QuizSessionId>;
+export type ResPlayerId = ResValid<PlayerId>;
 
 export const authRegister = (email: string, password: string,
   nameFirst: string, nameLast: string): ResToken =>
