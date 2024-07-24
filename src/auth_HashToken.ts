@@ -1,6 +1,5 @@
-import { setData, getData, getKey } from './dataStore';
+import { setData, getData } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
-import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -16,12 +15,8 @@ enum UserLimits {
 enum Secret {
   RANDOM_BYTE_LEN = 8,
   RANDOM_STR_LEN = 16,
-  SALT = 'SeCret'
+  SECRET = 'SeCret'
 }
-
-type Algorithms = 'HS256' | 'RS256' | 'ES256' | 'PS256';
-const ALGORITHM: Algorithms = 'RS256';
-const TOKEN_EXPIRY = '9999 years';
 
 export interface UserDetails {
   userId: number;
@@ -50,7 +45,8 @@ export interface TokenReturn {
  * @return {string} token - unique identifier for a user
  * @return {object} error - if email, password, nameFirst, nameLast invalid
  */
-export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string): TokenReturn | ErrorObject {
+export function adminAuthRegister(email: string, password: string,
+  nameFirst: string, nameLast: string): TokenReturn | ErrorObject {
   // Check if email is valid or already exists
   if (!isValidEmail(email, INVALID)) {
     throw new Error(`Email invalid format or already in use ${email}.`);
@@ -79,7 +75,7 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
     nameFirst: nameFirst,
     nameLast: nameLast,
     email: email,
-    password: storedHash(password),
+    password: storeHash(password),
     numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
   };
@@ -109,7 +105,7 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
   }
 
   const user: User = data.users[userIndex];
-  if (hashPassword(password) !== vertifyPassword(user.password)) {
+  if (hashText(password) !== vertifyHash(user.password)) {
     user.numFailedPasswordsSinceLastLogin += 1;
     setData(data);
     throw new Error(`Invalid password ${password}.`);
@@ -136,13 +132,10 @@ export function adminAuthLogin(email: string, password: string): TokenReturn | E
  */
 export function adminAuthLogout(token: string): EmptyObject | ErrorObject {
   const data: Data = getData();
-  const sessionIndex: number = data.sessions.sessionIds.findIndex(session =>
-    session.token === token
-  );
-
+  const sessionIndex: number = findSessionIndex(token);
   if (sessionIndex === INVALID) throw new Error(`Invalid token ${token}.`);
-  data.sessions.sessionIds.splice(sessionIndex, 1);
 
+  data.sessions.sessionIds.splice(sessionIndex, 1);
   setData(data);
   return {};
 }
@@ -230,7 +223,7 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string,
   const user: User = data.users[userIndex];
 
   // check whether oldPassword matches the user's password
-  if (vertifyPassword(user.password) !== hashPassword(oldPassword)) {
+  if (vertifyHash(user.password) !== hashText(oldPassword)) {
     throw new Error(`Invalid oldPassword ${oldPassword}.`);
   }
 
@@ -238,12 +231,13 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string,
   user.passwordHistory = user.passwordHistory || [];
   if (oldPassword === newPassword || !isValidPassword(newPassword) ||
     user.passwordHistory.some(oldPassword =>
-      vertifyPassword(oldPassword) === hashPassword(newPassword))) {
+      vertifyHash(oldPassword) === hashText(newPassword))) {
     throw new Error(`Invalid newPassword ${newPassword}.`);
   }
 
+  // if all input valid, then update the password
   user.passwordHistory.push(user.password);
-  user.password = storedHash(newPassword);
+  user.password = storeHash(newPassword);
   setData(data);
 
   return {};
@@ -252,61 +246,65 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string,
 /**
  * Generate a token that is globally unique, assume token never expire
  *
- * @param {string} email - user email, globally unique
- * @param {string} password - user password
+ * @param {string} userId - user identifier for easier debug
  *
  * @return {string} token - unique identifier of a login user
  */
 function generateToken(userId: number): string {
-  const header = { alg: ALGORITHM, typ: 'JWT' };
   const data: Data = getData();
-  const payload = {
-    jti: uuidv4(),
-    userId: userId,
-    tokenId: ++data.sessions.tokenCounter,
-    issueAt: Math.floor(Date.now() / 1000)
-  };
-
-  const token: string = jwt.sign(payload, getKey().privateKey, {
-    algorithm: ALGORITHM,
-    header,
-    expiresIn: TOKEN_EXPIRY
-  });
-
-  return token;
+  const timestamp: number = Date.now();
+  const token: number = ++data.sessions.tokenCounter;
+  return `${timestamp}:${uuidv4()}:${userId}:${token}`;
 }
 
 /**
- * Return the hash of a string
+ * Return a SHA-256 hash of the input string
  */
-export function getHashOf(plaintext: string): string {
+const getHashOf = (plaintext: string): string => {
   return crypto.createHash('sha256').update(plaintext).digest('hex');
-}
+};
 
 /**
  * Generate and push a session
  */
 function addSession(authUserId: number, token: string): void {
-  const data: Data = getData();
   const newSession: Session = {
     userId: authUserId,
-    token: token
+    token: `${storeHash(token)}`
   };
+
+  const data: Data = getData();
   data.sessions.sessionIds.push(newSession);
   setData(data);
 }
 
-const hashPassword = (plaintext: string): string => {
-  return getHashOf(Secret.SALT + getHashOf(plaintext));
+const hashText = (plainText: string): string => {
+  return getHashOf(Secret.SECRET + getHashOf(plainText));
 };
 
-const storedHash = (hash: string): string => {
-  const random: string = crypto.randomBytes(Secret.RANDOM_BYTE_LEN).toString('hex');
-  return `${hashPassword(hash)}${random}`;
+const randomText = (): string => {
+  return crypto.randomBytes(Secret.RANDOM_BYTE_LEN).toString('hex');
 };
 
-const vertifyPassword = (storedHash: string): string => {
-  return storedHash.slice(0, -Secret.RANDOM_STR_LEN);
+const storeHash = (hash: string): string => {
+  return `${hashText(hash)}${randomText()}`;
+};
+
+const vertifyHash = (storeHash: string): string => {
+  return storeHash.slice(0, -Secret.RANDOM_STR_LEN);
+};
+
+/**
+ * Given an admin user's token, find its sessionIndex in data
+ *
+ * @param {string} token - unique identifier for a user
+ *
+ * @return {number} sessionIndex - corresponding session of a token
+ */
+const findSessionIndex = (token: string): number => {
+  const data: Data = getData();
+  return data.sessions.sessionIds.findIndex(session =>
+    vertifyHash(session.token) === hashText(token));
 };
 
 /**
@@ -318,24 +316,9 @@ const vertifyPassword = (storedHash: string): string => {
  */
 export function findUserId(token: string): number {
   const data: Data = getData();
-  if (token === '') return INVALID;
-  try {
-    const decoded = jwt.decode(token);
-    if (!decoded || typeof decoded === 'string' || !decoded.userId) return INVALID;
-
-    const isValid = jwt.verify(token, getKey().publicKey,
-      { algorithms: [ALGORITHM] }) as { userId: number };
-    if (!isValid) return INVALID;
-
-    const session: Session = data.sessions.sessionIds.find(session =>
-      session.token === token
-    );
-    if (!session || session.userId !== isValid.userId) return INVALID;
-
-    return session.userId;
-  } catch (error) {
-    return INVALID;
-  }
+  const sessionIndex: number = findSessionIndex(token);
+  if (sessionIndex === INVALID) return INVALID;
+  return data.sessions.sessionIds[sessionIndex].userId;
 }
 
 /**

@@ -1,6 +1,8 @@
 import fs from 'fs';
 const DATA_FILE = './dataStore.json';
 import { StatusCodes } from 'http-status-codes';
+import crypto from 'crypto';
+const SECURE_FILE = 'hs256_secret_key.txt';
 
 // YOU SHOULD MODIFY THIS OBJECT BELOW ONLY
 let data: Data = {
@@ -64,7 +66,6 @@ export interface Sessions {
   playerCounter: number;
   quizSessionCounter: number;
   sessionIds: Session[];
-  keyPair?: KeyPair;
 }
 
 export interface Session {
@@ -199,3 +200,22 @@ function loadData(): void {
 function saveData(data: Data): void {
   fs.writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' });
 }
+
+/**
+ * get the keyPair from the storage
+ *
+ */
+export const getKey = (): KeyPair => {
+  if (!fs.existsSync(SECURE_FILE)) {
+    const keyPair: KeyPair = crypto.generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+      publicKeyEncoding: { type: 'spki', format: 'pem' },
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+    });
+
+    fs.writeFileSync(SECURE_FILE, JSON.stringify(keyPair));
+    return keyPair;
+  }
+
+  return JSON.parse(fs.readFileSync(SECURE_FILE, 'utf8'));
+};
