@@ -269,6 +269,7 @@ export type ResSessionId = ResValid<QuizSessionId>;
 export type ResPlayerId = ResValid<PlayerId>;
 export type ResQuizSessions = ResValid<{ activeSessions: number[], inactiveSessions: number[] }>;
 
+
 export const authRegister = (email: string, password: string,
   nameFirst: string, nameLast: string): ResToken =>
   requestAuthRegister(email, password, nameFirst, nameLast) as ResToken;
