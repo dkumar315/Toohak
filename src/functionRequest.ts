@@ -25,15 +25,10 @@ type ApiResponse<T> = ResValid<T> | ResError;
 function requestHelper<T>(
   method: HttpVerb,
   path: string,
-  payload: object
+  payload: object,
+  headers: Header
 ): ApiResponse<T> {
   let res: Response;
-  let headers: Header = {};
-  if ('token' in payload) {
-    headers = { token: payload.token as string };
-    delete payload.token;
-  }
-
   if (['GET', 'DELETE'].includes(method)) {
     res = request(method, SERVER_URL + path, { qs: payload, headers });
   } else {
@@ -61,14 +56,14 @@ export function requestAuthRegister(
   nameLast: string
 ): ApiResponse<TokenReturn> {
   return requestHelper('POST', '/v1/admin/auth/register',
-    { email, password, nameFirst, nameLast });
+    { email, password, nameFirst, nameLast }, {});
 }
 
 export function requestAuthLogin(
   email: string,
   password: string
 ): ApiResponse<TokenReturn> {
-  return requestHelper('POST', '/v1/admin/auth/login', { email, password });
+  return requestHelper('POST', '/v1/admin/auth/login', { email, password }, {});
 }
 
 export function requestAuthLogoutV1(
@@ -84,10 +79,26 @@ export function requestAuthLogout(
 }
 
 // ============== adminUser ====================================================
+export function requestUserDetailsV1(
+  token: string
+): ApiResponse<UserDetailReturn> {
+  return requestHelper('GET', '/v1/admin/user/details', { token }, {});
+}
+
 export function requestUserDetails(
   token: string
 ): ApiResponse<UserDetailReturn> {
-  return requestHelper('GET', '/v1/admin/user/details', { token });
+  return requestHelper('GET', '/v2/admin/user/details', {}, { token });
+}
+
+export function requestUserDetailsUpdateV1(
+  token: string,
+  email: string,
+  nameFirst: string,
+  nameLast: string
+): ApiResponse<EmptyObject> {
+  return requestHelper('PUT', '/v1/admin/user/details',
+    { token, email, nameFirst, nameLast }, {});
 }
 
 export function requestUserDetailsUpdate(
@@ -96,8 +107,17 @@ export function requestUserDetailsUpdate(
   nameFirst: string,
   nameLast: string
 ): ApiResponse<EmptyObject> {
-  return requestHelper('PUT', '/v1/admin/user/details',
-    { token, email, nameFirst, nameLast });
+  return requestHelper('PUT', '/v2/admin/user/details',
+    { email, nameFirst, nameLast }, { token });
+}
+
+export function requestUserPasswordUpdateV1(
+  token: string,
+  oldPassword: string,
+  newPassword: string
+): ApiResponse<EmptyObject> {
+  return requestHelper('PUT', '/v1/admin/user/password',
+    { token, oldPassword, newPassword }, {});
 }
 
 export function requestUserPasswordUpdate(
@@ -105,15 +125,30 @@ export function requestUserPasswordUpdate(
   oldPassword: string,
   newPassword: string
 ): ApiResponse<EmptyObject> {
-  return requestHelper('PUT', '/v1/admin/user/password',
-    { token, oldPassword, newPassword });
+  return requestHelper('PUT', '/v2/admin/user/password',
+    { oldPassword, newPassword }, { token });
 }
 
 // ============== adminQuiz ====================================================
+export function requestQuizListV1(
+  token: string
+): ApiResponse<QuizListReturn> {
+  return requestHelper('GET', '/v1/admin/quiz/list', { token }, {});
+}
+
 export function requestQuizList(
   token: string
 ): ApiResponse<QuizListReturn> {
-  return requestHelper('GET', '/v1/admin/quiz/list', { token });
+  return requestHelper('GET', '/v2/admin/quiz/list', {}, { token });
+}
+
+export function requestQuizCreateV1(
+  token: string,
+  name: string,
+  description: string
+): ApiResponse<QuizCreateReturn> {
+  return requestHelper('POST', '/v1/admin/quiz',
+    { token, name, description }, {});
 }
 
 export function requestQuizCreate(
@@ -121,15 +156,30 @@ export function requestQuizCreate(
   name: string,
   description: string
 ): ApiResponse<QuizCreateReturn> {
-  return requestHelper('POST', '/v1/admin/quiz',
-    { token, name, description });
+  return requestHelper('POST', '/v2/admin/quiz',
+    { name, description }, { token });
+}
+
+export function requestQuizRemoveV1(
+  token: string,
+  quizId: number
+): ApiResponse<EmptyObject> {
+  return requestHelper('DELETE', `/v1/admin/quiz/${quizId}`, { token }, {});
 }
 
 export function requestQuizRemove(
   token: string,
   quizId: number
 ): ApiResponse<EmptyObject> {
-  return requestHelper('DELETE', `/v1/admin/quiz/${quizId}`, { token });
+  return requestHelper('DELETE', `/v2/admin/quiz/${quizId}`, {}, { token });
+}
+
+export function requestQuizInfoV1(
+  token: string,
+  quizId: number
+):
+ApiResponse<QuizInfoReturn> {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}`, { token }, {});
 }
 
 export function requestQuizInfo(
@@ -137,7 +187,16 @@ export function requestQuizInfo(
   quizId: number
 ):
 ApiResponse<QuizInfoReturn> {
-  return requestHelper('GET', `/v1/admin/quiz/${quizId}`, { token });
+  return requestHelper('GET', `/v2/admin/quiz/${quizId}`, {}, { token });
+}
+
+export function requestQuizNameUpdatezV1(
+  token: string,
+  quizId: number,
+  name: string
+): ApiResponse<EmptyObject> {
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/name`,
+    { token, name }, {});
 }
 
 export function requestQuizNameUpdate(
@@ -145,7 +204,17 @@ export function requestQuizNameUpdate(
   quizId: number,
   name: string
 ): ApiResponse<EmptyObject> {
-  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/name`, { token, name });
+  return requestHelper('PUT', `/v2/admin/quiz/${quizId}/name`,
+    { name }, { token });
+}
+
+export function requestQuizDescriptionUpdateV1(
+  token: string,
+  quizId: number,
+  description: string
+): ApiResponse<EmptyObject> {
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/description`,
+    { token, description }, {});
 }
 
 export function requestQuizDescriptionUpdate(
@@ -153,26 +222,57 @@ export function requestQuizDescriptionUpdate(
   quizId: number,
   description: string
 ): ApiResponse<EmptyObject> {
-  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/description`,
-    { token, description });
+  return requestHelper('PUT', `/v2/admin/quiz/${quizId}/description`,
+    { description }, { token });
+}
+
+export function requestQuizViewTrashV1(
+  token: string
+): ApiResponse<QuizListReturn> {
+  return requestHelper('GET', '/v1/admin/quiz/trash', { token }, {});
 }
 
 export function requestQuizViewTrash(
   token: string
 ): ApiResponse<QuizListReturn> {
-  return requestHelper('GET', '/v1/admin/quiz/trash', { token });
+  return requestHelper('GET', '/v2/admin/quiz/trash', {}, { token });
+}
+
+export function requestQuizRestoreV1(
+  token: string,
+  quizId: number): ApiResponse<EmptyObject> {
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/restore`,
+    { token }, {});
 }
 
 export function requestQuizRestore(
   token: string,
   quizId: number): ApiResponse<EmptyObject> {
-  return requestHelper('POST', `/v1/admin/quiz/${quizId}/restore`, { token });
+  return requestHelper('POST', `/v2/admin/quiz/${quizId}/restore`,
+    {}, { token });
+}
+
+export function requestQuizEmptyTrashV1(
+  token: string,
+  quizIds: number[]): ApiResponse<EmptyObject> {
+  return requestHelper('DELETE', '/v1/admin/quiz/trash/empty',
+    { token, quizIds }, {});
 }
 
 export function requestQuizEmptyTrash(
   token: string,
   quizIds: number[]): ApiResponse<EmptyObject> {
-  return requestHelper('DELETE', '/v1/admin/quiz/trash/empty', { token, quizIds });
+  return requestHelper('DELETE', '/v2/admin/quiz/trash/empty',
+    { quizIds }, { token });
+}
+
+export function requestQuizTransferV1(
+  token: string,
+  quizId: number,
+  email: string
+): ApiResponse<EmptyObject> {
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/transfer`,
+    { token, quizId, email }, {});
 }
 
 export function requestQuizTransfer(
@@ -180,24 +280,46 @@ export function requestQuizTransfer(
   quizId: number,
   email: string
 ): ApiResponse<EmptyObject> {
-  return requestHelper('POST', `/v1/admin/quiz/${quizId}/transfer`,
-    { token, quizId, email });
+  return requestHelper('POST', `/v2/admin/quiz/${quizId}/transfer`,
+    { quizId, email }, { token });
 }
+
 export function requestUpdateQuizThumbnail(
   token: string,
   quizId: number,
   imgUrl: string
 ): ApiResponse<EmptyObject> {
-  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/thumbnail`, { token, imgUrl });
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/thumbnail`,
+    { imgUrl }, { token });
 }
+
 // ============== adminQuizQuestion ============================================
-export function requestQuizQuestionCreate(
+export function requestQuizQuestionCreateV1(
   token: string,
   quizId: number,
   questionBody: QuestionBody
 ): ApiResponse<QuestionIdReturn> {
   return requestHelper('POST', `/v1/admin/quiz/${quizId}/question`,
-    { token, questionBody });
+    { token, questionBody }, {});
+}
+
+export function requestQuizQuestionCreate(
+  token: string,
+  quizId: number,
+  questionBody: QuestionBody
+): ApiResponse<QuestionIdReturn> {
+  return requestHelper('POST', `/v2/admin/quiz/${quizId}/question`,
+    { questionBody }, { token });
+}
+
+export function requestQuizQuestionUpdateV1(
+  token: string,
+  quizId: number,
+  questionId: number,
+  questionBody: QuestionBody
+): ApiResponse<EmptyObject> {
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/question/${questionId}`,
+    { token, questionBody }, {});
 }
 
 export function requestQuizQuestionUpdate(
@@ -206,15 +328,34 @@ export function requestQuizQuestionUpdate(
   questionId: number,
   questionBody: QuestionBody
 ): ApiResponse<EmptyObject> {
-  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/question/${questionId}`,
-    { token, questionBody });
+  return requestHelper('PUT', `/v2/admin/quiz/${quizId}/question/${questionId}`,
+    { questionBody }, { token });
+}
+
+export function requestQuizQuestionDeleteV1(
+  token: string, quizId: number,
+  questionId: number
+): ApiResponse<EmptyObject> {
+  return requestHelper('DELETE', `/v1/admin/quiz/${quizId}/question/${questionId}`,
+    { token }, {});
 }
 
 export function requestQuizQuestionDelete(
   token: string, quizId: number,
   questionId: number
 ): ApiResponse<EmptyObject> {
-  return requestHelper('DELETE', `/v1/admin/quiz/${quizId}/question/${questionId}`, { token });
+  return requestHelper('DELETE',
+    `/v2/admin/quiz/${quizId}/question/${questionId}`,
+    {}, { token });
+}
+
+export function requestQuizQuestionMoveV1(
+  token: string, quizId: number,
+  questionId: number, newPosition: number
+): ApiResponse<EmptyObject> {
+  return requestHelper('PUT',
+    `/v1/admin/quiz/${quizId}/question/${questionId}/move`,
+    { token, newPosition }, {});
 }
 
 export function requestQuizQuestionMove(
@@ -222,8 +363,18 @@ export function requestQuizQuestionMove(
   questionId: number, newPosition: number
 ): ApiResponse<EmptyObject> {
   return requestHelper('PUT',
-    `/v1/admin/quiz/${quizId}/question/${questionId}/move`,
-    { token, newPosition });
+    `/v2/admin/quiz/${quizId}/question/${questionId}/move`,
+    { newPosition }, { token });
+}
+
+export function requestQuizQuestionDuplicateV1(
+  token: string,
+  quizId: number,
+  questionId: number
+): ApiResponse<NewQuestionIdReturn> {
+  return requestHelper('POST',
+    `/v1/admin/quiz/${quizId}/question/${questionId}/duplicate`,
+    { token }, {});
 }
 
 export function requestQuizQuestionDuplicate(
@@ -232,7 +383,8 @@ export function requestQuizQuestionDuplicate(
   questionId: number
 ): ApiResponse<NewQuestionIdReturn> {
   return requestHelper('POST',
-    `/v1/admin/quiz/${quizId}/question/${questionId}/duplicate`, { token });
+    `/v2/admin/quiz/${quizId}/question/${questionId}/duplicate`,
+    {}, { token });
 }
 
 // ============== adminQuizSession ============================================
@@ -242,19 +394,19 @@ export function requestQuizSessionCreate(
   autoStartNum: number
 ): ApiResponse<QuizSessionId> {
   return requestHelper('POST', `/v1/admin/quiz/${quizId}/session/start`,
-    { token, autoStartNum });
+    { autoStartNum }, { token });
 }
 
 // ============== player =======================================================
 export function requestPlayerJoin(
   sessionId: number, name: string
 ): ApiResponse<PlayerId> {
-  return requestHelper('POST', '/v1/player/join', { sessionId, name });
+  return requestHelper('POST', '/v1/player/join', { sessionId, name }, {});
 }
 
 // ============== other ========================================================
 export function requestClear(): ApiResponse<EmptyObject> {
-  return requestHelper('DELETE', '/v1/clear', {});
+  return requestHelper('DELETE', '/v1/clear', {}, {});
 }
 
 export type ResEmpty = ResValid<EmptyObject>;
