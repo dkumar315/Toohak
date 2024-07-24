@@ -249,6 +249,14 @@ app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) =
   res.json(adminQuizSessionCreate(token, quizId, req.body.autoStartNum));
 });
 
+// Update a quiz session state
+app.put('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Response) => {
+  const token: string = req.header('token');
+  const quizId: number = parseInt(req.params.quizid as string);
+  const sessionId: number = parseInt(req.params.quizid as string);
+  res.json(adminQuizSessionUpdate(token, quizId, sessionId, req.body.action));
+});
+
 // ====================================================================
 //                          other
 // ====================================================================

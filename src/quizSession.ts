@@ -14,14 +14,28 @@ export enum SessionLimits {
 }
 
 export enum Action {
-  NEXT_QUESTION = "NEXT_QUESTION",
-  SKIP_COUNTDOWN = "SKIP_COUNTDOWN",
-  GO_TO_ANSWER = "GO_TO_ANSWER",
-  GO_TO_FINAL_RESULTS = "GO_TO_FINAL_RESULTS",
-  END = "END"
+  NEXT_QUESTION = 'NEXT_QUESTION',
+  SKIP_COUNTDOWN = 'SKIP_COUNTDOWN',
+  GO_TO_ANSWER = 'GO_TO_ANSWER',
+  GO_TO_FINAL_RESULTS = 'GO_TO_FINAL_RESULTS',
+  END = 'END'
 }
 
 export type QuizSessionId = { sessionId: number };
+
+const sessionTimers: Record<number, ReturnType<typeof setTimeout>> = {};
+
+function clearTimer(sessionId: number) {
+  if (sessionTimers[sessionId]) {
+    clearTimeout(sessionTimers[sessionId]);
+    delete sessionTimers[sessionId];
+  }
+}
+
+function setTimer(sessionId: number, duration: number, callback: () => void) {
+  clearTimer(sessionId);
+  sessionTimers[sessionId] = setTimeout(callback, duration * 1000);
+}
 
 /**
  * copies a quiz, and start a new session of a quiz
@@ -75,9 +89,9 @@ export function adminQuizSessionUpdate(token: string, quizId: number,
 
   const data: Data = getData();
   const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
-  
+
   const session: QuizSession | undefined = data.quizSessions.find(
-    session => session.sessionId === sessionId && session.metadata.quizId === quizId
+    session => session.sessionId === sessionId
   );
   if (!session) {
     throw new Error(`Invalid sessionId: ${sessionId}.`);
@@ -95,7 +109,11 @@ export function adminQuizSessionUpdate(token: string, quizId: number,
 
       session.state = States.QUESTION_COUNTDOWN;
       session.atQuestion += 1;
-      // const timerId = set
+      clearTimer(session.sessionId);
+      setTimer(session.sessionId, 3, () => {
+        session.state = States.QUESTION_OPEN;
+        setData(data);
+      });
       break;
 
     case Action.SKIP_COUNTDOWN:
@@ -106,7 +124,11 @@ export function adminQuizSessionUpdate(token: string, quizId: number,
       }
 
       session.state = States.QUESTION_OPEN;
-      // const timerId = set
+      clearTimer(session.sessionId);
+      setTimer(session.sessionId, 20, () => {
+        session.state = States.QUESTION_CLOSE;
+        setData(data);
+      });
       break;
 
     case Action.GO_TO_ANSWER:

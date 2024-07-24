@@ -232,8 +232,10 @@ export function requestQuizSessionCreate(
     { token, autoStartNum });
 }
 
-export function requestQuizSessionUpdate(token: string, quizId: number,
-  sessionId: number, action: string): ApiResponse<EmptyObject> {
+export function requestQuizSessionUpdate(
+  token: string, quizId: number,
+  sessionId: number, action: string
+): ApiResponse<EmptyObject> {
   return requestHelper('PUT', `/v1/admin/quiz/${quizId}/session/${sessionId}`,
     { token, action });
 }
@@ -272,7 +274,6 @@ export const quizSessionCreate = (token: string, quizId: number,
   autoStartNum: number): ResSessionId =>
   requestQuizSessionCreate(token, quizId, autoStartNum) as ResSessionId;
 
-export const quizSessionUpdate = (token: string, quizId: number, sessionId: number,
-  action: string): ResEmpty =>
+export const quizSessionUpdate = (token: string, quizId: number,
+  sessionId: number, action: string): ResEmpty =>
   requestQuizSessionUpdate(token, quizId, sessionId, action) as ResEmpty;
-  

@@ -14,7 +14,7 @@ import {
 beforeAll(() => requestClear());
 
 let token: string, quizId: number, sessionId: number;
-const autoStartNum: number = SessionLimits.AUTO_START_NUM_MAX - 1;;
+const autoStartNum: number = SessionLimits.AUTO_START_NUM_MAX - 1;
 let result: ResEmpty | ResError;
 
 beforeEach(() => {
@@ -42,7 +42,7 @@ beforeEach(() => {
 
 afterAll(() => requestClear());
 
-describe('testing adminQuizSessionUpdate PUT /v1/admin/quiz/:quizId/session/{sessionid}', () => {
+describe('testing adminQuizSessionUpdate PUT /v1/admin/quiz/{quizId}/session/{sessionid}', () => {
   const VALID_UPDATE = {};
 
   test('route and type check', () => {
@@ -130,7 +130,7 @@ describe('testing adminQuizSessionUpdate PUT /v1/admin/quiz/:quizId/session/{ses
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
-      
+
       test('test 2.2.3 quizId is permanently removed', () => {
         requestQuizRemove(token, quizId);
         requestQuizEmptyTrash(token, [quizId]);
