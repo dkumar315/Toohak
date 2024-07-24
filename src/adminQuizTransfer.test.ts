@@ -1,7 +1,8 @@
 import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
 import {
   authRegister, requestAuthLogout, requestQuizCreate,
-  requestQuizInfo, requestQuizTransfer, requestClear
+  requestQuizInfo, requestQuizTransfer, requestClear,
+  requestQuizCreateV1, requestQuizTransferV1, requestQuizInfoV1
 } from './functionRequest';
 
 let token: string;
@@ -142,5 +143,14 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
         }
       });
     });
+  });
+});
+
+describe('V1 routes for adminQuiz', () => {
+  test('quizTransfer and quizInfo', () => {
+    expect(requestQuizCreateV1(token, 'quiz2', '').status).toStrictEqual(OK);
+    const token2: string = authRegister('e2@mail.com', 'passw0rd', 'na', 'me').token;
+    expect(requestQuizTransferV1(token2, quizId, 'e2@mail.com')).toStrictEqual(OK);
+    expect(requestQuizInfoV1(token2, quizId).status).toStrictEqual(OK);
   });
 });
