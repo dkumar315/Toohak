@@ -216,3 +216,4 @@ export const getKey = (): KeyPair => {
 
   return JSON.parse(fs.readFileSync(SECURE_FILE, 'utf8'));
 };
+
