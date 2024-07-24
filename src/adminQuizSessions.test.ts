@@ -1,8 +1,8 @@
-import { OK, UNAUTHORIZED, FORBIDDEN, BAD_REQUEST } from './dataStore';
+import { OK } from './dataStore';
 import {
   authRegister, requestAuthLogout,
   quizCreate, requestQuizRemove, requestQuizEmptyTrash,
-  requestAdminQuizSessions, requestClear, ResQuizSessions, ResError
+  requestAdminQuizSessions, requestClear, ResQuizSessions
 } from './functionRequest';
 
 beforeAll(() => requestClear());

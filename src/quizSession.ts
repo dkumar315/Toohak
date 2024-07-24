@@ -1,5 +1,5 @@
 import {
-  getData, setData, Data, States, INVALID, Quiz, QuizSession, UNAUTHORIZED, FORBIDDEN, BAD_REQUEST
+  getData, setData, Data, States, INVALID, Quiz, QuizSession
 } from './dataStore';
 import {
   findQuizIndex, IsValid
@@ -49,7 +49,6 @@ export function adminQuizSessionCreate(token: string, quizId: number,
   return { sessionId };
 }
 
-
 /**
  * Retrieves active and inactive session ids for a quiz.
  *
@@ -68,7 +67,6 @@ export function adminQuizSessionList(token: string, quizId: number) {
   }
 
   const data: Data = getData();
-  const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
 
   const activeSessions = data.quizSessions
     .filter(session => session.state !== States.END)
