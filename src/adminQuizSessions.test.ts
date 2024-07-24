@@ -9,6 +9,7 @@ beforeAll(() => requestClear());
 
 let token: string, quizId: number;
 
+
 beforeEach(() => {
   requestClear();
   token = authRegister('krishpatel@gmail.com', 'Krishpatel01', 'Krish', 'Patel').token;
