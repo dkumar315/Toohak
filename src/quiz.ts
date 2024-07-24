@@ -34,11 +34,11 @@ export function validateQuiz(authUserId: number, quizId: number): true | ErrorOb
 
   const quiz: Quiz | undefined = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (!quiz) {
-    throw new Error(`Invalid quiz: quizId ${quizId} does not exist.`);
+    return { error: `Invalid quiz: quizId ${quizId} does not exist.` };
   }
 
   if (quiz.creatorId !== authUserId) {
-    throw new Error(`UserId ${authUserId} does not own quizId ${quizId}.`);
+    return { error: `UserId ${authUserId} does not own quizId ${quizId}.` };
   }
 
   return true;
@@ -140,7 +140,7 @@ export function adminQuizRemove(token: string, quizId: number): EmptyObject | Er
 
   const ownershipValidation = validateQuiz(authUserId, quizId);
   if (ownershipValidation !== true) {
-    return ownershipValidation;
+    throw new Error(ownershipValidation.error);
   }
 
   const data: Data = getData();
@@ -171,7 +171,7 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
 
   const ownershipValidation = validateQuiz(authUserId, quizId);
   if (ownershipValidation !== true) {
-    return ownershipValidation;
+    throw new Error(ownershipValidation.error);
   }
 
   const data: Data = getData();
@@ -212,7 +212,7 @@ export function adminQuizNameUpdate(
 
   const ownershipValidation = validateQuiz(authUserId, quizId);
   if (ownershipValidation !== true) {
-    return ownershipValidation;
+    throw new Error(ownershipValidation.error);
   }
 
   if (!name) {
@@ -268,7 +268,7 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
 
   const ownershipValidation = validateQuiz(authUserId, quizId);
   if (ownershipValidation !== true) {
-    return ownershipValidation;
+    throw new Error(ownershipValidation.error);
   }
 
   if (description.length > MAX_DESCRIPTION_LENGTH) {
@@ -333,7 +333,7 @@ export function adminQuizTrashEmpty(token: string, quizIds: number[]): EmptyObje
  * @return {QuizListReturn | ErrorObject} - Returns the info of trashed quiz,
  * or an error object if unsuccessful
  */
-export function adminQuizViewTrash(token: string): QuizListReturn | ErrorObject {
+export function adminQuizTrashList(token: string): QuizListReturn | ErrorObject {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     throw new Error(`Invalid token ${token}.`);
@@ -392,7 +392,9 @@ export function adminQuizRestore(
 /**
  * This function transfers the ownership of a quiz to another user.
  *
- * @param {QuizTransfer} transferData - The data required for the transfer
+ * @param {string} token - Id of the authorised user
+ * @param {number} quizId - Id of the quiz
+ * @param {string} userEmail - email of the authorised user
  *
  * @return {object} - Returns an empty object
  */
@@ -408,7 +410,7 @@ export function adminQuizTransfer(
 
   const ownershipValidation = validateQuiz(authUserId, quizId);
   if (ownershipValidation !== true) {
-    return ownershipValidation;
+    throw new Error(ownershipValidation.error);
   }
 
   const data: Data = getData();
@@ -438,7 +440,18 @@ export function adminQuizTransfer(
   setData(data);
   return {};
 }
-export function updateQuizThumbnail(
+
+/**
+ * This function update the imgUrl of a quiz
+ *
+ * @param {string} token - Id of the authorised user
+ * @param {number} quizId - Id of the quiz
+ * @param {string} imgUrl - imgUrl to update
+ *
+ * @return {object} - Returns an empty object
+ */
+
+export function adminQuizThumbnailUpdate(
   quizId: number,
   imgUrl: string,
   token: string

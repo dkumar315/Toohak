@@ -2,9 +2,10 @@ import { OK, BAD_REQUEST, UNAUTHORIZED, EmptyObject } from './dataStore';
 import { UserDetails } from './auth';
 import {
   authRegister, requestAuthLogin, requestAuthLogout,
-  requestUserDetails, requestUserDetailsUpdate,
-  requestUserPasswordUpdate, requestClear,
-  VALID_EMPTY_RETURN, ERROR, ResToken,
+  requestUserDetails, requestUserDetailsV1,
+  requestUserDetailsUpdate, requestUserDetailsUpdateV1,
+  requestUserPasswordUpdate, requestUserPasswordUpdateV1,
+  requestClear, VALID_EMPTY_RETURN, ERROR, ResToken,
   ResError, ResEmpty, ResUserDetail
 } from './functionRequest';
 
@@ -31,9 +32,9 @@ beforeEach(() => {
 
 afterAll(() => requestClear());
 
-describe('testing adminUserDetails (GET /v1/admin/user/details)', () => {
+describe('testing adminUserDetails (GET /v2/admin/user/details)', () => {
   let result: ResUserDetail | ResError;
-  test('test1: route and type check', () => {
+  test('test1: type check', () => {
     result = requestUserDetails(token1);
     expect(
       typeof result === 'object' && 'user' in result &&
@@ -215,7 +216,7 @@ describe('testing adminUserDetails (GET /v1/admin/user/details)', () => {
   });
 });
 
-describe('testing adminUserDetailsUpdate (PUT /v1/admin/user/details)', () => {
+describe('testing adminUserDetailsUpdate (PUT /v2/admin/user/details)', () => {
   let result: EmptyObject | ResError;
   describe('test1: valid results', () => {
     describe('test1.1: valid token(s)', () => {
@@ -647,5 +648,23 @@ describe('testing adminUser', () => {
     expect(userResult1).toStrictEqual(userResult2);
     expect(userResult3).toStrictEqual(userResult2);
     expect(userResult3).toStrictEqual(userResult4);
+  });
+});
+
+describe('test with v1 route functional', () => {
+  test('test with route v1', () => {
+    // requestUserDetailsUpdateV1
+    requestUserDetailsUpdateV1(token1, email1, 'new', nameLast1);
+
+    // requestUserDetailsV1
+    let result: ResUserDetail = requestUserDetailsV1(token1) as ResUserDetail;
+    expect(result.status).toStrictEqual(OK);
+    expect(result.user.name).toStrictEqual('new' + ' ' + nameLast1);
+
+    // requestUserPasswordUpdateV1
+    requestUserPasswordUpdateV1(token1, password1, 'newPassw0rd');
+    requestAuthLogin(email1, 'newPassw0rd');
+    result = requestUserDetailsV1(token1) as ResUserDetail;
+    expect(result.user.numSuccessfulLogins).toStrictEqual(2);
   });
 });
