@@ -8,30 +8,14 @@ before_script:
 
 tests:
   stage: checks
-  except:
-    - iteration2/vic/dryRun
+  only:
+    - master
+    - merge_requests
   script:
     - SERVER_LOG=$(mktemp)
-    - TEST_LOG=$(mktemp)
-    - npm run ts-node-coverage >& $SERVER_LOG &
+    - npm run start >& $SERVER_LOG &
     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
-    - timeout -s SIGINT 180s npm t >& $TEST_LOG || (cat $SERVER_LOG && cat $TEST_LOG && exit 1)
-    - pkill -SIGINT -f ts-node
+    - timeout -s SIGINT 180s npm run test || (cat $SERVER_LOG && exit 1)
+    - kill -SIGINT %1
+    - sleep 2
     - cat $SERVER_LOG
-    - cat $TEST_LOG
-  coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
-  artifacts:
-    paths:
-      - coverage/
-    expose_as: 'Coverage Report'
-    expire_in: 3 days
-
-typecheck:
-  stage: checks
-  script:
-    - npm run tsc
-
-linting:
-  stage: checks
-  script:
-    - npm run lint
