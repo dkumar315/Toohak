@@ -150,7 +150,7 @@ describe('V1 routes for adminQuiz', () => {
   test('quizTransfer and quizInfo', () => {
     expect(requestQuizCreateV1(token, 'quiz2', '').status).toStrictEqual(OK);
     const token2: string = authRegister('e2@mail.com', 'passw0rd', 'na', 'me').token;
-    expect(requestQuizTransferV1(token2, quizId, 'e2@mail.com')).toStrictEqual(OK);
+    expect(requestQuizTransferV1(token, quizId, 'e2@mail.com').status).toStrictEqual(OK);
     expect(requestQuizInfoV1(token2, quizId).status).toStrictEqual(OK);
   });
 });

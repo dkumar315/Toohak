@@ -400,23 +400,22 @@ describe('Testing for adminQuizDescriptionUpdate', () => {
 describe('V1 routes for adminQuiz', () => {
   let token: string, quizId: number;
 
-  beforeAll(() => {
-    token = authRegister('e@mail.com', 'passw0rd', 'na', 'me');
-    quizId = requestQuizCreateV1(token, 'quiz', '') as ResQuizId;
+  beforeEach(() => {
+    token = authRegister('e@mail.com', 'passw0rd', 'na', 'me').token;
+    quizId = (requestQuizCreateV1(token, 'quiz', '') as ResQuizId).quizId;
   });
 
   test('quizCreate and quizList', () => {
-    expect(requestQuizCreateV1(token, 'quiz2', '').status).toStrictEqual(OK);
     const quizList: ResQuizList = requestQuizListV1(token) as ResQuizList;
-    expect(quizList[0].name).toStrictEqual('quiz');
-    expect(quizList[0].description).toStrictEqual('');
+    expect(quizList.quizzes[0].quizId).toStrictEqual(quizId);
+    expect(quizList.quizzes[0].name).toStrictEqual('quiz');
   });
 
   test('quizUpdate and quizInfo', () => {
-    expect(requestQuizNameUpdateV1(token, quizId, 'a').status).toStrictEqual(OK);
+    expect(requestQuizNameUpdateV1(token, quizId, 'abc').status).toStrictEqual(OK);
     expect(requestQuizDescriptionUpdateV1(token, quizId, '').status).toStrictEqual(OK);
     const quizInfo: ResQuizInfo = requestQuizInfoV1(token, quizId) as ResQuizInfo;
-    expect(quizInfo.name).toStrictEqual('a');
-    expect(quizInfo.name).toStrictEqual('');
+    expect(quizInfo.name).toStrictEqual('abc');
+    expect(quizInfo.description).toStrictEqual('');
   });
 });

@@ -256,7 +256,7 @@ app.post('/v2/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
 
 // Permanently delete specific quizzes currently sitting in the trash (v1)
 app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
-  const token: string = req.body.token;
+  const token: string = req.query.token;
   const quizIds: number[] = (req.query.quizIds as string[]).map(Number);
   return res.json(adminQuizTrashEmpty(token, quizIds));
 });
