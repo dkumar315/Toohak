@@ -10,6 +10,7 @@ import { QuestionBody } from './quizQuestion';
 import {
   SessionLimits
 } from './quizSession';
+// import sleepSync from 'slync';
 
 beforeAll(() => requestClear());
 
@@ -86,6 +87,23 @@ describe('testing adminQuizSessionUpdate PUT /v1/admin/quiz/{quizId}/session/{se
       result = quizSessionUpdate(token, quizId, sessionId, 'END');
       expect(result).toMatchObject(VALID_UPDATE);
       expect(result.status).toStrictEqual(OK);
+    });
+
+    describe('test 1.6 timer checks', () => {
+      test.skip('test 1.6.1 timer for QUESTION_COUNTDOWN to QUESTION_OPEN', () => {
+        quizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
+        // sleepSync(3000);
+        // const sessionState = adminQuizSessionState(quizId, sessionId);
+        // expect(sessionState).toStrictEqual('QUESTION_OPEN');
+      });
+  
+      test.skip('test 1.6.2 timer for QUESTION_OPEN to QUESTION_CLOSE', () => {
+        quizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
+        // sleepSync(3000);
+        // sleepSync(10000);
+        // const sessionState = adminQuizSessionState(quizId, sessionId);
+        // expect(sessionState).toStrictEqual('QUESTION_CLOSE');
+      });
     });
   });
 

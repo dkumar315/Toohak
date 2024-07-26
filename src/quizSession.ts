@@ -33,8 +33,8 @@ function clearTimer(sessionId: number) {
 }
 
 function setTimer(sessionId: number, duration: number, callback: () => void) {
-  clearTimer(sessionId);
-  sessionTimers[sessionId] = setTimeout(callback, duration * 1000);
+  clearTimer(sessionId); // Ensure any existing timer is cleared before setting a new one
+  sessionTimers[sessionId] = setTimeout(callback, duration * 1000); // Convert duration to milliseconds
 }
 
 /**
@@ -91,7 +91,7 @@ export function adminQuizSessionUpdate(token: string, quizId: number,
   const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
 
   const session: QuizSession | undefined = data.quizSessions.find(
-    session => session.sessionId === sessionId
+    session => session.sessionId === sessionId && quiz.quizId === quizId
   );
   if (!session) {
     throw new Error(`Invalid sessionId: ${sessionId}.`);
@@ -109,11 +109,19 @@ export function adminQuizSessionUpdate(token: string, quizId: number,
 
       session.state = States.QUESTION_COUNTDOWN;
       session.atQuestion += 1;
-      clearTimer(session.sessionId);
-      setTimer(session.sessionId, 3, () => {
-        session.state = States.QUESTION_OPEN;
-        setData(data);
-      });
+
+      let questionDuration: number = quiz.questions[session.atQuestion - 1].duration;
+      setData(data);
+
+      // clearTimer(session.sessionId);
+      // setTimer(session.sessionId, 3, () => {
+      //   session.state = States.QUESTION_OPEN;
+      //   setData(data);
+      //   setTimer(session.sessionId, questionDuration, () => {
+      //     session.state = States.QUESTION_CLOSE;
+      //     setData(data);
+      //   });
+      // });
       break;
 
     case Action.SKIP_COUNTDOWN:
@@ -124,11 +132,14 @@ export function adminQuizSessionUpdate(token: string, quizId: number,
       }
 
       session.state = States.QUESTION_OPEN;
-      clearTimer(session.sessionId);
-      setTimer(session.sessionId, 20, () => {
-        session.state = States.QUESTION_CLOSE;
-        setData(data);
-      });
+      questionDuration = quiz.questions[session.atQuestion - 1].duration;
+      setData(data);
+
+      // clearTimer(session.sessionId);
+      // setTimer(session.sessionId, questionDuration, () => {
+      //   session.state = States.QUESTION_CLOSE;
+      //   setData(data);
+      // });
       break;
 
     case Action.GO_TO_ANSWER:
@@ -139,11 +150,9 @@ export function adminQuizSessionUpdate(token: string, quizId: number,
       }
 
       session.state = States.ANSWER_SHOW;
-      // if (session.atQuestion >= quiz.numQuestions) {
-      //   throw new Error(
-      //     `Cannot perform NEXT_QUESTION action as it exceeds number of questions.`
-      //   );
-      // }
+      setData(data);
+
+      clearTimer(session.sessionId);
       break;
 
     case Action.GO_TO_FINAL_RESULTS:
@@ -154,10 +163,16 @@ export function adminQuizSessionUpdate(token: string, quizId: number,
       }
 
       session.state = States.FINAL_RESULTS;
+      setData(data);
+
+      clearTimer(session.sessionId);
       break;
 
     case Action.END:
       session.state = States.END;
+      setData(data);
+
+      clearTimer(session.sessionId);
       break;
 
     default:
