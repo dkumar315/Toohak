@@ -399,6 +399,12 @@ export function requestQuizSessionCreate(
     { token, autoStartNum });
 }
 
+export function requestAdminQuizSessions(
+  token: string, quizId: number):
+  ApiResponse<{ activeSessions: number[], inactiveSessions: number[] }> {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/sessions`, { token });
+}
+
 // ============== player =======================================================
 export function requestPlayerJoin(
   sessionId: number, name: string
@@ -421,6 +427,7 @@ export type ResQuestionId = ResValid<QuestionIdReturn>;
 export type ResNewQuestionId = ResValid<NewQuestionIdReturn>;
 export type ResSessionId = ResValid<QuizSessionId>;
 export type ResPlayerId = ResValid<PlayerId>;
+export type ResQuizSessions = ResValid<{ activeSessions: number[], inactiveSessions: number[] }>;
 
 export const authRegister = (email: string, password: string,
   nameFirst: string, nameLast: string): ResToken =>
