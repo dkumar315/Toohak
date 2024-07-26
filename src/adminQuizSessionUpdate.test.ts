@@ -10,7 +10,7 @@ import { QuestionBody } from './quizQuestion';
 import {
   SessionLimits
 } from './quizSession';
-// import sleepSync from 'slync';
+import sleepSync from 'slync';
 
 beforeAll(() => requestClear());
 
@@ -24,7 +24,7 @@ beforeEach(() => {
   quizId = quizCreate(token, 'time to start a kahoot', 'test your skill').quizId;
   const questionBody: QuestionBody = {
     question: `question of quiz ${quizId}`,
-    duration: 10,
+    duration: 5,
     points: 8,
     answers: [
       {
@@ -92,15 +92,23 @@ describe('testing adminQuizSessionUpdate PUT /v1/admin/quiz/{quizId}/session/{se
     describe('test 1.6 timer checks', () => {
       test.skip('test 1.6.1 timer for QUESTION_COUNTDOWN to QUESTION_OPEN', () => {
         quizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
-        // sleepSync(3000);
+        sleepSync(3000);
         // const sessionState = adminQuizSessionState(quizId, sessionId);
         // expect(sessionState).toStrictEqual('QUESTION_OPEN');
       });
-  
+
       test.skip('test 1.6.2 timer for QUESTION_OPEN to QUESTION_CLOSE', () => {
         quizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
-        // sleepSync(3000);
-        // sleepSync(10000);
+        sleepSync(3000);
+        sleepSync(5000);
+        // const sessionState = adminQuizSessionState(quizId, sessionId);
+        // expect(sessionState).toStrictEqual('QUESTION_CLOSE');
+      });
+
+      test('test 1.6.3 timer for QUESTION_OPEN to QUESTION_CLOSE when question countdown skipped', () => {
+        quizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
+        quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
+        sleepSync(5000);
         // const sessionState = adminQuizSessionState(quizId, sessionId);
         // expect(sessionState).toStrictEqual('QUESTION_CLOSE');
       });
