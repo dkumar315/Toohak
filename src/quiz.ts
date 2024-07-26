@@ -455,7 +455,7 @@ export function adminQuizThumbnailUpdate(
   quizId: number,
   imgUrl: string,
   token: string
-): true | ErrorObject {
+): EmptyObject | ErrorObject {
   const authUserId = findUserId(token);
 
   if (authUserId === INVALID) {
@@ -478,12 +478,9 @@ export function adminQuizThumbnailUpdate(
   const data = getData();
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
 
-  if (quiz) {
-    quiz.thumbnailUrl = imgUrl;
-    quiz.timeLastEdited = Date.now();
-    setData(data);
-    return true;
-  }
+  quiz.thumbnailUrl = imgUrl;
+  quiz.timeLastEdited = Date.now();
+  setData(data);
 
-  throw new Error(`QuizId ${quizId} does not exist.`);
+  return {};
 }

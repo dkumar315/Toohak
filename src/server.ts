@@ -1,5 +1,5 @@
 import express, { json, Request, Response, NextFunction } from 'express';
-import { echo, newEcho } from './newecho';
+import { echo } from './newecho';
 import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
@@ -32,7 +32,7 @@ const HOST: string = process.env.IP || '127.0.0.1';
 // ====================================================================
 import { StatusCodes } from 'http-status-codes';
 import { BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
-
+import { newEcho } from './newecho';
 import {
   adminAuthRegister, adminAuthLogin, adminAuthLogout,
   adminUserDetails, adminUserDetailsUpdate, adminUserPasswordUpdate
@@ -430,9 +430,7 @@ app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
       statusCode = BAD_REQUEST;
     }
   }
-  if (statusCode === StatusCodes.INTERNAL_SERVER_ERROR) {
-    console.error(`Error occurred: ${message}`);
-  }
+
   res.status(statusCode).json({ error: message });
 });
 
