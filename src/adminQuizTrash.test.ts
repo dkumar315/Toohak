@@ -1,14 +1,12 @@
 import { OK, UNAUTHORIZED } from './dataStore';
-import { QuizListReturn } from './quiz';
+import { QuizList } from './quiz';
 import {
   requestClear, authRegister, quizCreate,
-  requestQuizViewTrash, requestQuizRemove,
-  ResToken, ResError, ResQuizId, ResQuizList,
-  ERROR,
-  requestQuizRestore,
-  validQuizInfo,
-  requestQuizCreateV1, requestQuizInfoV1, requestQuizRemoveV1,
-  requestQuizViewTrashV1, requestQuizRestoreV1, requestQuizEmptyTrashV1
+  requestQuizViewTrash, requestQuizRemove, validQuizInfo,
+  ResToken, ResError, ResQuizId, ResQuizList, ERROR,
+  requestQuizRestore, requestQuizCreateV1, requestQuizInfoV1,
+  requestQuizRemoveV1, requestQuizViewTrashV1,
+  requestQuizRestoreV1, requestQuizEmptyTrashV1
 } from './functionRequest';
 
 let token1: string;
@@ -33,7 +31,7 @@ afterAll(() => requestClear());
 
 describe('adminQuizViewTrash', () => {
   test('should return the list of trashed quizzes for the user', () => {
-    const example: QuizListReturn = {
+    const example: QuizList = {
       quizzes: [
         {
           quizId: quizId1,
@@ -61,7 +59,7 @@ describe('adminQuizViewTrash', () => {
   test('should return an empty list if there are no quizzes in the trash', () => {
     // Clear all data
     requestClear();
-    const example: QuizListReturn = {
+    const example: QuizList = {
       quizzes: []
     };
     // Register a new user to ensure no pre-existing quizzes
@@ -79,7 +77,7 @@ describe('adminQuizViewTrash', () => {
     const anotherQuizId = anotherQuizCreateResponse.quizId;
     requestQuizRemove(token1, anotherQuizId);
 
-    const example: QuizListReturn = {
+    const example: QuizList = {
       quizzes: [
         {
           quizId: quizId1,
@@ -99,7 +97,7 @@ describe('adminQuizViewTrash', () => {
 
   test('should return only the quizzes owned by the user even if there are other trashed quizzes', () => {
     const result = requestQuizViewTrash(token1) as ResQuizList;
-    const example: QuizListReturn = {
+    const example: QuizList = {
       quizzes: [
         {
           quizId: quizId1,
@@ -109,7 +107,7 @@ describe('adminQuizViewTrash', () => {
     };
     expect(result).toMatchObject(example);
     expect(result.status).toStrictEqual(OK);
-    const example2: QuizListReturn = {
+    const example2: QuizList = {
       quizzes: [
         {
           quizId: quizId2,
@@ -125,7 +123,7 @@ describe('adminQuizViewTrash', () => {
   test('should return only trashed quizzes after a quiz is restored', () => {
     // Restore a quiz from the trash
     requestQuizRestore(token1, quizId1);
-    const example: QuizListReturn = {
+    const example: QuizList = {
       quizzes: []
     };
     const result = requestQuizViewTrash(token1) as ResQuizList;
@@ -134,7 +132,7 @@ describe('adminQuizViewTrash', () => {
   });
 
   test('should handle a large number of trashed quizzes', () => {
-    const example: QuizListReturn = {
+    const example: QuizList = {
       quizzes: [
         {
           quizId: quizId1,

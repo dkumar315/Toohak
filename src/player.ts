@@ -1,6 +1,6 @@
 import {
   setData, getData, States, Data, INVALID,
-  QuizSession, Player, ErrorObject
+  QuizSession, Player
 } from './dataStore';
 
 enum NameGen {
@@ -22,8 +22,7 @@ export type PlayerId = { playerId: number };
  * @return {object} playerId - unique identifier for a guest player
  * @return {object} errorObject - session, session state or namw input invalid
  */
-export const playerJoin = (sessionId: number, name: string):
-PlayerId | ErrorObject => {
+export const playerJoin = (sessionId: number, name: string): PlayerId => {
   const sessionIndex: number = findSession(sessionId);
   if (sessionIndex === INVALID) {
     throw new Error(`Invalid sessionId number: ${sessionId}.`);

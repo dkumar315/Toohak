@@ -3,7 +3,7 @@ import {
   requestAuthRegister, requestAuthLogin,
   requestUserDetails,
   requestQuizList, requestQuizCreate, requestQuizInfo,
-  requestClear, ResToken, ResUserDetail,
+  requestClear, ResToken, ResUserDetails,
   ResQuizList, ResQuizId, ResQuizInfo, ResError
 } from './functionRequest';
 
@@ -20,7 +20,7 @@ afterAll(() => requestClear());
 
 describe('clear test', () => {
   test('clears all the user details', () => {
-    expect((requestUserDetails(user.token) as ResUserDetail).user).toStrictEqual({
+    expect((requestUserDetails(user.token) as ResUserDetails).user).toStrictEqual({
       userId: expect.any(Number),
       name: 'Devaansh Kumar',
       email: 'devk@gmail.com',

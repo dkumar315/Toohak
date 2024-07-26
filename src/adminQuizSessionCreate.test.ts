@@ -1,10 +1,9 @@
 import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
 import {
-  authRegister, requestAuthLogout,
-  quizCreate, validQuizInfo, requestQuizRemove, requestQuizEmptyTrash,
-  questionCreate, requestQuizQuestionDelete, requestQuizQuestionDuplicate,
-  requestQuizSessionCreate, quizSessionCreate,
-  requestClear, ResSessionId, ResQuizInfo, ERROR, ResError
+  authRegister, requestAuthLogout, quizCreate, requestQuizRemove,
+  requestQuizEmptyTrash, questionCreate, requestQuizQuestionDelete,
+  requestQuizSessionCreate, quizSessionCreate, requestAdminQuizSessions,
+  ResQuizSessions, requestClear, ResSessionId, ERROR, ResError
 } from './functionRequest';
 import {
   QuestionBody
@@ -79,28 +78,11 @@ describe('testing adminQuizSessionCreate POST /v1/admin/quiz/{quizid}/session/st
       expect(result.status).toStrictEqual(BAD_REQUEST);
     });
 
-    test('test 1.5 origin quiz does not moditify', () => {
-      const quizInfo: ResQuizInfo = validQuizInfo(token, quizId);
-      quizSessionCreate(token, quizId, autoStartNum);
-      // need PUT /v1/admin/quiz/{quizid}/session/{sessionid}
-      const quizInfoUpdate: ResQuizInfo = validQuizInfo(token, quizId);
-      expect(quizInfo).toStrictEqual(quizInfoUpdate);
-    });
-
-    test.skip('test 1.7 check active quiz sessions', () => {
-      // const sessionId: number = quizSessionCreate(token, quizId, autoStartNum).sessionId;
-      // need GET /v1/admin/quiz/{quizid}/sessions
-      // const expectList: type = { activeSessions: [ sessionId ], inactiveSessions: [ ] }
-      // expect(activeQuizList).toStrictEqual(expectList);
-    });
-
-    test('test 1.8 check moditify of quiz / question not effect running session', () => {
-      quizSessionCreate(token, quizId, autoStartNum);
-      // const sessionInfo1: ResQuizInfo =
-      requestQuizQuestionDuplicate(token, quizId, questionId);
-      // need GET /v1/admin/quiz/{quizid}/session/{sessionid}
-      // const sessionInfo2: ResQuizInfo =
-      // expect(sessionInfo1).toStrictEqual(sessionInfo2);
+    test('test 1.5 quiz set in data correctly', () => {
+      const sessionId: number = quizSessionCreate(token, quizId, autoStartNum).sessionId;
+      const expectList: ResQuizSessions =
+      requestAdminQuizSessions(token, quizId) as ResQuizSessions;
+      expect(expectList.activeSessions).toStrictEqual([sessionId]);
     });
   });
 

@@ -1,10 +1,10 @@
 import { OK, UNAUTHORIZED } from './dataStore';
-import { UserDetailReturn, UserDetails } from './auth';
+import { UserDetail } from './auth';
 import {
   authRegister, requestAuthLogin, requestAuthLogout, requestAuthLogoutV1,
   requestUserDetails, requestUserDetailsUpdate,
   requestUserPasswordUpdate, requestClear, VALID_EMPTY_RETURN,
-  ERROR, ResToken, ResEmpty, ResError
+  ERROR, ResToken, ResUserDetails, ResEmpty, ResError
 } from './functionRequest';
 
 let email: string, password: string, nameFirst: string, nameLast: string;
@@ -112,16 +112,16 @@ describe('testing POST /v2/admin/auth/logout adminAuthLogout', () => {
 
   describe('test3.0 test with other function', () => {
     test('test 3.1 userDetail', () => {
-      let result: UserDetails;
+      let result: UserDetail;
       token2 = (requestAuthLogin(email, password) as ResToken).token;
       requestAuthLogin(email, password + 'invalid');
 
-      result = (requestUserDetails(token1) as UserDetailReturn).user;
+      result = (requestUserDetails(token1) as ResUserDetails).user;
       expect(result.numSuccessfulLogins).toStrictEqual(2);
       expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
 
       requestAuthLogout(token1);
-      result = (requestUserDetails(token2) as UserDetailReturn).user;
+      result = (requestUserDetails(token2) as ResUserDetails).user;
       expect(result.numSuccessfulLogins).toStrictEqual(2);
       expect(result.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
 

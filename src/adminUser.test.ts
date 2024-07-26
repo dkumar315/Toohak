@@ -1,12 +1,12 @@
 import { OK, BAD_REQUEST, UNAUTHORIZED, EmptyObject } from './dataStore';
-import { UserDetails } from './auth';
+import { UserDetail } from './auth';
 import {
   authRegister, requestAuthLogin, requestAuthLogout,
   requestUserDetails, requestUserDetailsV1,
   requestUserDetailsUpdate, requestUserDetailsUpdateV1,
   requestUserPasswordUpdate, requestUserPasswordUpdateV1,
   requestClear, VALID_EMPTY_RETURN, ERROR, ResToken,
-  ResError, ResEmpty, ResUserDetail
+  ResError, ResEmpty, ResUserDetails
 } from './functionRequest';
 
 // user1
@@ -33,7 +33,7 @@ beforeEach(() => {
 afterAll(() => requestClear());
 
 describe('testing adminUserDetails (GET /v2/admin/user/details)', () => {
-  let result: ResUserDetail | ResError;
+  let result: ResUserDetails | ResError;
   test('test1: type check', () => {
     result = requestUserDetails(token1);
     expect(
@@ -51,14 +51,14 @@ describe('testing adminUserDetails (GET /v2/admin/user/details)', () => {
 
   describe('test2: single registered user', () => {
     test('test2.1: valid input', () => {
-      const expectRes: UserDetails = {
+      const expectRes: UserDetail = {
         userId: expect.any(Number),
         name: nameFirst1 + ' ' + nameLast1,
         email: email1,
         numSuccessfulLogins: 1,
         numFailedPasswordsSinceLastLogin: 0,
       };
-      result = requestUserDetails(token1) as ResUserDetail;
+      result = requestUserDetails(token1) as ResUserDetails;
       expect(result.status).toStrictEqual(OK);
       expect(result.user).toMatchObject(expectRes);
     });
@@ -104,7 +104,7 @@ describe('testing adminUserDetails (GET /v2/admin/user/details)', () => {
     });
 
     test('test3.1: with valid tokens', () => {
-      const expectUser1: UserDetails = {
+      const expectUser1: UserDetail = {
         userId: expect.any(Number),
         name: nameFirst1 + ' ' + nameLast1,
         email: email1,
@@ -112,7 +112,7 @@ describe('testing adminUserDetails (GET /v2/admin/user/details)', () => {
         numFailedPasswordsSinceLastLogin: 0,
       };
 
-      const expectUser2: UserDetails = {
+      const expectUser2: UserDetail = {
         userId: expect.any(Number),
         name: nameFirst2 + ' ' + nameLast2,
         email: email2,
@@ -120,11 +120,11 @@ describe('testing adminUserDetails (GET /v2/admin/user/details)', () => {
         numFailedPasswordsSinceLastLogin: 0,
       };
 
-      result = requestUserDetails(token1) as ResUserDetail;
+      result = requestUserDetails(token1) as ResUserDetails;
       expect(result.user).toMatchObject(expectUser1);
       expect(result.status).toStrictEqual(OK);
 
-      result = requestUserDetails(token2) as ResUserDetail;
+      result = requestUserDetails(token2) as ResUserDetails;
       expect(result.user).toMatchObject(expectUser2);
       expect(result.status).toStrictEqual(OK);
     });
@@ -149,7 +149,7 @@ describe('testing adminUserDetails (GET /v2/admin/user/details)', () => {
       const nameLast3: string = 'World';
       const token3: string = authRegister(email3, password3, nameFirst3, nameLast3).token;
 
-      const expectUser3: UserDetails = {
+      const expectUser3: UserDetail = {
         userId: expect.any(Number),
         name: nameFirst3 + ' ' + nameLast3,
         email: email3,
@@ -157,7 +157,7 @@ describe('testing adminUserDetails (GET /v2/admin/user/details)', () => {
         numFailedPasswordsSinceLastLogin: 0,
       };
 
-      result = requestUserDetails(token3) as ResUserDetail;
+      result = requestUserDetails(token3) as ResUserDetails;
       expect(result.user).toMatchObject(expectUser3);
 
       const invalidToken: string = (parseInt(token3) + 1).toString();
@@ -168,9 +168,9 @@ describe('testing adminUserDetails (GET /v2/admin/user/details)', () => {
   });
 
   describe('test4: test with authlogin and authLogout', () => {
-    let userResult: UserDetails | ResError;
+    let userResult: UserDetail | ResError;
     test('test4.0: initial before authadminLogin', () => {
-      userResult = (requestUserDetails(token1) as ResUserDetail).user;
+      userResult = (requestUserDetails(token1) as ResUserDetails).user;
       expect(userResult.numSuccessfulLogins).toStrictEqual(1);
       expect(userResult.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
     });
@@ -179,7 +179,7 @@ describe('testing adminUserDetails (GET /v2/admin/user/details)', () => {
       requestAuthLogin(email1, password1 + 'invalid');
       requestAuthLogin(email1, password1 + 'invalid');
 
-      userResult = (requestUserDetails(token1) as ResUserDetail).user;
+      userResult = (requestUserDetails(token1) as ResUserDetails).user;
       expect(userResult.numSuccessfulLogins).toStrictEqual(1);
       expect(userResult.numFailedPasswordsSinceLastLogin).toStrictEqual(2);
     });
@@ -189,7 +189,7 @@ describe('testing adminUserDetails (GET /v2/admin/user/details)', () => {
       requestAuthLogin(email1, password1);
       requestAuthLogin(email1, password1 + 'invalid');
 
-      userResult = (requestUserDetails(token1) as ResUserDetail).user;
+      userResult = (requestUserDetails(token1) as ResUserDetails).user;
       expect(userResult.numSuccessfulLogins).toStrictEqual(3);
       expect(userResult.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
     });
@@ -197,19 +197,19 @@ describe('testing adminUserDetails (GET /v2/admin/user/details)', () => {
     test('test4.3: successful, fail the successful to login', () => {
       // successfully login
       requestAuthLogin(email1, password1);
-      userResult = (requestUserDetails(token1) as ResUserDetail).user;
+      userResult = (requestUserDetails(token1) as ResUserDetails).user;
       expect(userResult.numSuccessfulLogins).toStrictEqual(2);
       expect(userResult.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
 
       // then fail to login
       requestAuthLogin(email1, password1 + 'invalid');
-      userResult = (requestUserDetails(token1) as ResUserDetail).user;
+      userResult = (requestUserDetails(token1) as ResUserDetails).user;
       expect(userResult.numSuccessfulLogins).toStrictEqual(2);
       expect(userResult.numFailedPasswordsSinceLastLogin).toStrictEqual(1);
 
       // then successfully login
       requestAuthLogin(email1, password1);
-      userResult = (requestUserDetails(token1) as ResUserDetail).user;
+      userResult = (requestUserDetails(token1) as ResUserDetails).user;
       expect(userResult.numSuccessfulLogins).toStrictEqual(3);
       expect(userResult.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
     });
@@ -247,14 +247,14 @@ describe('testing adminUserDetailsUpdate (PUT /v2/admin/user/details)', () => {
         const token3: string = (requestAuthLogin(email1, password1) as ResToken).token;
         requestUserDetailsUpdate(token3, newEmail, nameFirst1, newName);
 
-        const result1: UserDetails = (requestUserDetails(token3) as ResUserDetail).user;
+        const result1: UserDetail = (requestUserDetails(token3) as ResUserDetails).user;
         expect(result1.email).toStrictEqual(newEmail);
         expect(result1.name).toStrictEqual(nameFirst1 + ' ' + newName);
         expect(result1.numSuccessfulLogins).toStrictEqual(3);
         expect(result1.numFailedPasswordsSinceLastLogin).toStrictEqual(0);
 
         const token4: string = (requestAuthLogin(newEmail, password1) as ResToken).token;
-        const result2: UserDetails = (requestUserDetails(token4) as ResUserDetail).user;
+        const result2: UserDetail = (requestUserDetails(token4) as ResUserDetails).user;
         expect(result2.email).toStrictEqual(newEmail);
         expect(result2.name).toStrictEqual(result1.name);
         expect(result2.numSuccessfulLogins).toStrictEqual(4);
@@ -540,14 +540,14 @@ describe('testing requestUserPasswordUpdate (PUT /v1/admin/user/details)', () =>
 });
 
 describe('testing adminUser', () => {
-  let result: ResUserDetail | ResEmpty | ResError;
+  let result: ResUserDetails | ResEmpty | ResError;
   beforeEach(() => {
     token2 = authRegister(email2, password2, nameFirst2, nameLast2).token;
   });
 
   test('test1.0: check details, and then update details and password', () => {
     // check detail and update detail
-    result = requestUserDetails(token1) as ResUserDetail;
+    result = requestUserDetails(token1) as ResUserDetails;
     expect(result.user.email).toStrictEqual(email1);
     expect(result.user.name).toStrictEqual(nameFirst1 + ' ' + nameLast1);
 
@@ -557,7 +557,7 @@ describe('testing adminUser', () => {
     requestUserDetailsUpdate(token1, email1, nameFirst1, nameLast1);
 
     // (update detail) and check detail
-    result = requestUserDetails(token1) as ResUserDetail;
+    result = requestUserDetails(token1) as ResUserDetails;
     expect(result.user.email).toStrictEqual(email1);
     expect(result.user.name).toStrictEqual(nameFirst1 + ' ' + nameLast1);
 
@@ -574,7 +574,7 @@ describe('testing adminUser', () => {
     requestUserDetailsUpdate(token1, email1, nameFirst1, nameLast1);
 
     // (update password, update detail) and check detail
-    result = requestUserDetails(token1) as ResUserDetail;
+    result = requestUserDetails(token1) as ResUserDetails;
     expect(result.user.email).toStrictEqual(email1);
     expect(result.user.name).toStrictEqual(nameFirst1 + ' ' + nameLast1);
   });
@@ -594,7 +594,7 @@ describe('testing adminUser', () => {
 
   test('test1.2: fail to change details', () => {
     // check deatil
-    result = requestUserDetails(token2) as ResUserDetail;
+    result = requestUserDetails(token2) as ResUserDetails;
     expect(result.user.email).toStrictEqual(email2);
     expect(result.user.name).toStrictEqual(nameFirst2 + ' ' + nameLast2);
 
@@ -605,7 +605,7 @@ describe('testing adminUser', () => {
     expect(result.status).toStrictEqual(BAD_REQUEST);
 
     // check deatil
-    result = requestUserDetails(token2) as ResUserDetail;
+    result = requestUserDetails(token2) as ResUserDetails;
     expect(result.user.email).toStrictEqual(email2);
     expect(result.user.name).toStrictEqual(nameFirst2 + ' ' + nameLast2);
   });
@@ -638,10 +638,10 @@ describe('testing adminUser', () => {
     const token4: string = (requestAuthLogin(emailnew, newPassword) as ResToken).token;
 
     // use token 1, 2, 3 to check
-    const userResult1: UserDetails = (requestUserDetails(token1) as ResUserDetail).user;
-    const userResult2: UserDetails = (requestUserDetails(token2) as ResUserDetail).user;
-    const userResult3: UserDetails = (requestUserDetails(token3) as ResUserDetail).user;
-    const userResult4: UserDetails = (requestUserDetails(token4) as ResUserDetail).user;
+    const userResult1: UserDetail = (requestUserDetails(token1) as ResUserDetails).user;
+    const userResult2: UserDetail = (requestUserDetails(token2) as ResUserDetails).user;
+    const userResult3: UserDetail = (requestUserDetails(token3) as ResUserDetails).user;
+    const userResult4: UserDetail = (requestUserDetails(token4) as ResUserDetails).user;
 
     expect(userResult1.email).toStrictEqual(emailnew);
     expect(userResult1.name).toStrictEqual(nameFirst1 + 'new' + ' ' + nameLast1);
@@ -657,14 +657,14 @@ describe('test with v1 route functional', () => {
     requestUserDetailsUpdateV1(token1, email1, 'new', nameLast1);
 
     // requestUserDetailsV1
-    let result: ResUserDetail = requestUserDetailsV1(token1) as ResUserDetail;
+    let result: ResUserDetails = requestUserDetailsV1(token1) as ResUserDetails;
     expect(result.status).toStrictEqual(OK);
     expect(result.user.name).toStrictEqual('new' + ' ' + nameLast1);
 
     // requestUserPasswordUpdateV1
     requestUserPasswordUpdateV1(token1, password1, 'newPassw0rd');
     requestAuthLogin(email1, 'newPassw0rd');
-    result = requestUserDetailsV1(token1) as ResUserDetail;
+    result = requestUserDetailsV1(token1) as ResUserDetails;
     expect(result.user.numSuccessfulLogins).toStrictEqual(2);
   });
 });
