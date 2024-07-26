@@ -48,7 +48,8 @@ import {
   adminQuizQuestionDelete, adminQuizQuestionMove, adminQuizQuestionDuplicate
 } from './quizQuestion';
 import {
-  adminQuizSessionCreate, adminQuizSessionUpdate
+  adminQuizSessionCreate,
+  adminQuizSessionList, adminQuizSessionUpdate
 } from './quizSession';
 import {
   playerJoin
@@ -251,6 +252,13 @@ app.put('/v1/admin/quiz/:quizid/thumbnail', (req: Request, res: Response) => {
 //                          adminQuizSession
 // ====================================================================
 
+// Get active and inactive session ids for a quiz
+app.get('/v1/admin/quiz/:quizid/sessions', (req: Request, res: Response) => {
+  const token = req.header('token');
+  const quizId = parseInt(req.params.quizid as string);
+  res.json(adminQuizSessionList(token, quizId));
+});
+
 // Start a new session for a quiz
 app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) => {
   const token: string = req.header('token');
@@ -279,6 +287,7 @@ app.post('/v1/player/join', (req: Request, res: Response) => {
 //                          other
 // ====================================================================
 
+// other
 // Reset the state of the application back to the start
 app.delete('/v1/clear', (req: Request, res: Response) => {
   res.json(clear());
@@ -332,7 +341,7 @@ app.use((req: Request, res: Response) => {
 // start server
 const server = app.listen(PORT, HOST, () => {
   // DO NOT CHANGE THIS LINE
-  console.log(`⚡️ Server started on port ${PORT} at ${HOST}`);
+  console.log(`⚡ Server started on port ${PORT} at ${HOST}`);
 });
 
 // For coverage, handle Ctrl+C gracefully

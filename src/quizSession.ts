@@ -3,7 +3,7 @@ import {
   EmptyObject
 } from './dataStore';
 import {
-  findQuizIndex, IsValid, isValidErrorReturn as errorReturn
+  findQuizIndex, IsValid
 } from './quizQuestion';
 import { findUserId } from './auth';
 
@@ -38,6 +38,38 @@ function setTimer(sessionId: number, duration: number, callback: () => void) {
 }
 
 /**
+ * Retrieves active and inactive session ids for a quiz.
+ *
+ * @param {string} token - A unique identifier for a logged-in user.
+ * @param {number} quizId - A unique identifier for a valid quiz.
+ *
+ * @returns {object} - An object containing arrays of active and inactive session ids.
+ * @returns {number[]} activeSessions - An array of active session ids.
+ * @returns {number[]} inactiveSessions - An array of inactive session ids.
+ * @throws {Error} - Throws an error if the token or quizId is invalid, with an associated status code.
+ */
+export function adminQuizSessionList(token: string, quizId: number) {
+  const isValidObj: IsValid = isValidIds(token, quizId);
+  if (!isValidObj.isValid) {
+    throw new Error(isValidObj.errorMsg);
+  }
+
+  const data: Data = getData();
+
+  const activeSessions = data.quizSessions
+    .filter(session => session.state !== States.END)
+    .map(session => session.sessionId)
+    .sort((a, b) => a - b);
+
+  const inactiveSessions = data.quizSessions
+    .filter(session => session.state === States.END)
+    .map(session => session.sessionId)
+    .sort((a, b) => a - b);
+
+  return { activeSessions, inactiveSessions };
+}
+
+/**
  * copies a quiz, and start a new session of a quiz
  *
  * @param {string} token - a unique identifier for a login user
@@ -63,7 +95,7 @@ export function adminQuizSessionCreate(token: string, quizId: number,
     throw new Error(`Invalid quiz question number: ${quiz.numQuestions}.`);
   }
 
-  const activeQuizzesNum: number = activeSessionsList(quiz).activeSessions.length;
+  const activeQuizzesNum: number = activeSessionsList(data, quizId).activeSessions.length;
   if (activeQuizzesNum >= SessionLimits.ACTIVE_SESSIONS_NUM_MAX) {
     throw new Error(`Invalid activeSessionNum: ${activeQuizzesNum}.`);
   }
@@ -152,7 +184,7 @@ export function adminQuizSessionUpdate(token: string, quizId: number,
       session.state = States.ANSWER_SHOW;
       setData(data);
 
-      // clearTimer(session.sessionId);
+      clearTimer(session.sessionId);
       break;
 
     case Action.GO_TO_FINAL_RESULTS:
@@ -165,14 +197,14 @@ export function adminQuizSessionUpdate(token: string, quizId: number,
       session.state = States.FINAL_RESULTS;
       setData(data);
 
-      // clearTimer(session.sessionId);
+      clearTimer(session.sessionId);
       break;
 
     case Action.END:
       session.state = States.END;
       setData(data);
 
-      // clearTimer(session.sessionId);
+      clearTimer(session.sessionId);
       break;
 
     default:
@@ -183,9 +215,15 @@ export function adminQuizSessionUpdate(token: string, quizId: number,
   return {};
 }
 
-function isValidIds(token: string, quizId: number) {
+function isValidIds(token: string, quizId: number): IsValid {
   const authUserId: number = findUserId(token);
-  if (authUserId === INVALID) return errorReturn(`Invalid token string: ${token}.`);
+  if (authUserId === INVALID) {
+    return { isValid: false, errorMsg: `Invalid token string: ${token}` };
+  }
+
+  if (quizId <= 0) {
+    return { isValid: false, errorMsg: `Invalid quizId number: ${quizId}` };
+  }
 
   const data: Data = getData();
   let isValidQuiz: IsValid = findQuizIndex(data.quizzes, quizId, authUserId);
@@ -193,22 +231,21 @@ function isValidIds(token: string, quizId: number) {
 
   isValidQuiz = findQuizIndex(data.trashedQuizzes, quizId, authUserId);
   if (isValidQuiz.isValid) {
-    return errorReturn(`Invalid quiz in trash: ${quizId}.`);
+    return { isValid: false, errorMsg: `Invalid quiz in trash: ${quizId}` };
   }
 
-  return isValidQuiz;
+  return { isValid: false, errorMsg: `Invalid quizId number: ${quizId}` };
 }
 
-function activeSessionsList(quiz: Quiz) {
-  const data: Data = getData();
+function activeSessionsList(data: Data, quizId: number) {
   const activeSessions: number[] = [];
-  if (data.quizSessions.length === 0 || quiz.sessionIds.length === 0) {
+  if (data.quizSessions.length === 0) {
     return { activeSessions };
   }
 
   activeSessions.push(...data.quizSessions
     .filter((session: QuizSession) => session.state !== States.END &&
-      quiz.quizId === session.metadata.quizId)
+      session.metadata.quizId === quizId)
     .map((session: QuizSession) => session.sessionId));
 
   return { activeSessions };

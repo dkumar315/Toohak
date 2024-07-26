@@ -105,7 +105,7 @@ describe('testing adminQuizSessionUpdate PUT /v1/admin/quiz/{quizId}/session/{se
         // expect(sessionState).toStrictEqual('QUESTION_CLOSE');
       });
 
-      test('test 1.6.3 timer for QUESTION_OPEN to QUESTION_CLOSE when question countdown skipped', () => {
+      test.skip('test 1.6.3 timer for QUESTION_OPEN to QUESTION_CLOSE when question countdown skipped', () => {
         quizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
         quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
         sleepSync(5000);

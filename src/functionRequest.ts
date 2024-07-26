@@ -230,6 +230,14 @@ export function requestQuizQuestionDuplicate(
 }
 
 // ============== adminQuizSession ============================================
+export function requestAdminQuizSessions(
+  token: string,
+  quizId: number
+):
+  ApiResponse<{ activeSessions: number[], inactiveSessions: number[] }> {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/sessions`, { token });
+}
+
 export function requestQuizSessionCreate(
   token: string,
   quizId: number,
@@ -269,6 +277,7 @@ export type ResQuestionId = ResValid<QuestionIdReturn>;
 export type ResNewQuestionId = ResValid<NewQuestionIdReturn>;
 export type ResSessionId = ResValid<QuizSessionId>;
 export type ResPlayerId = ResValid<PlayerId>;
+export type ResQuizSessions = ResValid<{ activeSessions: number[], inactiveSessions: number[] }>;
 
 export const authRegister = (email: string, password: string,
   nameFirst: string, nameLast: string): ResToken =>
