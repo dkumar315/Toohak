@@ -262,7 +262,7 @@ app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) =
 app.put('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Response) => {
   const token: string = req.header('token');
   const quizId: number = parseInt(req.params.quizid as string);
-  const sessionId: number = parseInt(req.params.quizid as string);
+  const sessionId: number = parseInt(req.params.sessionid as string);
   res.json(adminQuizSessionUpdate(token, quizId, sessionId, req.body.action));
 });
 
