@@ -13,10 +13,11 @@ tests:
   script:
     - SERVER_LOG=$(mktemp)
     - TEST_LOG=$(mktemp)
-    - npm run ts-node-coverage >& $SERVER_LOG &
-    - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
+    - npm run ts-node-coverage &> $SERVER_LOG & pid=$!
+    - sleep 10
+    - ps -p $pid > /dev/null || (cat $SERVER_LOG && exit 1)
     - timeout -s SIGINT 180s npm t >& $TEST_LOG || (cat $SERVER_LOG && cat $TEST_LOG && exit 1)
-    - pkill -SIGINT -f ts-node
+    - kill -SIGINT $pid || true
     - cat $SERVER_LOG
     - cat $TEST_LOG
   coverage: '/All files\s*\|\s*(\d+(?:\.\d+)?)/'
