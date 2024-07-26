@@ -1,9 +1,7 @@
 import {
   getData, setData, Data, States, INVALID, Quiz, QuizSession
 } from './dataStore';
-import {
-  findQuizIndex, IsValid
-} from './quizQuestion';
+import { findQuizIndex, IsValid } from './quizQuestion';
 import { findUserId } from './auth';
 
 export enum SessionLimits {
@@ -13,6 +11,10 @@ export enum SessionLimits {
 }
 
 export type QuizSessionId = { sessionId: number };
+export type QuizSessions = {
+  activeSessions: number[],
+  inactiveSessions: number[]
+};
 
 /**
  * copies a quiz, and start a new session of a quiz
@@ -22,11 +24,11 @@ export type QuizSessionId = { sessionId: number };
  * @param {number} autoStartNum - number of people to autostart
  *
  * @return {object} quizId - unique identifier for a qiz of a user
- * @return {object} error - token, quizId, or questionBody invalid
+ * @throws {Error} error - if token, quizId, or autoStartNum invalid
  */
-export function adminQuizSessionCreate(token: string, quizId: number,
-  autoStartNum: number): QuizSessionId {
-  const isValidObj: IsValid = isValidIds(token, quizId);
+export const adminQuizSessionCreate = (token: string, quizId: number,
+  autoStartNum: number): QuizSessionId => {
+  const isValidObj: IsValid = isValidIds(token, quizId, true);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   if (autoStartNum < SessionLimits.AUTO_START_AND_QUESTIONS_NUM_MIN ||
@@ -40,28 +42,29 @@ export function adminQuizSessionCreate(token: string, quizId: number,
     throw new Error(`Invalid quiz question number: ${quiz.numQuestions}.`);
   }
 
-  const activeQuizzesNum: number = activeSessionsList(data, quizId).activeSessions.length;
+  const activeQuizzesNum: number = activeSessionsNum(data, quizId);
   if (activeQuizzesNum >= SessionLimits.ACTIVE_SESSIONS_NUM_MAX) {
     throw new Error(`Invalid activeSessionNum: ${activeQuizzesNum}.`);
   }
 
-  const sessionId: number = setNewSession(data, quiz, autoStartNum);
+  const sessionId: number = setNewSession(quiz, autoStartNum);
   return { sessionId };
-}
+};
 
 /**
  * Retrieves active and inactive session ids for a quiz.
  *
- * @param {string} token - A unique identifier for a logged-in user.
- * @param {number} quizId - A unique identifier for a valid quiz.
+ * @param {string} token - A unique identifier for a logged-in user
+ * @param {number} quizId - A unique identifier for a valid quiz
  *
- * @returns {object} - An object containing arrays of active and inactive session ids.
- * @returns {number[]} activeSessions - An array of active session ids.
- * @returns {number[]} inactiveSessions - An array of inactive session ids.
- * @throws {Error} - Throws an error if the token or quizId is invalid, with an associated status code.
+ * @returns {object} - An object containing arrays of active and inactive session ids
+ * @returns {number[]} activeSessions - An array of active session ids
+ * @returns {number[]} inactiveSessions - An array of inactive session ids
+ * @throws {Error} - Throws an error if the token or quizId is invalid
  */
-export function adminQuizSessionList(token: string, quizId: number) {
-  const isValidObj: IsValid = isValidIds(token, quizId);
+export const adminQuizSessionList = (token: string, quizId: number):
+QuizSessions => {
+  const isValidObj: IsValid = isValidIds(token, quizId, true);
   if (!isValidObj.isValid) {
     throw new Error(isValidObj.errorMsg);
   }
@@ -79,9 +82,19 @@ export function adminQuizSessionList(token: string, quizId: number) {
     .sort((a, b) => a - b);
 
   return { activeSessions, inactiveSessions };
-}
+};
 
-function isValidIds(token: string, quizId: number): IsValid {
+/**
+ * check token, quizId, or and quiz in trash
+ *
+ * @param {string} token - a unique identifier for a login user
+ * @param {number} quizId - a unique identifier for a valid quiz
+ * @param {boolean} checkTrashQuiz - whether check quizId in trash
+ *
+ * @return {object} isValidObj - isValid, errorMsg if invalid
+ */
+const isValidIds = (token: string, quizId: number, checkTrashQuiz: boolean):
+IsValid => {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     return { isValid: false, errorMsg: `Invalid token string: ${token}` };
@@ -95,36 +108,48 @@ function isValidIds(token: string, quizId: number): IsValid {
   let isValidQuiz: IsValid = findQuizIndex(data.quizzes, quizId, authUserId);
   if (isValidQuiz.isValid) return isValidQuiz;
 
-  isValidQuiz = findQuizIndex(data.trashedQuizzes, quizId, authUserId);
-  if (isValidQuiz.isValid) {
-    return { isValid: false, errorMsg: `Invalid quiz in trash: ${quizId}` };
+  if (checkTrashQuiz) {
+    isValidQuiz = findQuizIndex(data.trashedQuizzes, quizId, authUserId);
+    if (isValidQuiz.isValid) {
+      return { isValid: false, errorMsg: `Invalid quiz in trash: ${quizId}` };
+    }
   }
 
   return { isValid: false, errorMsg: `Invalid quizId number: ${quizId}` };
-}
+};
 
-function activeSessionsList(data: Data, quizId: number) {
-  const activeSessions: number[] = [];
-  if (data.quizSessions.length === 0) {
-    return { activeSessions };
-  }
-
-  activeSessions.push(...data.quizSessions
+/**
+ * count the active quizSessions number aof a quiz
+ *
+ * @param {object} data - there info stores
+ * @param {number} quizId - a unique identifier for a valid quiz
+ *
+ * @return {number} activeSessionsNum - of a quiz
+ */
+const activeSessionsNum = (data: Data, quizId: number): number => {
+  const activeSessions: QuizSession[] = data.quizSessions
     .filter((session: QuizSession) => session.state !== States.END &&
-      session.metadata.quizId === quizId)
-    .map((session: QuizSession) => session.sessionId));
+      session.metadata.quizId === quizId);
 
-  return { activeSessions };
-}
+  return activeSessions.length;
+};
 
-function setNewSession(data: Data, quiz: Quiz, autoStartNum: number): number {
+/** add a new session copy of current quiz in data.quizSessions
+ *
+ * @param {object} quiz - origin quiz info
+ * @param {number} autoStartNum - the number people to auto start a session
+ *
+ * @return {number} sessionId - the global unique identifier of a quiz session
+ */
+const setNewSession = (quiz: Quiz, autoStartNum: number): number => {
   const { sessionIds, questions, questionCounter, ...metaQuiz } = quiz;
+  const data: Data = getData();
   const newSession: QuizSession = {
     sessionId: ++data.sessions.quizSessionCounter,
     state: States.LOBBY,
     atQuestion: 0,
     players: [],
-    autoStartNum: autoStartNum,
+    autoStartNum,
     metadata: {
       ...metaQuiz,
       questions: questions.map(question => ({
@@ -141,4 +166,4 @@ function setNewSession(data: Data, quiz: Quiz, autoStartNum: number): number {
 
   setData(data);
   return newSession.sessionId;
-}
+};

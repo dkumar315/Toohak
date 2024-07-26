@@ -3,21 +3,14 @@ import {
   EmptyObject, ErrorObject, INVALID
 } from './dataStore';
 import { findUserId } from './auth';
-// import { error } from 'console';
 
 const MAX_DESCRIPTION_LENGTH: number = 100;
 const MIN_NAME_LENGTH: number = 3;
 const MAX_NAME_LENGTH: number = 30;
 
-export interface QuizListReturn {
-  quizzes: { quizId: number; name: string }[];
-}
-
-export interface QuizCreateReturn {
-  quizId: number;
-}
-
-export interface QuizInfoReturn {
+export type QuizList = { quizzes: { quizId: number, name: string }[]; };
+export type QuizId = { quizId: number; };
+export type QuizInfo = {
   quizId: number;
   name: string,
   timeCreated: number,
@@ -29,7 +22,8 @@ export interface QuizInfoReturn {
   thumbnailUrl: string,
 }
 
-export function validateQuiz(authUserId: number, quizId: number): true | ErrorObject {
+export const validateQuiz = (authUserId: number, quizId: number
+):true | ErrorObject => {
   const data: Data = getData();
 
   const quiz: Quiz | undefined = data.quizzes.find(quiz => quiz.quizId === quizId);
@@ -42,7 +36,7 @@ export function validateQuiz(authUserId: number, quizId: number): true | ErrorOb
   }
 
   return true;
-}
+};
 
 /**
  * This function provides a list of all quizzes that
@@ -52,7 +46,7 @@ export function validateQuiz(authUserId: number, quizId: number): true | ErrorOb
  *
  * @return {object} - Returns the details of the quiz
  */
-export function adminQuizList(token: string): QuizListReturn | ErrorObject {
+export const adminQuizList = (token: string): QuizList => {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     throw new Error(`Invalid token ${token}.`);
@@ -68,7 +62,7 @@ export function adminQuizList(token: string): QuizListReturn | ErrorObject {
   }
 
   return { quizzes: quizArray };
-}
+};
 
 /**
  * This function if given basic details about a new quiz,
@@ -80,20 +74,22 @@ export function adminQuizList(token: string): QuizListReturn | ErrorObject {
  *
  * @return {object} - Returns the details of the quiz
  */
-export function adminQuizCreate(token: string, name: string, description: string): QuizCreateReturn | ErrorObject {
+export const adminQuizCreate = (token: string, name: string, description: string
+): QuizId => {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     throw new Error(`Invalid token ${token}.`);
   }
 
   if (!/^[a-zA-Z0-9 ]{3,30}$/.test(name)) {
-    throw new Error(`Name ${name} contains invalid characters or is not the correct length.`);
+    throw new Error(`Name ${name} contains invalid characters or length.`);
   }
 
   const data: Data = getData();
 
   if (data.quizzes.some(quiz => quiz.creatorId === authUserId && quiz.name === name)) {
-    throw new Error(`Name ${name} is already used by the current logged-in user for another quiz`);
+    throw new Error(`Name ${name} is already used by the current logged-in user` +
+      'for another quiz');
   }
 
   if (description.length > MAX_DESCRIPTION_LENGTH) {
@@ -121,7 +117,7 @@ export function adminQuizCreate(token: string, name: string, description: string
 
   setData(data);
   return { quizId: newQuiz.quizId };
-}
+};
 
 /**
  * This function permanently removes the quiz,
@@ -132,7 +128,7 @@ export function adminQuizCreate(token: string, name: string, description: string
  *
  * @return {object} - Returns an empty object
  */
-export function adminQuizRemove(token: string, quizId: number): EmptyObject | ErrorObject {
+export const adminQuizRemove = (token: string, quizId: number): EmptyObject => {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     throw new Error(`Invalid token ${token}.`);
@@ -151,7 +147,7 @@ export function adminQuizRemove(token: string, quizId: number): EmptyObject | Er
 
   setData(data);
   return {};
-}
+};
 
 /**
  * This function gets all of the relevant information,
@@ -163,7 +159,7 @@ export function adminQuizRemove(token: string, quizId: number): EmptyObject | Er
  * @return {object} - Returns an empty object
  *
  */
-export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | ErrorObject {
+export const adminQuizInfo = (token: string, quizId: number): QuizInfo => {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     throw new Error(`Invalid token ${token}.`);
@@ -189,7 +185,7 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
     duration: quiz.duration,
     thumbnailUrl: quiz.thumbnailUrl,
   };
-}
+};
 
 /**
  * This function updates the name of the relevant quiz.
@@ -200,11 +196,8 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
  *
  * @return {object} - Returns an empty object
  */
-export function adminQuizNameUpdate(
-  token: string,
-  quizId: number,
-  name: string
-): EmptyObject | ErrorObject {
+export const adminQuizNameUpdate = (token: string, quizId: number, name: string
+): EmptyObject => {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     throw new Error(`Invalid token ${token}.`);
@@ -222,7 +215,8 @@ export function adminQuizNameUpdate(
   name = name.trim();
 
   if (!/^[a-zA-Z0-9 ]+$/.test(name)) {
-    throw new Error(`Name ${name} contains invalid characters, only alphanumeric and spaces allowed`);
+    throw new Error(`Name ${name} contains invalid characters,` +
+      'only alphanumeric and spaces allowed');
   }
 
   if (name.length < MIN_NAME_LENGTH) {
@@ -249,7 +243,7 @@ export function adminQuizNameUpdate(
 
   setData(data);
   return {};
-}
+};
 
 /**
  * This function updates the description of the relevant quiz.
@@ -260,7 +254,9 @@ export function adminQuizNameUpdate(
  *
  * @return {object} - Returns an empty object
  */
-export function adminQuizDescriptionUpdate(token: string, quizId: number, description: string): EmptyObject | ErrorObject {
+export const adminQuizDescriptionUpdate = (
+  token: string, quizId: number, description: string
+): EmptyObject => {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     throw new Error(`Invalid token ${token}.`);
@@ -284,7 +280,7 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
 
   setData(data);
   return {};
-}
+};
 
 /**
  * This function permanently deletes specific quizzes currently sitting in the trash.
@@ -295,7 +291,8 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
  * @return {EmptyObject | ErrorObject} - Returns an empty object if successful,
  * or an error object if unsuccessful
  */
-export function adminQuizTrashEmpty(token: string, quizIds: number[]): EmptyObject | ErrorObject {
+export const adminQuizTrashEmpty = (token: string, quizIds: number[]
+): EmptyObject => {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     throw new Error(`Invalid token ${token}.`);
@@ -315,7 +312,8 @@ export function adminQuizTrashEmpty(token: string, quizIds: number[]): EmptyObje
     const quiz = data.trashedQuizzes[quizIndex];
 
     if (quiz.creatorId !== authUserId) {
-      throw new Error(`User Id ${authUserId} does not own quizId ${quizId} or quiz does not exist.`);
+      throw new Error(`User Id ${authUserId} does not own quizId ${quizId}` +
+       'or quiz does not exist.');
     }
 
     data.trashedQuizzes.splice(quizIndex, 1);
@@ -323,7 +321,7 @@ export function adminQuizTrashEmpty(token: string, quizIds: number[]): EmptyObje
 
   setData(data);
   return {};
-}
+};
 
 /**
  * This function restores a quiz from the trash back to active quizzes.
@@ -333,7 +331,7 @@ export function adminQuizTrashEmpty(token: string, quizIds: number[]): EmptyObje
  * @return {QuizListReturn | ErrorObject} - Returns the info of trashed quiz,
  * or an error object if unsuccessful
  */
-export function adminQuizTrashList(token: string): QuizListReturn | ErrorObject {
+export const adminQuizTrashList = (token: string): QuizList => {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     throw new Error(`Invalid token ${token}.`);
@@ -345,7 +343,7 @@ export function adminQuizTrashList(token: string): QuizListReturn | ErrorObject 
     .map(({ quizId, name }) => ({ quizId, name }));
 
   return { quizzes: trashedquizArray };
-}
+};
 
 /**
  * This function restores a quiz from the trash back to active quizzes.
@@ -356,9 +354,7 @@ export function adminQuizTrashList(token: string): QuizListReturn | ErrorObject 
  * @return {EmptyObject | ErrorObject} - Returns the entire dataset if successful,
  * or an error object if unsuccessful
  */
-export function adminQuizRestore(
-  token: string,
-  quizId: number): EmptyObject | ErrorObject {
+export const adminQuizRestore = (token: string, quizId: number): EmptyObject => {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     throw new Error(`Invalid token ${token}.`);
@@ -366,7 +362,8 @@ export function adminQuizRestore(
 
   const data: Data = getData();
 
-  const trashedQuizIndex = data.trashedQuizzes.findIndex(trashQuiz => trashQuiz.quizId === quizId);
+  const trashedQuizIndex = data.trashedQuizzes
+    .findIndex(trashQuiz => trashQuiz.quizId === quizId);
   if (trashedQuizIndex === INVALID) {
     throw new Error(`Quiz ${quizId} is not in the trash.`);
   }
@@ -387,7 +384,7 @@ export function adminQuizRestore(
 
   setData(data);
   return {};
-}
+};
 
 /**
  * This function transfers the ownership of a quiz to another user.
@@ -398,11 +395,9 @@ export function adminQuizRestore(
  *
  * @return {object} - Returns an empty object
  */
-export function adminQuizTransfer(
-  token: string,
-  quizId: number,
-  userEmail: string
-): EmptyObject | ErrorObject {
+export const adminQuizTransfer = (
+  token: string, quizId: number, userEmail: string
+): EmptyObject => {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
     throw new Error(`Invalid token ${token}.`);
@@ -424,12 +419,13 @@ export function adminQuizTransfer(
   const newOwnerId = newOwner.userId;
 
   if (newOwnerId === authUserId) {
-    throw new Error(`Cannot transfer quiz quizId ${quizId} to the current owner.`);
+    throw new Error(`Cannot transfer quiz ${quizId} to the current owner.`);
   }
 
   if (data.quizzes.some(quiz => quiz.creatorId === newOwnerId &&
     quiz.name === data.quizzes[quizId - 1].name)) {
-    throw new Error(`Quiz quizId with name ${data.quizzes[quizId - 1].name} already exists for the new owner.`);
+    throw new Error(`Quiz with name ${data.quizzes[quizId - 1].name}` +
+      'already exists for the new owner.');
   }
 
   const quiz: Quiz = data.quizzes.find(q => q.quizId === quizId);
@@ -439,7 +435,7 @@ export function adminQuizTransfer(
 
   setData(data);
   return {};
-}
+};
 
 /**
  * This function update the imgUrl of a quiz
@@ -451,11 +447,9 @@ export function adminQuizTransfer(
  * @return {object} - Returns an empty object
  */
 
-export function adminQuizThumbnailUpdate(
-  quizId: number,
-  imgUrl: string,
-  token: string
-): EmptyObject | ErrorObject {
+export const adminQuizThumbnailUpdate = (
+  quizId: number, imgUrl: string, token: string
+): EmptyObject => {
   const authUserId = findUserId(token);
 
   if (authUserId === INVALID) {
@@ -472,7 +466,8 @@ export function adminQuizThumbnailUpdate(
   }
 
   if (!/\.(jpg|jpeg|png)$/i.test(imgUrl)) {
-    throw new Error('The imgUrl does not end with one of the following filetypes: jpg, jpeg, png');
+    throw new Error('The imgUrl does not end with one of the following' +
+      'filetypes: jpg, jpeg, png');
   }
 
   const data = getData();
@@ -483,4 +478,4 @@ export function adminQuizThumbnailUpdate(
   setData(data);
 
   return {};
-}
+};
