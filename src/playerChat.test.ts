@@ -4,7 +4,7 @@ import { MessageBody, MessageLimits } from './playerChat';
 import {
   authRegister, quizCreate, questionCreate, quizSessionCreate,
   playerJoin, requestClear, requestPlayerChatCreate,
-  ERROR, ResError, ResPlayerId, ResEmpty
+  ERROR, ResError, ResPlayerId, ResEmpty, VALID_EMPTY_RETURN
 } from './functionRequest';
 
 beforeAll(requestClear);
@@ -23,27 +23,72 @@ beforeEach(() => {
     points: 8,
     answers: [
       {
-        answer: '1 right answer at least',
+        answer: 'minimum 1 true answer',
         correct: true
       },
       {
-        answer: '2 answers minimum',
+        answer: 'minimum 2 answers in total',
         correct: true
       }],
-    thumbnailUrl: 'http://google.com/img_path.jpg'
+    thumbnailUrl: 'http://imgName.png'
   };
   questionCreate(token, quizId, questionBody);
   const sessionId: number = quizSessionCreate(token, quizId, 10).sessionId;
   playerId = playerJoin(sessionId, '').playerId;
-  message = {
-    message: {
-      messageBody: 'minimum 1 len and maximum 100 len'
-    }
-  };
 });
 
-describe('test 1.0 valid test', () => {
-  test('valid Input', () => {
-    requestPlayerChatCreate(playerId, message);
+describe('testing playerChatCreate /v1/player/{playerid}/chat', () => {
+  describe('test 1.0 valid test', () => {
+    test('valid Input', () => {
+      message = { message: { messageBody: 'min 1, max 100 chars in len' } };
+      result = requestPlayerChatCreate(playerId, message);
+      expect(result).toMatchObject(VALID_EMPTY_RETURN);
+      expect(result.status).toStrictEqual(OK);
+    });
+
+    test('Edge Case of message: minimum Len', () => {
+      const messageBody: string = 'm';
+      message = { message: { messageBody } };
+      result = requestPlayerChatCreate(playerId, message);
+      expect(result).toMatchObject(VALID_EMPTY_RETURN);
+      expect(result.status).toStrictEqual(OK);
+    });
+
+    test('Edge Case of message: maximum len', () => {
+      const messageBody: string = 'm'.repeat(MessageLimits.MAX_MSGBODY_LEN);
+      message = { message: { messageBody } };
+      result = requestPlayerChatCreate(playerId, message);
+      expect(result).toMatchObject(VALID_EMPTY_RETURN);
+      expect(result.status).toStrictEqual(OK);
+    });
+  });
+
+  describe('test 2.0 invalid test', () => {
+    test('invalid playerId', () => {
+      message = { message: { messageBody: 'min 1, max 100 chars in len' } };
+      result = requestPlayerChatCreate(playerId + 1, message);
+      expect(result).toMatchObject(ERROR);
+      expect(result.status).toStrictEqual(BAD_REQUEST);
+
+      result = requestPlayerChatCreate(playerId - 1, message);
+      expect(result).toMatchObject(ERROR);
+      expect(result.status).toStrictEqual(BAD_REQUEST);
+    });
+
+    test('Edge Case of message: minimum Len', () => {
+      const messageBody: string = '';
+      message = { message: { messageBody } };
+      result = requestPlayerChatCreate(playerId, message);
+      expect(result).toMatchObject(ERROR);
+      expect(result.status).toStrictEqual(BAD_REQUEST);
+    });
+
+    test('Edge Case of message: maximum len', () => {
+      const messageBody: string = 'm'.repeat(MessageLimits.MAX_MSGBODY_LEN + 1);
+      message = { message: { messageBody } };
+      result = requestPlayerChatCreate(playerId, message);
+      expect(result).toMatchObject(ERROR);
+      expect(result.status).toStrictEqual(BAD_REQUEST);
+    });
   });
 });
