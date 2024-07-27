@@ -145,7 +145,7 @@ export interface QuestionSession extends Question {
 
 export interface Message {
   messageBody: string,
-  senderId: number,
+  playerId: number,
   playerName: string,
   timeSent: number
 }

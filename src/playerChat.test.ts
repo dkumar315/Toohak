@@ -4,7 +4,7 @@ import { MessageBody, MessageLimits } from './playerChat';
 import {
   authRegister, quizCreate, questionCreate, quizSessionCreate,
   playerJoin, requestClear, requestPlayerChatCreate,
-  ERROR, ResError, ResPlayerId, ResEmpty, VALID_EMPTY_RETURN
+  ERROR, ResError, ResEmpty, VALID_EMPTY_RETURN
 } from './functionRequest';
 
 beforeAll(requestClear);

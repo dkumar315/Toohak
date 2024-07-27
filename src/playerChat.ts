@@ -1,4 +1,8 @@
-import { setData, getData, Data, Message, EmptyObject } from './dataStore';
+import {
+  setData, getData, Data, QuizSession, Player, Message, INVALID,
+  EmptyObject, ErrorObject
+} from './dataStore';
+import { timeStamp } from './helperFunctions';
 export interface MessageBody {
   message: {
     messageBody: string
@@ -10,8 +14,53 @@ export enum MessageLimits {
   MAX_MSGBODY_LEN = 100
 }
 
-// findplayer(playerId)
-// QuizSession.messages
+export enum MessageEncrypt {
+  VIGENERE_KEY = 'sEcReCt'
+}
+
+type PlayerIndices = {
+  sessionIndex: number;
+  playerIndex: number;
+};
+
+const findSessionPlayer = (playerId: number): PlayerIndices | ErrorObject => {
+  const data: Data = getData();
+  const sessionIndex: number = data.quizSessions
+    .findIndex((session: QuizSession) => session
+      .players.some((player: Player) => player.playerId === playerId));
+
+  if (sessionIndex === INVALID) {
+    return { error: `Invalid playerId number: ${playerId} not exist.` };
+  }
+
+  const playerIndex = data.quizSessions[sessionIndex]
+    .players.findIndex(player => player.playerId === playerId);
+
+  return { sessionIndex, playerIndex };
+};
+
+const shiftChar = (char: string, shift: number): string => {
+  const code = char.charCodeAt(0);
+  return String.fromCharCode((code - 32 + shift) % 95 + 32);
+};
+
+const vigenereChar = (char: string, keyChar: string): string => {
+  const shift = keyChar.charCodeAt(0) - 32;
+  return shiftChar(char, shift);
+};
+
+const encrypt = (plaintext: string, shift: number): string => {
+  // caesar
+  const shiftedText = plaintext
+    .split('').map((char, index) => shiftChar(char, shift + index)).join('');
+
+  // vigenère
+  const key: string = MessageEncrypt.VIGENERE_KEY;
+  return shiftedText
+    .split('')
+    .map((char, i) => vigenereChar(char, key[i % key.length]))
+    .join('');
+};
 
 /**
  * Send chat message in session
@@ -26,8 +75,26 @@ export const playerChatCreate = (
   playerId: number,
   message: MessageBody
 ): EmptyObject => {
-  // If player ID does not exist
-  // If message body is less than 1 character or more than 100 characters
-  console.log(playerId, message);
+  const isvalidPlayer: PlayerIndices | ErrorObject = findSessionPlayer(playerId);
+  if ('error' in isvalidPlayer) throw new Error(isvalidPlayer.error);
+
+  const messageBody: string = message.message.messageBody;
+  const messageBodyLen: number = messageBody.length;
+  if (messageBodyLen < MessageLimits.MIN_MSGBODY_LEN ||
+    messageBodyLen > MessageLimits.MAX_MSGBODY_LEN) {
+    throw new Error(`Invalid messageBody length: ${messageBodyLen}.`);
+  }
+
+  const data: Data = getData();
+  const session: QuizSession = data.quizSessions[isvalidPlayer.sessionIndex];
+  session.messages.push({
+    messageBody: encrypt(messageBody, playerId),
+    playerId,
+    playerName: session.players[isvalidPlayer.playerIndex].name,
+    timeSent: timeStamp()
+  });
+  setData(data);
+
+  console.log(encrypt('ABC', 1));
   return {};
 };
