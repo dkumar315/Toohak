@@ -10,6 +10,7 @@ import { QuizList, QuizId, QuizInfo } from './quiz';
 import { QuestionBody, QuestionId, NewQuestionId } from './quizQuestion';
 import { QuizSessionId, QuizSessions } from './quizSession';
 import { PlayerId } from './player';
+import { MessageBody } from './playerChat';
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
 type Header = EmptyObject | { token: string };
@@ -384,8 +385,7 @@ export function requestQuizQuestionDuplicate(
 export function requestAdminQuizSessions(
   token: string,
   quizId: number
-):
-  ApiResponse<{ activeSessions: number[], inactiveSessions: number[] }> {
+): ApiResponse<QuizSessions> {
   return requestHelper('GET', `/v1/admin/quiz/${quizId}/sessions`, { token });
 }
 
@@ -410,8 +410,16 @@ export function requestQuizSessionUpdate(
 export function requestPlayerJoin(
   sessionId: number,
   name: string
-):ApiResponse<PlayerId> {
+): ApiResponse<PlayerId> {
   return requestHelper('POST', '/v1/player/join', { sessionId, name });
+}
+
+// ============== playerChat ===================================================
+export function requestPlayerChatCreate(
+  playerId: number,
+  message: MessageBody
+): ApiResponse<EmptyObject> {
+  return requestHelper('POST', `/v1/player/${playerId}/chat`, { message });
 }
 
 // ============== other ========================================================
@@ -453,3 +461,6 @@ export const quizSessionCreate = (token: string, quizId: number,
 export const quizSessionUpdate = (token: string, quizId: number,
   sessionId: number, action: string): ResEmpty =>
   requestQuizSessionUpdate(token, quizId, sessionId, action) as ResEmpty;
+
+export const playerJoin = (sessionId: number, name: string): ResPlayerId =>
+  requestPlayerJoin(sessionId, name) as ResPlayerId;

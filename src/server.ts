@@ -52,8 +52,10 @@ import {
 import {
   playerJoin
 } from './player';
+import {
+  playerChatCreate
+} from './playerChat';
 import { clear } from './other';
-// import { request } from 'http';
 
 // ====================================================================
 // ============= ROUTES ARE DEFINED BELOW THIS LINE ===================
@@ -414,6 +416,16 @@ app.put('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Respons
 // Allow a guest player to join a session
 app.post('/v1/player/join', (req: Request, res: Response) => {
   res.json(playerJoin(req.body.sessionId, req.body.name));
+});
+
+// ====================================================================
+//                          player Chat
+// ====================================================================
+
+// Send chat message in session
+app.post('/v1/player/:playerid/chat', (req: Request, res: Response) => {
+  const playerId: number = parseInt(req.params.playerid as string);
+  res.json(playerChatCreate(playerId, req.body.message));
 });
 
 // ====================================================================
