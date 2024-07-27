@@ -153,8 +153,12 @@ export const adminQuizSessionCreate = (
  *
  * @return {object} success or error message
  */
-export function adminQuizSessionUpdate(token: string, quizId: number,
-  sessionId: number, action: Action): EmptyObject {
+export const adminQuizSessionUpdate = (
+  token: string,
+  quizId: number,
+  sessionId: number,
+  action: Action
+): EmptyObject => {
   const isValidObj: IsValid = isValidIds(token, quizId, false);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
@@ -168,7 +172,6 @@ export function adminQuizSessionUpdate(token: string, quizId: number,
   }
 
   let questionDuration: number;
-
   switch (action) {
     case Action.NEXT_QUESTION:
       if (session.state !== States.LOBBY &&
@@ -253,4 +256,4 @@ export function adminQuizSessionUpdate(token: string, quizId: number,
 
   setData(data);
   return {};
-}
+};

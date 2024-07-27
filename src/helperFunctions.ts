@@ -13,7 +13,7 @@ export interface IsValid {
  *
  * @return {number} userId - corresponding userId of a token
  */
-export { findUserId } from './auth';
+// findUserId
 
 /**
  * Check if a given quizId is exist and own by the current authorized User

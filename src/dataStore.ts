@@ -2,7 +2,7 @@ import fs from 'fs';
 const DATA_FILE = './dataStore.json';
 import { StatusCodes } from 'http-status-codes';
 import crypto from 'crypto';
-const SECURE_FILE = 'hs256_secret_key.txt';
+export const SECURE_FILE = 'hs256_secret_key.txt';
 
 // YOU SHOULD MODIFY THIS OBJECT BELOW ONLY
 let data: Data = {

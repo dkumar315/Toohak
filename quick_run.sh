@@ -82,6 +82,7 @@ function end {
   echo "Shutting down server gracefully."
   wait $server_pid
   rm server.log
+  rm hs256_secret_key.txt
 }
 
 start && test && tsc && lint && end

@@ -18,7 +18,7 @@ enum Secret {
   SECRET = 'SeCret'
 }
 
-export interface UserDetails {
+export interface UserDetail {
   userId: number;
   email: string;
   name: string;
@@ -26,11 +26,11 @@ export interface UserDetails {
   numFailedPasswordsSinceLastLogin: number;
 }
 
-export interface UserDetailReturn {
-  user: UserDetails;
+export interface UserDetails {
+  user: UserDetail;
 }
 
-export interface TokenReturn {
+export interface Token {
   token: string;
 }
 
@@ -50,7 +50,7 @@ export const adminAuthRegister = (
   password: string,
   nameFirst: string,
   nameLast: string
-): TokenReturn => {
+): Token => {
   // Check if email is valid or already exists
   if (!isValidEmail(email, INVALID)) {
     throw new Error(`Email invalid format or already in use ${email}.`);
@@ -101,7 +101,7 @@ export const adminAuthRegister = (
 * @return {string} token - unique identifier for a user
 * @return {object} error - if email or password invalid
 */
-export const adminAuthLogin = (email: string, password: string): TokenReturn => {
+export const adminAuthLogin = (email: string, password: string): Token => {
   const data: Data = getData();
   const userIndex: number = data.users.findIndex(user => user.email === email);
   if (userIndex === INVALID) {
@@ -149,10 +149,10 @@ export const adminAuthLogout = (token: string): EmptyObject => {
  *
  * @param {string} token - unique identifier for a login user
  *
- * @return {object} user - userDetails
+ * @return {object} user - UserDetail
  * @return {object} error - if token invalid
  */
-export const adminUserDetails = (token: string): UserDetailReturn => {
+export const adminUserDetails = (token: string): UserDetails => {
   const userId: number = findUserId(token);
   if (userId === INVALID) throw new Error(`Invalid token ${token}.`);
 
@@ -201,7 +201,7 @@ export const adminUserDetailsUpdate = (
   if (!isValidName(nameFirst)) throw new Error(`Invalid nameFirst ${nameFirst}.`);
   if (!isValidName(nameLast)) throw new Error(`Invalid nameLast ${nameLast}.`);
 
-  // update userDetails
+  // update UserDetail
   user.email = email;
   user.nameFirst = nameFirst;
   user.nameLast = nameLast;

@@ -1,10 +1,11 @@
 import { setData, getData, getKey } from './dataStore';
 import isEmail from 'validator/lib/isEmail';
 import jwt from 'jsonwebtoken';
+import fs from 'fs';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  Data, User, Session, INVALID, EmptyObject, ALGORITHM
+  Data, User, Session, INVALID, EmptyObject, ALGORITHM, SECURE_FILE
 } from './dataStore';
 
 enum UserLimits {
@@ -69,10 +70,10 @@ export const adminAuthRegister = (
   }
 
   const data: Data = getData();
-  const authUserId: number = data.users.length + 1;
+  const userId: number = data.users.length + 1;
 
   const newUser: User = {
-    userId: authUserId,
+    userId: userId,
     nameFirst: nameFirst,
     nameLast: nameLast,
     email: email,
@@ -83,8 +84,8 @@ export const adminAuthRegister = (
   data.users.push(newUser);
   setData(data);
 
-  const token: string = generateToken(authUserId);
-  addSession(authUserId, token);
+  const token: string = generateToken(userId);
+  addSession(userId, token);
 
   return { token: token };
 };
@@ -285,13 +286,9 @@ const generateToken = (userId: number): string => {
  * @param {number} authUserId - a unique identifier of a user
  * @param {string} token - a unique identifier of user activitives
  */
-const addSession = (authUserId: number, token: string): void => {
+const addSession = (userId: number, token: string): void => {
   const data: Data = getData();
-  const newSession: Session = {
-    userId: authUserId,
-    token: token
-  };
-  data.sessions.sessionIds.push(newSession);
+  data.sessions.sessionIds.push({ userId, token });
   setData(data);
 };
 
@@ -417,17 +414,20 @@ const isValidPassword = (password: string): boolean => {
  */
 export const findUserId = (token: string): number => {
   const data: Data = getData();
-  if (token === '') return INVALID;
+  if (token === '' || !fs.existsSync(SECURE_FILE)) return INVALID;
   try {
-    const userId: number = (jwt.verify(token, getKey().publicKey,
-      { algorithms: [ALGORITHM] }) as { userId: number }).userId;
+    const decoded = jwt.decode(token);
+    const isValid = jwt.verify(token, getKey().publicKey,
+      { algorithms: [ALGORITHM] }) as { userId: number };
 
     const session: Session = data.sessions.sessionIds.find(session =>
       session.token === token
     );
 
-    if (!session || session.userId !== userId) return INVALID;
-    return userId;
+    if (!decoded || !isValid ||
+      !session || session.userId !== isValid.userId) return INVALID;
+
+    return session.userId;
   } catch (error) {
     return INVALID;
   }
