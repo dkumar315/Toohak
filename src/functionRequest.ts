@@ -245,6 +245,29 @@ export function requestAdminQuizSessions(
   return requestHelper('GET', `/v1/admin/quiz/${quizId}/sessions`, { token });
 }
 
+export function requestAdminQuizSessionResults(
+  token: string,
+  quizId: number,
+  sessionId: number
+): ApiResponse<{ usersRankedByScore: Array<{ name: string; score: number }>, questionResults: Array<{ questionId: number; playersCorrectList: string[], averageAnswerTime: number, percentCorrect: number }> }> {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}/results`, { token });
+}
+
+export function requestQuizStart(
+  token: string,
+  quizId: number
+): ApiResponse<QuizSessionId> {
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/session/start`, { token, autoStartNum: 0 });
+}
+
+export function requestQuizEnd(
+  token: string,
+  quizId: number,
+  sessionId: number
+): ApiResponse<EmptyObject> {
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/session/${sessionId}/end`, { token });
+}
+
 // ============== player =======================================================
 export function requestPlayerJoin(
   sessionId: number, name: string
