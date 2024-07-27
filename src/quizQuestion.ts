@@ -2,7 +2,9 @@ import {
   setData, getData, INVALID, Colours,
   Data, Colour, Quiz, Question, Answer, EmptyObject
 } from './dataStore';
-import { findUserId } from './auth';
+import {
+  timeStamp, isvalidErrorObj, isValidIds, isValidImgUrl
+} from './helperFunctions';
 
 export enum QuestionLimit {
   MIN_LEN = 5,
@@ -35,7 +37,6 @@ export interface IsValid {
   questionIndex?: number;
   errorMsg?: string;
   status?: number;
-
 }
 export interface QuestionBody {
   question: string;
@@ -68,7 +69,7 @@ export const adminQuizQuestionCreate = (
   quizId: number,
   questionBody: QuestionBody
 ): QuestionId => {
-  const isValidObj: IsValid = isValidIds({ token, quizId, questionBody });
+  const isValidObj: IsValid = isValidIdsAdv({ token, quizId, questionBody });
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
@@ -105,7 +106,8 @@ export const adminQuizQuestionUpdate = (
   questionId: number,
   questionBody: QuestionBody
 ): EmptyObject => {
-  const isValidObj: IsValid = isValidIds({ token, quizId, questionId, questionBody });
+  const isValidObj: IsValid =
+  isValidIdsAdv({ token, quizId, questionId, questionBody });
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
@@ -138,7 +140,7 @@ export const adminQuizQuestionDelete = (
   quizId: number,
   questionId: number
 ): EmptyObject => {
-  const isValidObj: IsValid = isValidIds({ token, quizId, questionId });
+  const isValidObj: IsValid = isValidIdsAdv({ token, quizId, questionId });
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
@@ -172,7 +174,7 @@ export const adminQuizQuestionMove = (
   questionId: number,
   newPosition: number
 ): EmptyObject => {
-  const isValidObj: IsValid = isValidIds({ token, quizId, questionId });
+  const isValidObj: IsValid = isValidIdsAdv({ token, quizId, questionId });
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
@@ -211,7 +213,7 @@ export const adminQuizQuestionDuplicate = (
   quizId: number,
   questionId: number
 ): NewQuestionId => {
-  const isValidObj: IsValid = isValidIds({ token, quizId, questionId });
+  const isValidObj: IsValid = isValidIdsAdv({ token, quizId, questionId });
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
@@ -248,7 +250,7 @@ export const adminQuizQuestionDuplicate = (
  * questionIndex: number - when isValid is true, corresponding index in the quiz
  * errorMsg: string - if token, questionId or quizId invalid
  */
-const isValidIds = (
+const isValidIdsAdv = (
   params: {
     token: string,
     quizId: number,
@@ -257,15 +259,7 @@ const isValidIds = (
   }
 ): IsValid => {
   const { token, quizId, questionId, questionBody } = params;
-  // check token
-  const userId: number = findUserId(token);
-  if (userId === INVALID) {
-    return isValidErrorReturn(`Invalid token string: ${token} not exists.`);
-  }
-
-  // check quizId
-  const data: Data = getData();
-  const isValidObj: IsValid = findQuizIndex(data.quizzes, quizId, userId);
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
   if (!isValidObj.isValid) return isValidObj;
 
   // check questionId
@@ -277,6 +271,7 @@ const isValidIds = (
   }
 
   if (questionBody) {
+    const data: Data = getData();
     const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
     let duration: number = quiz.duration;
     if ('questionId' in params) {
@@ -288,37 +283,6 @@ const isValidIds = (
   }
 
   return isValidObj;
-};
-
-/**
- * Check if a given quizId is exist and own by the current authorized User
- *
- * @param {number} quiz - a valid quiz
- * @param {number} quizId - a unique identifier for a valid quiz
- * @param {number} authUserId - a unique identifier for a login user
- *
- * @return {object} isValidQuizIdObj - includes:
- * isValid: boolean - identify whether the quizId is found and own by the user
- * quizIndex: number - if quizId valid, quizIndex, otherwise index === INVALID
- * errorMsg: string - if quizId not found, or not own by current user
- */
-export const findQuizIndex = (
-  quizzes: Quiz[],
-  quizId: number,
-  authUserId: number
-): IsValid => {
-  const quizIndex: number = quizzes.findIndex((quiz: Quiz) => quiz.quizId === quizId);
-  // userId not exist
-  if (quizIndex === INVALID) {
-    return isValidErrorReturn(`Invalid quizId number: ${quizId} not exists.`);
-  }
-
-  // user does not own the quiz
-  if (quizzes[quizIndex].creatorId !== authUserId) {
-    return isValidErrorReturn(`Invalid quizId number: ${quizId} access denied.`);
-  }
-
-  return { isValid: true, quizIndex };
 };
 
 /**
@@ -360,25 +324,25 @@ const isValidQuestionBody = (
 
   if (question.length < QuestionLimit.MIN_LEN ||
     question.length > QuestionLimit.MAX_LEN) {
-    return isValidErrorReturn(`Invalid question length: ${question.length}.`);
+    return isvalidErrorObj(`Invalid question length: ${question.length}.`);
   }
 
   if (answers.length < AnswersLimit.MIN_COUNT ||
     answers.length > AnswersLimit.MAX_COUNT) {
-    return isValidErrorReturn(`Invalid answers number: ${answers.length}.`);
+    return isvalidErrorObj(`Invalid answers number: ${answers.length}.`);
   }
 
   if (duration < DurationLimit.MIN_QUESTION_SECS ||
     quizDuration + duration > MAX_DURATIONS_SECS) {
-    return isValidErrorReturn(`Invalid duration number: ${duration}.`);
+    return isvalidErrorObj(`Invalid duration number: ${duration}.`);
   }
 
   if (points < PointsLimit.MIN_NUM || points > PointsLimit.MAX_NUM) {
-    return isValidErrorReturn(`Invalid points number: ${points}.`);
+    return isvalidErrorObj(`Invalid points number: ${points}.`);
   }
 
-  if (!isInvalidImgUrl(thumbnailUrl)) {
-    return isValidErrorReturn(`Invalid thumbnailUrl string: ${thumbnailUrl}.`);
+  if (!isValidImgUrl(thumbnailUrl)) {
+    return isvalidErrorObj(`Invalid thumbnailUrl string: ${thumbnailUrl}.`);
   }
 
   return isValidAnswer(answers);
@@ -397,7 +361,7 @@ const isValidAnswer = (answers: AnswerInput[]): IsValid => {
     answerBody.answer.length < AnswersLimit.MIN_STR_LEN ||
     answerBody.answer.length > AnswersLimit.MAX_STR_LEN);
   if (invalidAnswerLen) {
-    return isValidErrorReturn(
+    return isvalidErrorObj(
       'Invalid answers object, answer string length number(s) invalid.');
   }
 
@@ -405,29 +369,18 @@ const isValidAnswer = (answers: AnswerInput[]): IsValid => {
     .map((answerBody: AnswerInput) => answerBody.answer));
   const hasDuplicateAnswer: boolean = uniqueAnswers.size !== answers.length;
   if (hasDuplicateAnswer) {
-    return isValidErrorReturn(
+    return isvalidErrorObj(
       'Invalid answers object, answer string(s) not unique.');
   }
 
   const hasCorrectAnswer = answers.some((answerBody: AnswerInput) =>
     answerBody.correct);
   if (!hasCorrectAnswer) {
-    return isValidErrorReturn(
+    return isvalidErrorObj(
       'Invalid answers object, answers has no correct answer.');
   }
 
   return { isValid: true };
-};
-
-/**
- * Return an object of { isValid, errorMsg } for isValid function when invalid
- *
- * @param {string} errorMsg - specific error meaasge
- *
- * @return {object} isValidObj - an object contains errorMsg
- */
-export const isValidErrorReturn = (errorMsg: string): IsValid => {
-  return { isValid: false, errorMsg };
 };
 
 /**
@@ -456,26 +409,4 @@ const generateRandomColor = (): Colour => {
   const colours: Colour[] = Object.values(Colours);
   const randomIndex: number = Math.floor(Math.random() * colours.length);
   return colours[randomIndex];
-};
-
-/**
- * generate a timeStamp for a quiz when a question is changed
- *
- * @return {string} timeStamp - unix time in seconds, rounded with Math.floor
- */
-const timeStamp = (): number => Math.floor(Date.now() / 1000);
-
-/**
- * check if a imgUrl is valid
- *
- * @param {string} imgUrl - thumbnail
- *
- * @return {boolean} true - if extension and protocol valid
- * extension is end with .jpg, .jpeg or .png (case insensitive), and
- * protocol http or https
- */
-const isInvalidImgUrl = (thumbnailUrl: string): boolean => {
-  const validExtension = /\.(jpe?g|png)$/i.test(thumbnailUrl);
-  const validProtocol = /^(http:\/\/|https:\/\/)/.test(thumbnailUrl);
-  return validExtension && validProtocol;
 };

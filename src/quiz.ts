@@ -2,13 +2,18 @@ import {
   getData, setData, Data, Quiz, Question,
   EmptyObject, ErrorObject, INVALID
 } from './dataStore';
-import { findUserId } from './auth';
+import {
+  isValidIds, IsValid, timeStamp, findUserId, isValidImgUrl
+} from './helperFunctions';
 
-const MAX_DESCRIPTION_LENGTH: number = 100;
-const MIN_NAME_LENGTH: number = 3;
-const MAX_NAME_LENGTH: number = 30;
+enum QuizLimits {
+  MAX_DESCRIPTION_LENGTH = 100,
+  MIN_NAME_LENGTH = 3,
+  MAX_NAME_LENGTH = 30
+}
 
-export type QuizList = { quizzes: { quizId: number, name: string }[]; };
+export interface QuizList { quizzes: QuizInfoBrief[] }
+interface QuizInfoBrief { quizId: number, name: string }
 export type QuizId = { quizId: number; };
 export type QuizInfo = {
   quizId: number;
@@ -21,23 +26,46 @@ export type QuizInfo = {
   duration: number,
   thumbnailUrl: string,
 }
+export type Helper = ErrorObject | EmptyObject;
 
-export const validateQuiz = (
-  authUserId: number,
-  quizId: number
-):true | ErrorObject => {
+const isValidQuizName = (name: string): Helper => {
+  name = name.trim();
+  if (!/^[a-zA-Z0-9 ]+$/.test(name)) {
+    return { error: `Name '${name}' contains invalid characters.` };
+  }
+
+  if (name.length < QuizLimits.MIN_NAME_LENGTH) {
+    return { error: `Name length is less than ${QuizLimits.MIN_NAME_LENGTH}.` };
+  } else if (name.length > QuizLimits.MAX_NAME_LENGTH) {
+    return { error: `Name length is more than ${QuizLimits.MAX_NAME_LENGTH}.` };
+  }
+
+  return {};
+};
+
+const isValidDescription = (description: string): Helper => {
+  if (description.length > QuizLimits.MAX_DESCRIPTION_LENGTH) {
+    return {
+      error: 'Description is more than' +
+    `${QuizLimits.MAX_DESCRIPTION_LENGTH} characters in length.`
+    };
+  }
+
+  return {};
+};
+
+const isUsedName = (userId: number, quizId: number, name: string): Helper => {
   const data: Data = getData();
-
-  const quiz: Quiz | undefined = data.quizzes.find(quiz => quiz.quizId === quizId);
-  if (!quiz) {
-    return { error: `Invalid quiz: quizId ${quizId} does not exist.` };
+  const nameExist: boolean = data.quizzes.some(quiz =>
+    quiz.creatorId === userId && quiz.quizId !== quizId &&
+    quiz.name === name);
+  if (nameExist) {
+    return {
+      error: `Name '${name}' is already used by the current` +
+    'logged-in user for another quiz.'
+    };
   }
-
-  if (quiz.creatorId !== authUserId) {
-    return { error: `UserId ${authUserId} does not own quizId ${quizId}.` };
-  }
-
-  return true;
+  return {};
 };
 
 /**
@@ -56,14 +84,11 @@ export const adminQuizList = (token: string): QuizList => {
 
   const data: Data = getData();
 
-  const quizArray: { quizId: number; name: string }[] = [];
-  for (const quiz of data.quizzes) {
-    if (quiz.creatorId === authUserId) {
-      quizArray.push({ quizId: quiz.quizId, name: quiz.name });
-    }
-  }
+  const quizzes: QuizInfoBrief[] = data.quizzes
+    .filter(quiz => quiz.creatorId === authUserId)
+    .map(({ quizId, name }) => ({ quizId, name }));
 
-  return { quizzes: quizArray };
+  return { quizzes };
 };
 
 /**
@@ -86,30 +111,19 @@ export const adminQuizCreate = (
     throw new Error(`Invalid token ${token}.`);
   }
 
-  if (!/^[a-zA-Z0-9 ]{3,30}$/.test(name)) {
-    throw new Error(`Name ${name} contains invalid characters or length.`);
-  }
+  const errorMsg: string = isValidQuizName(name).error ||
+  isValidDescription(description).error ||
+  isUsedName(authUserId, INVALID, name).error;
+  if (errorMsg) throw new Error(errorMsg);
 
   const data: Data = getData();
-
-  if (data.quizzes.some(quiz => quiz.creatorId === authUserId && quiz.name === name)) {
-    throw new Error(`Name ${name} is already used by the current logged-in user` +
-      'for another quiz');
-  }
-
-  if (description.length > MAX_DESCRIPTION_LENGTH) {
-    throw new Error('Description is more than 100 characters in length.');
-  }
-
-  data.sessions.quizCounter += 1;
-
   const newQuiz: Quiz = {
-    quizId: data.sessions.quizCounter,
+    quizId: ++data.sessions.quizCounter,
     creatorId: authUserId,
     name,
     description,
-    timeCreated: Math.floor(Date.now() / 1000),
-    timeLastEdited: Math.floor(Date.now() / 1000),
+    timeCreated: timeStamp(),
+    timeLastEdited: timeStamp(),
     numQuestions: 0,
     questionCounter: 0,
     questions: [],
@@ -137,20 +151,11 @@ export const adminQuizRemove = (
   token: string,
   quizId: number
 ): EmptyObject => {
-  const authUserId: number = findUserId(token);
-  if (authUserId === INVALID) {
-    throw new Error(`Invalid token ${token}.`);
-  }
-
-  const ownershipValidation = validateQuiz(authUserId, quizId);
-  if (ownershipValidation !== true) {
-    throw new Error(ownershipValidation.error);
-  }
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
+  if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
-
-  const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
-  const [deletedQuiz] = data.quizzes.splice(quizIndex, 1);
+  const [deletedQuiz] = data.quizzes.splice(isValidObj.quizIndex, 1);
   data.trashedQuizzes.push(deletedQuiz);
 
   setData(data);
@@ -171,19 +176,11 @@ export const adminQuizInfo = (
   token: string,
   quizId: number
 ): QuizInfo => {
-  const authUserId: number = findUserId(token);
-  if (authUserId === INVALID) {
-    throw new Error(`Invalid token ${token}.`);
-  }
-
-  const ownershipValidation = validateQuiz(authUserId, quizId);
-  if (ownershipValidation !== true) {
-    throw new Error(ownershipValidation.error);
-  }
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
+  if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
-
-  const quiz: Quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+  const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
 
   return {
     quizId: quiz.quizId,
@@ -212,48 +209,17 @@ export const adminQuizNameUpdate = (
   quizId: number,
   name: string
 ): EmptyObject => {
-  const authUserId: number = findUserId(token);
-  if (authUserId === INVALID) {
-    throw new Error(`Invalid token ${token}.`);
-  }
-
-  const ownershipValidation = validateQuiz(authUserId, quizId);
-  if (ownershipValidation !== true) {
-    throw new Error(ownershipValidation.error);
-  }
-
-  if (!name) {
-    throw new Error(`Name ${name} not found`);
-  }
-
-  name = name.trim();
-
-  if (!/^[a-zA-Z0-9 ]+$/.test(name)) {
-    throw new Error(`Name ${name} contains invalid characters,` +
-      'only alphanumeric and spaces allowed');
-  }
-
-  if (name.length < MIN_NAME_LENGTH) {
-    throw new Error(`Name is less than ${MIN_NAME_LENGTH} characters long.`);
-  }
-
-  if (name.length > MAX_NAME_LENGTH) {
-    throw new Error(`Name is more than ${MAX_NAME_LENGTH} characters long.`);
-  }
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
+  if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
-
-  if (data.quizzes.find(
-    q => q.creatorId === authUserId &&
-    q.quizId !== quizId && q.name === name
-  )) {
-    throw new Error(`Name ${name} is already used by the current logged-in user for another quiz.`);
-  }
-
-  const quiz: Quiz = data.quizzes.find(q => q.quizId === quizId);
+  const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
+  const errorMsg: string = isValidQuizName(name).error ||
+  isUsedName(quiz.creatorId, quizId, name).error;
+  if (errorMsg) throw new Error(errorMsg);
 
   quiz.name = name;
-  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
+  quiz.timeLastEdited = timeStamp();
 
   setData(data);
   return {};
@@ -273,26 +239,16 @@ export const adminQuizDescriptionUpdate = (
   quizId: number,
   description: string
 ): EmptyObject => {
-  const authUserId: number = findUserId(token);
-  if (authUserId === INVALID) {
-    throw new Error(`Invalid token ${token}.`);
-  }
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
+  if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
-  const ownershipValidation = validateQuiz(authUserId, quizId);
-  if (ownershipValidation !== true) {
-    throw new Error(ownershipValidation.error);
-  }
-
-  if (description.length > MAX_DESCRIPTION_LENGTH) {
-    throw new Error(`Description is more than ${MAX_DESCRIPTION_LENGTH} characters in length.`);
-  }
+  const descriptionCheck: Helper = isValidDescription(description);
+  if ('error' in descriptionCheck) throw new Error(descriptionCheck.error);
 
   const data: Data = getData();
-
-  const quiz: Quiz = data.quizzes.find(q => q.quizId === quizId);
-
+  const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
   quiz.description = description;
-  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
+  quiz.timeLastEdited = timeStamp();
 
   setData(data);
   return {};
@@ -317,25 +273,22 @@ export const adminQuizTrashEmpty = (
   }
 
   // Parse quizIds into an array of numbers
-  // const parsedQuizIds: number[] = JSON.parse(quizIds);
   const data: Data = getData();
-
-  for (const quizId of quizIds) {
-    const quizIndex = data.trashedQuizzes.findIndex(quiz => quiz.quizId === quizId);
-
+  const quizIndexes: number[] = [];
+  quizIds.forEach((quizId) => {
+    const quizIndex: number = data.trashedQuizzes.findIndex((quiz: Quiz) =>
+      quiz.quizId === quizId);
     if (quizIndex === INVALID) {
       throw new Error(`Quiz Id ${quizId} is not currently in the trash.`);
     }
-
-    const quiz = data.trashedQuizzes[quizIndex];
-
-    if (quiz.creatorId !== authUserId) {
-      throw new Error(`User Id ${authUserId} does not own quizId ${quizId}` +
-       'or quiz does not exist.');
+    if (data.trashedQuizzes[quizIndex].creatorId !== authUserId) {
+      throw new Error(`User Id ${authUserId} does not own quizId ${quizId}.`);
     }
 
-    data.trashedQuizzes.splice(quizIndex, 1);
-  }
+    quizIndexes.push(quizIndex);
+  });
+
+  quizIndexes.forEach((quizIndex) => data.trashedQuizzes.splice(quizIndex, 1));
 
   setData(data);
   return {};
@@ -356,11 +309,11 @@ export const adminQuizTrashList = (token: string): QuizList => {
   }
 
   const data = getData();
-  const trashedquizArray: { quizId: number; name: string }[] = data.trashedQuizzes
+  const quizzes: QuizInfoBrief[] = data.trashedQuizzes
     .filter(quiz => quiz.creatorId === authUserId)
     .map(({ quizId, name }) => ({ quizId, name }));
 
-  return { quizzes: trashedquizArray };
+  return { quizzes };
 };
 
 /**
@@ -382,9 +335,9 @@ export const adminQuizRestore = (
   }
 
   const data: Data = getData();
-
-  const trashedQuizIndex = data.trashedQuizzes
+  const trashedQuizIndex: number = data.trashedQuizzes
     .findIndex(trashQuiz => trashQuiz.quizId === quizId);
+
   if (trashedQuizIndex === INVALID) {
     throw new Error(`Quiz ${quizId} is not in the trash.`);
   }
@@ -394,12 +347,11 @@ export const adminQuizRestore = (
     throw new Error(`UserId ${authUserId} does not own quizId ${quizId}.`);
   }
 
-  if (data.quizzes.some(existingQuiz => existingQuiz.name === quiz.name)) {
-    throw new Error(`Quiz name ${quiz.name} is already used by another active quiz.`);
-  }
+  const nameCheck: Helper = isUsedName(authUserId, INVALID, quiz.name);
+  if ('error' in nameCheck) throw new Error(nameCheck.error);
 
   // Restore the quiz by moving it back to the active quizzes
-  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
+  quiz.timeLastEdited = timeStamp();
   data.quizzes.push(quiz);
   data.trashedQuizzes.splice(trashedQuizIndex, 1);
 
@@ -421,15 +373,8 @@ export const adminQuizTransfer = (
   quizId: number,
   userEmail: string
 ): EmptyObject => {
-  const authUserId: number = findUserId(token);
-  if (authUserId === INVALID) {
-    throw new Error(`Invalid token ${token}.`);
-  }
-
-  const ownershipValidation = validateQuiz(authUserId, quizId);
-  if (ownershipValidation !== true) {
-    throw new Error(ownershipValidation.error);
-  }
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
+  if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
 
@@ -439,22 +384,20 @@ export const adminQuizTransfer = (
     throw new Error(`User with email ${userEmail} does not exist.`);
   }
 
-  const newOwnerId = newOwner.userId;
+  const newOwnerId: number = newOwner.userId;
+  const quiz: Quiz = data.quizzes[isValidObj.quizIndex];
 
-  if (newOwnerId === authUserId) {
+  if (newOwnerId === quiz.creatorId) {
     throw new Error(`Cannot transfer quiz ${quizId} to the current owner.`);
   }
 
-  if (data.quizzes.some(quiz => quiz.creatorId === newOwnerId &&
-    quiz.name === data.quizzes[quizId - 1].name)) {
-    throw new Error(`Quiz with name ${data.quizzes[quizId - 1].name}` +
-      'already exists for the new owner.');
+  const nameCheck: Helper = isUsedName(newOwnerId, INVALID, quiz.name);
+  if ('error' in nameCheck) {
+    throw new Error(`Quiz name '${quiz.name}' already exists for the new owner.`);
   }
 
-  const quiz: Quiz = data.quizzes.find(q => q.quizId === quizId);
-
   quiz.creatorId = newOwnerId;
-  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
+  quiz.timeLastEdited = timeStamp();
 
   setData(data);
   return {};
@@ -469,37 +412,23 @@ export const adminQuizTransfer = (
  *
  * @return {object} - Returns an empty object
  */
-
 export const adminQuizThumbnailUpdate = (
   quizId: number,
   imgUrl: string,
   token: string
 ): EmptyObject => {
-  const authUserId = findUserId(token);
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
+  if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
-  if (authUserId === INVALID) {
-    throw new Error('Invalid token');
-  }
-
-  const validation = validateQuiz(authUserId, quizId);
-  if (validation !== true) {
-    throw new Error(validation.error);
-  }
-
-  if (!imgUrl.startsWith('http://') && !imgUrl.startsWith('https://')) {
-    throw new Error('The imgUrl does not begin with "http://" or "https://"');
-  }
-
-  if (!/\.(jpg|jpeg|png)$/i.test(imgUrl)) {
-    throw new Error('The imgUrl does not end with one of the following' +
-      'filetypes: jpg, jpeg, png');
+  if (!isValidImgUrl(imgUrl)) {
+    throw new Error('The imgUrl does not begin with "http://" or "https://"' +
+      'or does not end with one of the following jpg, jpeg, png');
   }
 
   const data = getData();
-  const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
-
+  const quiz = data.quizzes[isValidObj.quizIndex];
   quiz.thumbnailUrl = imgUrl;
-  quiz.timeLastEdited = Date.now();
+  quiz.timeLastEdited = timeStamp();
   setData(data);
 
   return {};

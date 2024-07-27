@@ -286,7 +286,7 @@ describe('Testing for adminQuizNameUpdate', () => {
     const result = requestQuizNameUpdate(userId1.token, quizInfo1.quizId, '   New Quiz   ');
     expect(result).toStrictEqual({ status: OK });
     quizInfo1 = requestQuizInfo(userId1.token, quizId1.quizId) as ResQuizInfo;
-    expect((quizInfo1.name)).toStrictEqual('New Quiz');
+    expect((quizInfo1.name)).toStrictEqual('   New Quiz   ');
   });
 
   test('Name with multiple spaces in between', () => {

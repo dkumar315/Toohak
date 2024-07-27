@@ -26,6 +26,9 @@ export const BAD_REQUEST = StatusCodes.BAD_REQUEST; // 400
 export const UNAUTHORIZED = StatusCodes.UNAUTHORIZED; // 401
 export const FORBIDDEN = StatusCodes.FORBIDDEN; // 403
 
+export type Algorithms = 'HS256' | 'RS256' | 'ES256' | 'PS256';
+export const ALGORITHM: Algorithms = 'RS256';
+
 export enum Colours {
   RED = 'red',
   BLUE = 'blue',

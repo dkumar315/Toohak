@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  Data, User, Session, INVALID, EmptyObject
+  Data, User, Session, INVALID, EmptyObject, ALGORITHM
 } from './dataStore';
 
 enum UserLimits {
@@ -19,8 +19,6 @@ enum Secret {
   SALT = 'SeCret'
 }
 
-export type Algorithms = 'HS256' | 'RS256' | 'ES256' | 'PS256';
-export const ALGORITHM: Algorithms = 'RS256';
 const TOKEN_EXPIRY = '9999 years';
 
 export interface UserDetail {
@@ -256,6 +254,31 @@ export const adminUserPasswordUpdate = (
 };
 
 /**
+ * Given an admin user's token, return userId if valid
+ *
+ * @param {string} token - unique identifier for a user
+ *
+ * @return {number} userId - corresponding userId of a token
+ */
+export const findUserId = (token: string): number => {
+  const data: Data = getData();
+  if (token === '') return INVALID;
+  try {
+    const userId: number = (jwt.verify(token, getKey().publicKey,
+      { algorithms: [ALGORITHM] }) as { userId: number }).userId;
+
+    const session: Session = data.sessions.sessionIds.find(session =>
+      session.token === token
+    );
+
+    if (!session || session.userId !== userId) return INVALID;
+    return userId;
+  } catch (error) {
+    return INVALID;
+  }
+};
+
+/**
  * Generate a token that is globally unique, assume token never expire
  *
  * @param {string} email - user email, globally unique
@@ -341,31 +364,6 @@ const storedHash = (hash: string): string => {
  */
 const vertifyPassword = (storedHash: string): string => {
   return storedHash.slice(0, -Secret.RANDOM_STR_LEN);
-};
-
-/**
- * Given an admin user's token, return userId if valid
- *
- * @param {string} token - unique identifier for a user
- *
- * @return {number} userId - corresponding userId of a token
- */
-export const findUserId = (token: string): number => {
-  const data: Data = getData();
-  if (token === '') return INVALID;
-  try {
-    const userId: number = (jwt.verify(token, getKey().publicKey,
-      { algorithms: [ALGORITHM] }) as { userId: number }).userId;
-
-    const session: Session = data.sessions.sessionIds.find(session =>
-      session.token === token
-    );
-
-    if (!session || session.userId !== userId) return INVALID;
-    return userId;
-  } catch (error) {
-    return INVALID;
-  }
 };
 
 /**
