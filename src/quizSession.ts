@@ -62,12 +62,12 @@ export function adminQuizSessionList(token: string, quizId: number): SessionList
 
   const data: Data = getData();
 
-  const activeSessions = data.quizSessions
+  const activeSessions: Array<number> = data.quizSessions
     .filter(session => session.state !== States.END)
     .map(session => session.sessionId)
     .sort((a, b) => a - b);
 
-  const inactiveSessions = data.quizSessions
+  const inactiveSessions: Array<number> = data.quizSessions
     .filter(session => session.state === States.END)
     .map(session => session.sessionId)
     .sort((a, b) => a - b);
