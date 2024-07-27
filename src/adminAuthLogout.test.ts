@@ -1,7 +1,7 @@
 import { OK, UNAUTHORIZED } from './dataStore';
 import { UserDetailReturn, UserDetails } from './auth';
 import {
-  authRegister, requestAuthLogin, requestAuthLogout,
+  authRegister, requestAuthLogin, requestAuthLogout, requestAuthLogoutV1,
   requestUserDetails, requestUserDetailsUpdate,
   requestUserPasswordUpdate, requestClear, VALID_EMPTY_RETURN,
   ERROR, ResToken, ResEmpty, ResError
@@ -21,7 +21,17 @@ beforeEach(() => {
 afterAll(() => requestClear());
 
 // /v1/admin/auth/logout
-describe('testing POST /v1/admin/auth/logout adminAuthLogout', () => {
+describe('testing POST /v2/admin/auth/logout adminAuthLogout', () => {
+  test('test version support /v1/admin/auth/logout', () => {
+    result = requestAuthLogoutV1(token1);
+    expect(result).toMatchObject(VALID_EMPTY_RETURN);
+    expect(result.status).toStrictEqual(OK);
+
+    result = requestAuthLogout(token1);
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(UNAUTHORIZED);
+  });
+
   describe('test1.0 valid returns', () => {
     test('test 1.1 single user successfully logout', () => {
       result = requestAuthLogout(token1);

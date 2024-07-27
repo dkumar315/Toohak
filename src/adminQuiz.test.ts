@@ -3,7 +3,9 @@ import {
   authRegister, requestAuthLogin,
   requestQuizList, requestQuizCreate, requestQuizInfo, requestQuizRemove,
   requestQuizNameUpdate, requestQuizDescriptionUpdate, requestClear,
-  ResError, ResEmpty, ResToken, ResQuizList, ResQuizId, ResQuizInfo
+  ResError, ResEmpty, ResToken, ResQuizList, ResQuizId, ResQuizInfo,
+  requestQuizCreateV1, requestQuizListV1, requestQuizNameUpdateV1,
+  requestQuizDescriptionUpdateV1, requestQuizInfoV1
 } from './functionRequest';
 
 beforeEach(() => {
@@ -392,5 +394,28 @@ describe('Testing for adminQuizDescriptionUpdate', () => {
   test('Description more than 100 characters', () => {
     const result = requestQuizDescriptionUpdate(userId1.token, quizInfo1.quizId, 'd'.repeat(101)) as ResError;
     expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
+  });
+});
+
+describe('V1 routes for adminQuiz', () => {
+  let token: string, quizId: number;
+
+  beforeEach(() => {
+    token = authRegister('e@mail.com', 'passw0rd', 'na', 'me').token;
+    quizId = (requestQuizCreateV1(token, 'quiz', '') as ResQuizId).quizId;
+  });
+
+  test('quizCreate and quizList', () => {
+    const quizList: ResQuizList = requestQuizListV1(token) as ResQuizList;
+    expect(quizList.quizzes[0].quizId).toStrictEqual(quizId);
+    expect(quizList.quizzes[0].name).toStrictEqual('quiz');
+  });
+
+  test('quizUpdate and quizInfo', () => {
+    expect(requestQuizNameUpdateV1(token, quizId, 'abc').status).toStrictEqual(OK);
+    expect(requestQuizDescriptionUpdateV1(token, quizId, '').status).toStrictEqual(OK);
+    const quizInfo: ResQuizInfo = requestQuizInfoV1(token, quizId) as ResQuizInfo;
+    expect(quizInfo.name).toStrictEqual('abc');
+    expect(quizInfo.description).toStrictEqual('');
   });
 });

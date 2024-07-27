@@ -19,8 +19,8 @@ enum Secret {
   SALT = 'SeCret'
 }
 
-type Algorithms = 'HS256' | 'RS256' | 'ES256' | 'PS256';
-const ALGORITHM: Algorithms = 'RS256';
+export type Algorithms = 'HS256' | 'RS256' | 'ES256' | 'PS256';
+export const ALGORITHM: Algorithms = 'RS256';
 const TOKEN_EXPIRY = '9999 years';
 
 export interface UserDetails {
@@ -263,8 +263,7 @@ function generateToken(userId: number): string {
   const payload = {
     jti: uuidv4(),
     userId: userId,
-    tokenId: ++data.sessions.tokenCounter,
-    issueAt: Math.floor(Date.now() / 1000)
+    tokenId: ++data.sessions.tokenCounter
   };
 
   const token: string = jwt.sign(payload, getKey().privateKey, {
@@ -348,19 +347,15 @@ export function findUserId(token: string): number {
   const data: Data = getData();
   if (token === '') return INVALID;
   try {
-    const decoded = jwt.decode(token);
-    if (!decoded || typeof decoded === 'string' || !decoded.userId) return INVALID;
-
-    const isValid = jwt.verify(token, getKey().publicKey,
-      { algorithms: [ALGORITHM] }) as { userId: number };
-    if (!isValid) return INVALID;
+    const userId: number = (jwt.verify(token, getKey().publicKey,
+      { algorithms: [ALGORITHM] }) as { userId: number }).userId;
 
     const session: Session = data.sessions.sessionIds.find(session =>
       session.token === token
     );
-    if (!session || session.userId !== isValid.userId) return INVALID;
 
-    return session.userId;
+    if (!session || session.userId !== userId) return INVALID;
+    return userId;
   } catch (error) {
     return INVALID;
   }
