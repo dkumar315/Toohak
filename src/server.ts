@@ -416,14 +416,7 @@ app.get('/v1/admin/quiz/:quizid/session/:sessionid/results', (req: Request, res:
     const result = adminQuizSessionResults(token, quizId, sessionId);
     res.json(result);
   } catch (error: unknown) {
-    let statusCode = BAD_REQUEST;
-    const errorMessage = (error as Error).message;
-    if (errorMessage.includes('token')) {
-      statusCode = UNAUTHORIZED;
-    } else if (errorMessage.includes('quizId') || errorMessage.includes('sessionId')) {
-      statusCode = FORBIDDEN;
-    }
-    res.status(statusCode).json({ error: errorMessage });
+    res.status(BAD_REQUEST).json({ error: (error as Error).message });
   }
 });
 

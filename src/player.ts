@@ -53,7 +53,8 @@ export const playerJoin = (sessionId: number, name: string): PlayerId => {
     name,
     points: 0,
     answerIds: [],
-    timeTaken: 0
+    timeTaken: 0,
+    score: 0
   };
   session.players.push(newPlayer);
   setData(data);
