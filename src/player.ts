@@ -77,6 +77,14 @@ PlayerStatusReturn | ErrorObject => {
   for (const session of data.quizSessions) {
     const player = session.players.find(p => p.playerId === playerId);
     if (player) {
+      if (session.atQuestion === 0) {
+        return {
+          state: session.state,
+          numQuestions: session.metadata.questions.length,
+          atQuestion: session.atQuestion + 1
+        };
+      }
+      
       return {
         state: session.state,
         numQuestions: session.metadata.questions.length,
