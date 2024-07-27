@@ -9,7 +9,8 @@ import { Token, UserDetails } from './auth';
 import { QuizList, QuizId, QuizInfo } from './quiz';
 import { QuestionBody, QuestionId, NewQuestionId } from './quizQuestion';
 import { QuizSessionId, QuizSessions } from './quizSession';
-import { PlayerId } from './player';
+import { PlayerId, PlayerStatus } from './player';
+
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
 type Header = EmptyObject | { token: string };
@@ -414,6 +415,12 @@ export function requestPlayerJoin(
   return requestHelper('POST', '/v1/player/join', { sessionId, name });
 }
 
+export function requestPlayerStatus(
+  playerId: number
+): ApiResponse<PlayerStatus> {
+  return requestHelper('GET', `/v1/player/${playerId}`, {});
+}
+
 // ============== other ========================================================
 export function requestClear(): ApiResponse<EmptyObject> {
   return requestHelper('DELETE', '/v1/clear', {});
@@ -430,6 +437,7 @@ export type ResNewQuestionId = ResValid<NewQuestionId>;
 export type ResSessionId = ResValid<QuizSessionId>;
 export type ResPlayerId = ResValid<PlayerId>;
 export type ResQuizSessions = ResValid<QuizSessions>;
+export type ResPlayerStatus = ResValid<PlayerStatus>;
 
 export const authRegister = (email: string, password: string,
   nameFirst: string, nameLast: string): ResToken =>
@@ -453,3 +461,6 @@ export const quizSessionCreate = (token: string, quizId: number,
 export const quizSessionUpdate = (token: string, quizId: number,
   sessionId: number, action: string): ResEmpty =>
   requestQuizSessionUpdate(token, quizId, sessionId, action) as ResEmpty;
+
+export const playerStatus = (playerId: number): ResPlayerStatus =>
+  requestPlayerStatus(playerId) as ResPlayerStatus;

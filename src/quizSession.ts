@@ -57,6 +57,11 @@ const setNewSession = (quiz: Quiz, autoStartNum: number): number => {
   return newSession.sessionId;
 };
 
+export interface SessionListReturn {
+  activeSessions: Array<number>,
+  inactiveSessions: Array<number>
+}
+
 const sessionTimers: Record<number, ReturnType<typeof setTimeout>> = {};
 
 function clearTimer(sessionId: number) {
@@ -82,7 +87,10 @@ function setTimer(sessionId: number, duration: number, callback: () => void) {
  * @returns {number[]} inactiveSessions - An array of inactive session ids
  * @throws {Error} - Throws an error if the token or quizId is invalid
  */
-export function adminQuizSessionList(token: string, quizId: number) {
+export const adminQuizSessionList = (
+  token: string,
+  quizId: number
+): QuizSessions => {
   const isValidObj: IsValid = isValidIds(token, quizId, true);
   if (!isValidObj.isValid) {
     throw new Error(isValidObj.errorMsg);
@@ -90,18 +98,18 @@ export function adminQuizSessionList(token: string, quizId: number) {
 
   const data: Data = getData();
 
-  const activeSessions = data.quizSessions
+  const activeSessions: Array<number> = data.quizSessions
     .filter(session => session.state !== States.END)
     .map(session => session.sessionId)
     .sort((a, b) => a - b);
 
-  const inactiveSessions = data.quizSessions
+  const inactiveSessions: Array<number> = data.quizSessions
     .filter(session => session.state === States.END)
     .map(session => session.sessionId)
     .sort((a, b) => a - b);
 
   return { activeSessions, inactiveSessions };
-}
+};
 
 /**
  * copies a quiz, and start a new session of a quiz

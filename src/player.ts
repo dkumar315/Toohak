@@ -13,6 +13,12 @@ enum NameGen {
 
 export type PlayerId = { playerId: number };
 
+export interface PlayerStatus {
+  state: States[keyof States],
+  numQuestions: number;
+  atQuestion: number;
+}
+
 /**
  * add a player
  *
@@ -53,6 +59,39 @@ export const playerJoin = (sessionId: number, name: string): PlayerId => {
   setData(data);
 
   return { playerId };
+};
+
+/**
+ * Get the status of a guest player
+ *
+ * @param {number} playerId - unique identifier for a guest player
+ *
+ * @return {object} status - status of the player
+ * @return {object} errorObject - if player ID does not exist
+ */
+export const playerStatus = (playerId: number): PlayerStatus => {
+  const data: Data = getData();
+
+  for (const session of data.quizSessions) {
+    const player = session.players.find(p => p.playerId === playerId);
+    if (player) {
+      if (session.atQuestion === 0) {
+        return {
+          state: session.state,
+          numQuestions: session.metadata.questions.length,
+          atQuestion: session.atQuestion + 1
+        };
+      }
+
+      return {
+        state: session.state,
+        numQuestions: session.metadata.questions.length,
+        atQuestion: session.atQuestion
+      };
+    }
+  }
+
+  throw new Error(`Invalid playerId: ${playerId}.`);
 };
 
 const findSession = (sessionId: number): number => {
