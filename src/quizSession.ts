@@ -277,7 +277,7 @@ export const adminQuizSessionUpdate = (
  * @throws {Error} - Throws an error if the token, quizId, or sessionId is invalid, or if the session is not in FINAL_RESULTS state.
  */
 export function adminQuizSessionResults(token: string, quizId: number, sessionId: number) {
-  const isValidObj: IsValid = isValidIds(token, quizId);
+  const isValidObj = isValidIds(token, quizId);
   if (!isValidObj.isValid) {
     throw new Error(isValidObj.errorMsg);
   }
@@ -312,66 +312,4 @@ export function adminQuizSessionResults(token: string, quizId: number, sessionId
     usersRankedByScore,
     questionResults
   };
-}
-
-function isValidIds(token: string, quizId: number): IsValid {
-  const authUserId: number = findUserId(token);
-  if (authUserId === INVALID) {
-    return { isValid: false, errorMsg: `Invalid token string: ${token}` };
-  }
-
-  if (quizId <= 0) {
-    return { isValid: false, errorMsg: `Invalid quizId number: ${quizId}` };
-  }
-
-  const data: Data = getData();
-  let isValidQuiz: IsValid = findQuizIndex(data.quizzes, quizId, authUserId);
-  if (isValidQuiz.isValid) return isValidQuiz;
-
-  isValidQuiz = findQuizIndex(data.trashedQuizzes, quizId, authUserId);
-  if (isValidQuiz.isValid) {
-    return { isValid: false, errorMsg: `Invalid quiz in trash: ${quizId}` };
-  }
-
-  return { isValid: false, errorMsg: `Invalid quizId number: ${quizId}` };
-}
-
-function activeSessionsList(data: Data, quizId: number) {
-  const activeSessions: number[] = [];
-  if (data.quizSessions.length === 0) {
-    return { activeSessions };
-  }
-
-  activeSessions.push(...data.quizSessions
-    .filter((session: QuizSession) => session.state !== States.END &&
-      session.metadata.quizId === quizId)
-    .map((session: QuizSession) => session.sessionId));
-
-  return { activeSessions };
-}
-
-function setNewSession(data: Data, quiz: Quiz, autoStartNum: number): number {
-  const { sessionIds, questions, questionCounter, ...metaQuiz } = quiz;
-  const newSession: QuizSession = {
-    sessionId: ++data.sessions.quizSessionCounter,
-    state: States.LOBBY,
-    atQuestion: 0,
-    players: [],
-    autoStartNum: autoStartNum,
-    metadata: {
-      ...metaQuiz,
-      questions: questions.map(question => ({
-        ...question,
-        playersCorrectList: [],
-        averageAnswerTime: 0,
-        percentCorrect: 0
-      }))
-    },
-    messages: []
-  };
-  data.quizSessions.push(newSession);
-  quiz.sessionIds.push(newSession.sessionId);
-
-  setData(data);
-  return newSession.sessionId;
 }
