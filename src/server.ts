@@ -387,8 +387,8 @@ app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate',
 
 // Get active and inactive session ids for a quiz
 app.get('/v1/admin/quiz/:quizid/sessions', (req: Request, res: Response) => {
-  const token = req.header('token');
-  const quizId = parseInt(req.params.quizid as string);
+  const token: string = req.header('token');
+  const quizId: number = parseInt(req.params.quizid as string);
   res.json(adminQuizSessionList(token, quizId));
 });
 
