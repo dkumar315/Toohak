@@ -27,7 +27,7 @@ beforeEach(() => {
   requestQuizRemove(token2, quizId2);
 });
 
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 describe('adminQuizViewTrash', () => {
   test('should return the list of trashed quizzes for the user', () => {

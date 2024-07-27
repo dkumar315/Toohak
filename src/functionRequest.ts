@@ -403,6 +403,14 @@ export function requestQuizQuestionDuplicate(
 }
 
 // ============== adminQuizSession ============================================
+export function requestAdminQuizSessions(
+  token: string,
+  quizId: number
+):
+  ApiResponse<{ activeSessions: number[], inactiveSessions: number[] }> {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/sessions`, { token });
+}
+
 export function requestQuizSessionCreate(
   token: string,
   quizId: number,
@@ -412,11 +420,14 @@ export function requestQuizSessionCreate(
     { token, autoStartNum });
 }
 
-export function requestAdminQuizSessions(
+export function requestQuizSessionUpdate(
   token: string,
-  quizId: number
-): ApiResponse<QuizSessions> {
-  return requestHelper('GET', `/v1/admin/quiz/${quizId}/sessions`, { token });
+  quizId: number,
+  sessionId: number,
+  action: string
+): ApiResponse<EmptyObject> {
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/session/${sessionId}`,
+    { token, action });
 }
 
 // ============== player =======================================================
@@ -462,3 +473,7 @@ export const questionCreate = (token: string, quizId: number,
 export const quizSessionCreate = (token: string, quizId: number,
   autoStartNum: number): ResSessionId =>
   requestQuizSessionCreate(token, quizId, autoStartNum) as ResSessionId;
+
+export const quizSessionUpdate = (token: string, quizId: number,
+  sessionId: number, action: string): ResEmpty =>
+  requestQuizSessionUpdate(token, quizId, sessionId, action) as ResEmpty;

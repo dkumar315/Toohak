@@ -8,11 +8,8 @@ import {
   requestQuizDescriptionUpdateV1, requestQuizInfoV1
 } from './functionRequest';
 
-beforeEach(() => {
-  requestClear();
-});
-
-afterAll(() => requestClear());
+beforeEach(requestClear);
+afterAll(requestClear);
 
 describe('adminQuizList', () => {
   test('requestQuizList returns error when token is not valid', () => {

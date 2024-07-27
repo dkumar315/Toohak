@@ -22,7 +22,7 @@ beforeEach(() => {
   }
 });
 
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () => {
   describe('test1.0 valid returns (valid token and quizId)', () => {

@@ -12,7 +12,8 @@ import {
   SessionLimits, QuizSessionId
 } from './quizSession';
 
-beforeAll(() => requestClear());
+beforeAll(requestClear);
+afterAll(requestClear);
 
 let token: string, quizId: number, questionId: number;
 const autoStartNum: number = SessionLimits.AUTO_START_NUM_MAX - 1;
@@ -39,8 +40,6 @@ beforeEach(() => {
   };
   questionId = questionCreate(token, quizId, questionBody).questionId; // https://url.jpg
 });
-
-afterAll(() => requestClear());
 
 describe('testing adminQuizSessionCreate POST /v1/admin/quiz/{quizid}/session/start', () => {
   const VALID_CREATE: QuizSessionId = { sessionId: expect.any(Number) };

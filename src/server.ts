@@ -47,7 +47,7 @@ import {
 } from './quizQuestion';
 import {
   adminQuizSessionCreate,
-  adminQuizSessionList
+  adminQuizSessionList, adminQuizSessionUpdate
 } from './quizSession';
 import {
   playerJoin
@@ -385,6 +385,13 @@ app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate',
 //                          adminQuizSession
 // ====================================================================
 
+// Get active and inactive session ids for a quiz
+app.get('/v1/admin/quiz/:quizid/sessions', (req: Request, res: Response) => {
+  const token = req.header('token');
+  const quizId = parseInt(req.params.quizid as string);
+  res.json(adminQuizSessionList(token, quizId));
+});
+
 // Start a new session for a quiz
 app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) => {
   const token: string = req.header('token');
@@ -392,11 +399,12 @@ app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) =
   res.json(adminQuizSessionCreate(token, quizId, req.body.autoStartNum));
 });
 
-// Get active and inactive session ids for a quiz
-app.get('/v1/admin/quiz/:quizid/sessions', (req: Request, res: Response) => {
-  const token = req.header('token');
-  const quizId = parseInt(req.params.quizid as string);
-  res.json(adminQuizSessionList(token, quizId));
+// Update a quiz session state
+app.put('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Response) => {
+  const token: string = req.header('token');
+  const quizId: number = parseInt(req.params.quizid as string);
+  const sessionId: number = parseInt(req.params.sessionid as string);
+  res.json(adminQuizSessionUpdate(token, quizId, sessionId, req.body.action));
 });
 
 // ====================================================================

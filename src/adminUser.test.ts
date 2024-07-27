@@ -30,7 +30,7 @@ beforeEach(() => {
   nameLast2 = 'Smith';
 });
 
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 describe('testing adminUserDetails (GET /v2/admin/user/details)', () => {
   let result: ResUserDetails | ResError;

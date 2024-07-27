@@ -50,11 +50,8 @@ const falseAnswer3: AnswerInput = {
   correct: false
 };
 
-beforeEach(() => {
-  requestClear();
-});
-
-afterAll(() => requestClear());
+beforeEach(requestClear);
+afterAll(requestClear);
 
 describe('adminQuizQuestionDelete', () => {
   let user: ResToken;

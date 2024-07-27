@@ -5,17 +5,14 @@ import {
   requestAdminQuizSessions, requestClear, ResQuizSessions
 } from './functionRequest';
 
-beforeAll(() => requestClear());
-
+beforeAll(requestClear);
 let token: string, quizId: number;
-
 beforeEach(() => {
   requestClear();
   token = authRegister('krishpatel@gmail.com', 'Krishpatel01', 'Krish', 'Patel').token;
   quizId = quizCreate(token, 'Random Sample Quiz', 'Random Description').quizId;
 });
-
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 describe('Testing adminQuizSessions', () => {
   const VALID_RESPONSE = { status: OK, activeSessions: expect.any(Array), inactiveSessions: expect.any(Array) };

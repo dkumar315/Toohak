@@ -16,7 +16,7 @@ beforeEach(() => {
   quiz = requestQuizCreate(user.token, 'My Quiz1', 'Quiz on Testing') as ResQuizId;
 });
 
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 describe('clear test', () => {
   test('clears all the user details', () => {

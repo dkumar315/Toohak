@@ -62,7 +62,7 @@ beforeEach(() => {
   questionBody = { ...initQuestionBody, answers };
   questionId = questionCreate(token, quizId, questionBody).questionId;
 });
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 describe('testing adminQuizQuestionUpdate' +
   '(PUT /v1/admin/quiz/{quizid}/question)/{questionid}', () => {

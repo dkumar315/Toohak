@@ -18,7 +18,7 @@ beforeEach(() => {
   nameLast = 'Smith';
   token1 = authRegister(email, password, nameFirst, nameLast).token;
 });
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 // /v1/admin/auth/logout
 describe('testing POST /v2/admin/auth/logout adminAuthLogout', () => {

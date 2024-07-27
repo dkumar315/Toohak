@@ -29,7 +29,7 @@ beforeEach(() => {
   requestQuizRemove(otherToken, otherQuizId);
 });
 
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 describe('testing adminQuizRestore POST /v1/admin/quiz/{quizId}/restore', () => {
   describe('test1.0 valid returns (valid token and quizId)', () => {
