@@ -74,13 +74,13 @@ function setTimer(sessionId: number, duration: number, callback: () => void) {
 /**
  * Retrieves active and inactive session ids for a quiz.
  *
- * @param {string} token - A unique identifier for a logged-in user.
- * @param {number} quizId - A unique identifier for a valid quiz.
+ * @param {string} token - A unique identifier for a logged-in user
+ * @param {number} quizId - A unique identifier for a valid quiz
  *
- * @returns {object} - An object containing arrays of active and inactive session ids.
- * @returns {number[]} activeSessions - An array of active session ids.
- * @returns {number[]} inactiveSessions - An array of inactive session ids.
- * @throws {Error} - Throws an error if the token or quizId is invalid, with an associated status code.
+ * @returns {object} - An object containing arrays of active and inactive session ids
+ * @returns {number[]} activeSessions - An array of active session ids
+ * @returns {number[]} inactiveSessions - An array of inactive session ids
+ * @throws {Error} - Throws an error if the token or quizId is invalid
  */
 export function adminQuizSessionList(token: string, quizId: number) {
   const isValidObj: IsValid = isValidIds(token, quizId, true);
