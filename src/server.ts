@@ -49,7 +49,8 @@ import {
 } from './quizQuestion';
 import {
   adminQuizSessionCreate,
-  adminQuizSessionList
+  adminQuizSessionList,
+  adminQuizSessionResults
 } from './quizSession';
 import {
   playerJoin
@@ -264,6 +265,31 @@ app.get('/v1/admin/quiz/:quizid/sessions', (req: Request, res: Response) => {
   const token = req.header('token');
   const quizId = parseInt(req.params.quizid as string);
   res.json(adminQuizSessionList(token, quizId));
+});
+
+// Get the final results for a completed quiz session
+app.get('/v1/admin/quiz/:quizid/session/:sessionid/results', (req: Request, res: Response) => {
+  try {
+    const token = req.header('token');
+    const quizId = parseInt(req.params.quizid);
+    const sessionId = parseInt(req.params.sessionid);
+    const result = adminQuizSessionResults(token, quizId, sessionId);
+    res.json(result);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message.includes('token')) {
+        res.status(UNAUTHORIZED).json({ error: error.message });
+      } else if (error.message.includes('quizId')) {
+        res.status(FORBIDDEN).json({ error: error.message });
+      } else if (error.message.includes('sessionId') || error.message.includes('FINAL_RESULTS')) {
+        res.status(BAD_REQUEST).json({ error: error.message });
+      } else {
+        res.status(BAD_REQUEST).json({ error: error.message });
+      }
+    } else {
+      res.status(BAD_REQUEST).json({ error: 'Unknown error' });
+    }
+  }
 });
 
 // ====================================================================
