@@ -1,6 +1,7 @@
 import {
   getData, setData, Data, States, INVALID, Quiz, QuizSession,
-  EmptyObject
+  EmptyObject,
+  ErrorObject
 } from './dataStore';
 import {
   findQuizIndex, IsValid
@@ -22,6 +23,11 @@ export enum Action {
 }
 
 export type QuizSessionId = { sessionId: number };
+
+export interface SessionListReturn {
+  activeSessions: Array<number>,
+  inactiveSessions: Array<number>
+}
 
 const sessionTimers: Record<number, ReturnType<typeof setTimeout>> = {};
 
@@ -48,7 +54,7 @@ function setTimer(sessionId: number, duration: number, callback: () => void) {
  * @returns {number[]} inactiveSessions - An array of inactive session ids.
  * @throws {Error} - Throws an error if the token or quizId is invalid, with an associated status code.
  */
-export function adminQuizSessionList(token: string, quizId: number) {
+export function adminQuizSessionList(token: string, quizId: number): SessionListReturn | ErrorObject {
   const isValidObj: IsValid = isValidIds(token, quizId);
   if (!isValidObj.isValid) {
     throw new Error(isValidObj.errorMsg);
@@ -56,12 +62,12 @@ export function adminQuizSessionList(token: string, quizId: number) {
 
   const data: Data = getData();
 
-  const activeSessions = data.quizSessions
+  const activeSessions: Array<number> = data.quizSessions
     .filter(session => session.state !== States.END)
     .map(session => session.sessionId)
     .sort((a, b) => a - b);
 
-  const inactiveSessions = data.quizSessions
+  const inactiveSessions: Array<number> = data.quizSessions
     .filter(session => session.state === States.END)
     .map(session => session.sessionId)
     .sort((a, b) => a - b);
