@@ -84,7 +84,7 @@ PlayerStatusReturn | ErrorObject => {
           atQuestion: session.atQuestion + 1
         };
       }
-      
+
       return {
         state: session.state,
         numQuestions: session.metadata.questions.length,
