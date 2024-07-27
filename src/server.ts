@@ -21,8 +21,7 @@ app.use(morgan('dev'));
 const file = fs.readFileSync(path.join(process.cwd(), 'swagger.yaml'), 'utf8');
 app.get('/', (req: Request, res: Response) => res.redirect('/docs'));
 app.use('/docs', sui.serve, sui.setup(YAML.parse(file),
-  { swaggerOptions: { docExpansion: config.expandDocs ? 'full' : 'list' } })
-);
+  { swaggerOptions: { docExpansion: config.expandDocs ? 'full' : 'list' } }));
 
 const PORT: number = parseInt(process.env.PORT || config.port);
 const HOST: string = process.env.IP || '127.0.0.1';
@@ -47,11 +46,11 @@ import {
   adminQuizQuestionDelete, adminQuizQuestionMove, adminQuizQuestionDuplicate
 } from './quizQuestion';
 import {
-  adminQuizSessionCreate,
-  adminQuizSessionList, adminQuizSessionUpdate, adminQuizSessionResults
+  adminQuizSessionList, adminQuizSessionCreate, 
+  adminQuizSessionUpdate, adminQuizSessionResults
 } from './quizSession';
 import {
-  playerJoin
+  playerJoin, playerStatus
 } from './player';
 import { clear } from './other';
 // import { request } from 'http';
@@ -388,8 +387,8 @@ app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate',
 
 // Get active and inactive session ids for a quiz
 app.get('/v1/admin/quiz/:quizid/sessions', (req: Request, res: Response) => {
-  const token = req.header('token');
-  const quizId = parseInt(req.params.quizid as string);
+  const token: string = req.header('token');
+  const quizId: number = parseInt(req.params.quizid as string);
   res.json(adminQuizSessionList(token, quizId));
 });
 
@@ -435,6 +434,12 @@ app.get('/v1/admin/quiz/:quizid/session/:sessionid/results', (req: Request, res:
 // Allow a guest player to join a session
 app.post('/v1/player/join', (req: Request, res: Response) => {
   res.json(playerJoin(req.body.sessionId, req.body.name));
+});
+
+// Get the status of a guest player in a session
+app.get('/v1/player/:playerid', (req: Request, res: Response) => {
+  const playerId: number = parseInt(req.params.playerid as string);
+  res.json(playerStatus(playerId));
 });
 
 // ====================================================================

@@ -12,7 +12,7 @@ beforeEach(() => {
   result = requestAuthRegister('jane@example.com', 'MyPassw0rd', 'Jane', 'Smith');
 });
 
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 describe('adminAuthRegister', () => {
   describe('Valid Registration', () => {
