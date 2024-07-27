@@ -153,6 +153,7 @@ export interface Player {
   points: number;
   answerIds: number[];
   timeTaken: number;
+  score: number;
 }
 
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY
