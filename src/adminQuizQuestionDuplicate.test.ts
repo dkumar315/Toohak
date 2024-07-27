@@ -4,7 +4,10 @@ import {
   authRegister, requestAuthLogout, quizCreate, validQuizInfo,
   requestQuizRemove, questionCreate, requestQuizQuestionDuplicate,
   ResQuizInfo, ResNewQuestionId, requestQuizQuestionDelete,
-  requestClear, ERROR, ResError, VALID_EMPTY_RETURN
+  requestClear, ERROR, ResError, VALID_EMPTY_RETURN,
+  requestQuizQuestionCreateV1, requestQuizQuestionUpdateV1,
+  requestQuizQuestionDuplicateV1, requestQuizQuestionDeleteV1,
+  requestQuizQuestionMoveV1, ResQuestionId
 } from './functionRequest';
 
 const questionBody: QuestionBody = {
@@ -42,7 +45,7 @@ beforeEach(() => {
 afterAll(() => requestClear());
 
 describe('testing adminQuizQuestionDuplicate' +
-  '(POST /v1/admin/quiz/{quizid}/question)/{questionid}/duplicate', () => {
+  '(POST /v2/admin/quiz/{quizid}/question)/{questionid}/duplicate', () => {
   test('route and trpe check', () => {
     result = requestQuizQuestionDuplicate(token, quizId, questionId);
     expect(typeof result === 'object' && 'newQuestionId' in result &&
@@ -354,5 +357,31 @@ describe('testing adminQuizQuestionDuplicate' +
       expect(quizInfo2.questions.length).toStrictEqual(quizInfo2.numQuestions);
       expect(quizInfo2.duration).toStrictEqual(quizInfo1.duration + questionBody.duration);
     });
+  });
+});
+
+describe('testing v1 adminQuizQuestion', () => {
+  test('v1 create, update, movem reemove and duplicate', () => {
+    questionId = (requestQuizQuestionCreateV1(token, quizId, questionBody) as ResQuestionId).questionId;
+    expect(questionId).toStrictEqual(expect.any(Number));
+
+    const newquestion: QuestionBody = { ...questionBody, question: 'update' };
+    requestQuizQuestionUpdateV1(token, quizId, questionId, newquestion);
+    let updatedQuizInfo: ResQuizInfo = validQuizInfo(token, quizId);
+    expect(updatedQuizInfo.questions.length).toStrictEqual(2);
+    expect(updatedQuizInfo.questions[1].question).toStrictEqual('update');
+
+    requestQuizQuestionMoveV1(token, quizId, questionId, 0);
+    updatedQuizInfo = validQuizInfo(token, quizId);
+    expect(updatedQuizInfo.questions[0].questionId).toStrictEqual(questionId);
+    expect(updatedQuizInfo.questions.length).toStrictEqual(2);
+
+    requestQuizQuestionDuplicateV1(token, quizId, questionId);
+    updatedQuizInfo = validQuizInfo(token, quizId);
+    expect(updatedQuizInfo.questions.length).toStrictEqual(3);
+
+    requestQuizQuestionDeleteV1(token, quizId, questionId);
+    updatedQuizInfo = validQuizInfo(token, quizId);
+    expect(updatedQuizInfo.questions.length).toStrictEqual(2);
   });
 });

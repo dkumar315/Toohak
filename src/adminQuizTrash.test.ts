@@ -6,7 +6,9 @@ import {
   ResToken, ResError, ResQuizId, ResQuizList,
   ERROR,
   requestQuizRestore,
-  validQuizInfo
+  validQuizInfo,
+  requestQuizCreateV1, requestQuizInfoV1, requestQuizRemoveV1,
+  requestQuizViewTrashV1, requestQuizRestoreV1, requestQuizEmptyTrashV1
 } from './functionRequest';
 
 let token1: string;
@@ -151,5 +153,28 @@ describe('adminQuizViewTrash', () => {
     // Including the initial 'Test Quiz'
     expect(result).toMatchObject(example);
     expect(result.status).toStrictEqual(OK);
+  });
+});
+
+describe('V1 routes for adminQuizTrash', () => {
+  let result: ResQuizList;
+  test('quizTrashEmpty, quizTrashRestore, and quizTrashList v1', () => {
+    token1 = authRegister('e@mail.com', 'passw0rd', 'na', 'me').token;
+    quizId1 = (requestQuizCreateV1(token1, 'quiz', '') as ResQuizId).quizId;
+    expect(requestQuizRemoveV1(token1, quizId1).status).toStrictEqual(OK);
+    expect(requestQuizEmptyTrashV1(token1, [quizId1]).status).toStrictEqual(OK);
+
+    result = requestQuizViewTrashV1(token1) as ResQuizList;
+    expect(result.quizzes.length).toStrictEqual(0);
+
+    quizId1 = (requestQuizCreateV1(token1, 'quiz', '') as ResQuizId).quizId;
+    expect(requestQuizRemoveV1(token1, quizId1).status).toStrictEqual(OK);
+    result = requestQuizViewTrashV1(token1) as ResQuizList;
+    expect(result.quizzes.length).toStrictEqual(1);
+
+    expect(requestQuizRestoreV1(token1, quizId1).status).toStrictEqual(OK);
+    result = requestQuizViewTrashV1(token1) as ResQuizList;
+    expect(result.quizzes.length).toStrictEqual(0);
+    expect(requestQuizInfoV1(token1, quizId1).status).toStrictEqual(OK);
   });
 });

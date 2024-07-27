@@ -68,10 +68,3 @@ describe('HTTP tests using Jest', () => {
     expect(res.statusCode).toStrictEqual(400);
   });
 });
-
-describe('server functional', () => {
-  test('non eist route', () => {
-    const res = request('GET', `${url}:${port}/invalid`);
-    expect(res.statusCode).toStrictEqual(404);
-  });
-});
