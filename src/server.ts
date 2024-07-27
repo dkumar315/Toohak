@@ -46,7 +46,7 @@ import {
   adminQuizQuestionDelete, adminQuizQuestionMove, adminQuizQuestionDuplicate
 } from './quizQuestion';
 import {
-  adminQuizSessionList, adminQuizSessionCreate, 
+  adminQuizSessionList, adminQuizSessionCreate,
   adminQuizSessionUpdate, adminQuizSessionResults
 } from './quizSession';
 import {

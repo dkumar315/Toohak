@@ -264,7 +264,7 @@ export const adminQuizSessionUpdate = (
 
   setData(data);
   return {};
-}
+};
 
 /**
  * Retrieves the final results for a completed quiz session.
