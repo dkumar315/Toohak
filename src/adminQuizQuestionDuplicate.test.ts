@@ -42,7 +42,7 @@ beforeEach(() => {
   quizId = quizCreate(token, 'Mirror Mirror on the wall', 'I am the fairest of the all').quizId;
   questionId = questionCreate(token, quizId, questionBody).questionId;
 });
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 describe('testing adminQuizQuestionDuplicate' +
   '(POST /v2/admin/quiz/{quizid}/question)/{questionid}/duplicate', () => {

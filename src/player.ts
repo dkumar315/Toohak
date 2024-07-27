@@ -1,6 +1,6 @@
 import {
   setData, getData, States, Data, INVALID,
-  QuizSession, Player, ErrorObject
+  QuizSession, Player
 } from './dataStore';
 
 enum NameGen {
@@ -13,7 +13,7 @@ enum NameGen {
 
 export type PlayerId = { playerId: number };
 
-export interface PlayerStatusReturn {
+export interface PlayerStatus {
   state: States[keyof States],
   numQuestions: number;
   atQuestion: number;
@@ -28,8 +28,7 @@ export interface PlayerStatusReturn {
  * @return {object} playerId - unique identifier for a guest player
  * @return {object} errorObject - session, session state or namw input invalid
  */
-export const playerJoin = (sessionId: number, name: string):
-PlayerId | ErrorObject => {
+export const playerJoin = (sessionId: number, name: string): PlayerId => {
   const sessionIndex: number = findSession(sessionId);
   if (sessionIndex === INVALID) {
     throw new Error(`Invalid sessionId number: ${sessionId}.`);
@@ -70,8 +69,7 @@ PlayerId | ErrorObject => {
  * @return {object} status - status of the player
  * @return {object} errorObject - if player ID does not exist
  */
-export const playerStatus = (playerId: number):
-PlayerStatusReturn | ErrorObject => {
+export const playerStatus = (playerId: number): PlayerStatus => {
   const data: Data = getData();
 
   for (const session of data.quizSessions) {

@@ -4,7 +4,6 @@ import {
   quizCreate, validQuizInfo, requestUpdateQuizThumbnail,
   requestClear, ResQuizInfo, ERROR, ResError
 } from './functionRequest';
-beforeAll(() => requestClear());
 
 let token: string, quizId: number;
 
@@ -16,7 +15,7 @@ beforeEach(() => {
   quizId = quizResponse.quizId;
 });
 
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 describe('testing updateQuizThumbnail', () => {
   test('valid thumbnail update', () => {

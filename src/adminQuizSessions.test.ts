@@ -6,8 +6,7 @@ import {
   ResQuizSessions, ResError, ERROR
 } from './functionRequest';
 
-beforeAll(() => requestClear());
-
+beforeAll(requestClear);
 let token: string, quizId: number;
 let result: ResQuizSessions | ResError;
 
@@ -16,8 +15,7 @@ beforeEach(() => {
   token = authRegister('krishpatel@gmail.com', 'Krishpatel01', 'Krish', 'Patel').token;
   quizId = quizCreate(token, 'Random Sample Quiz', 'Random Description').quizId;
 });
-
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 describe('Testing adminQuizSessions', () => {
   const VALID_RESPONSE = { activeSessions: expect.any(Array<number>), inactiveSessions: expect.any(Array<number>) };

@@ -31,7 +31,7 @@ beforeEach(() => {
   deleteQuizIds = [quizId];
 });
 
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 describe('testing adminQuizTrashEmpty DELETE /v1/admin/quiz/trash/empty', () => {
   describe('test1.0 valid returns (valid token and quizIds)', () => {

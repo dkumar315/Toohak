@@ -34,7 +34,7 @@ beforeEach(() => {
   const answers: AnswerInput[] = [trueAnswer1, falseAnswer1];
   questionBody = { ...initQuestionBody, answers };
 });
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 describe('testing adminQuizQuestionCreate POST /v1/admin/quiz/{quizid}/question', () => {
   test('test route and type', () => {

@@ -12,8 +12,7 @@ import {
 } from './quizSession';
 import sleepSync from 'slync';
 
-beforeAll(() => requestClear());
-
+beforeAll(requestClear);
 let token: string, quizId: number, sessionId: number;
 const autoStartNum: number = SessionLimits.AUTO_START_NUM_MAX - 1;
 let result: ResEmpty | ResError;
@@ -41,7 +40,7 @@ beforeEach(() => {
   sessionId = quizSessionCreate(token, quizId, autoStartNum).sessionId;
 });
 
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 describe('testing adminQuizSessionUpdate PUT /v1/admin/quiz/{quizId}/session/{sessionid}', () => {
   const VALID_UPDATE = {};

@@ -22,7 +22,7 @@ beforeEach(() => {
   }
 });
 
-afterAll(() => requestClear());
+afterAll(requestClear);
 
 describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () => {
   describe('test1.0 valid returns (valid token and quizId)', () => {
@@ -42,13 +42,13 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
 
     test('test2.2 userEmail is the current logged in user', () => {
       const result = requestQuizTransfer(token, quizId, 'krishpatel@gmail.com');
-      expect(result).toStrictEqual({ status: FORBIDDEN, error: expect.any(String) });
+      expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
     });
 
     test('test2.3 quiz ID refers to a quiz that has a name that is already used by the target user', () => {
       requestQuizCreate(otherToken, 'Test Quiz', 'This is another test quiz.');
       const result = requestQuizTransfer(token, quizId, 'johnsmith@gmail.com');
-      expect(result).toStrictEqual({ status: FORBIDDEN, error: expect.any(String) });
+      expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
     });
 
     test('test2.4 token is empty or invalid (does not refer to valid logged in user session)', () => {

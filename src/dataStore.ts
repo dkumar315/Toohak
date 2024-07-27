@@ -2,7 +2,7 @@ import fs from 'fs';
 const DATA_FILE = './dataStore.json';
 import { StatusCodes } from 'http-status-codes';
 import crypto from 'crypto';
-const SECURE_FILE = 'hs256_secret_key.txt';
+export const SECURE_FILE = 'hs256_secret_key.txt';
 
 // YOU SHOULD MODIFY THIS OBJECT BELOW ONLY
 let data: Data = {
@@ -25,6 +25,9 @@ export const OK = StatusCodes.OK; // 200
 export const BAD_REQUEST = StatusCodes.BAD_REQUEST; // 400
 export const UNAUTHORIZED = StatusCodes.UNAUTHORIZED; // 401
 export const FORBIDDEN = StatusCodes.FORBIDDEN; // 403
+
+export type Algorithms = 'HS256' | 'RS256' | 'ES256' | 'PS256';
+export const ALGORITHM: Algorithms = 'RS256';
 
 export enum Colours {
   RED = 'red',
