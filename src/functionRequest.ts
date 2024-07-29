@@ -397,6 +397,12 @@ export function requestQuizSessionCreate(
     { token, autoStartNum });
 }
 
+export function requestQuizSessionList(
+  token: string, quizId: number):
+  ApiResponse<{ activeSessions: number[], inactiveSessions: number[] }> {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/sessions`, { token });
+}
+
 export function requestQuizSessionUpdate(
   token: string,
   quizId: number,
@@ -405,6 +411,14 @@ export function requestQuizSessionUpdate(
 ): ApiResponse<EmptyObject> {
   return requestHelper('PUT', `/v1/admin/quiz/${quizId}/session/${sessionId}`,
     { token, action });
+}
+
+export function requestQuizSessionResults(
+  token: string,
+  quizId: number,
+  sessionId: number
+): ApiResponse<{ usersRankedByScore: Array<{ name: string; score: number }>, questionResults: Array<{ questionId: number; playersCorrectList: string[], averageAnswerTime: number, percentCorrect: number }> }> {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}/results`, { token });
 }
 
 // ============== player =======================================================

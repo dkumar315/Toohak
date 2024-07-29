@@ -46,7 +46,8 @@ import {
   adminQuizQuestionDelete, adminQuizQuestionMove, adminQuizQuestionDuplicate
 } from './quizQuestion';
 import {
-  adminQuizSessionList, adminQuizSessionCreate, adminQuizSessionUpdate
+  adminQuizSessionList, adminQuizSessionCreate,
+  adminQuizSessionUpdate, adminQuizSessionResults
 } from './quizSession';
 import {
   playerJoin, playerStatus
@@ -404,6 +405,19 @@ app.put('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Respons
   const quizId: number = parseInt(req.params.quizid as string);
   const sessionId: number = parseInt(req.params.sessionid as string);
   res.json(adminQuizSessionUpdate(token, quizId, sessionId, req.body.action));
+});
+
+// Get the final results for a completed quiz session
+app.get('/v1/admin/quiz/:quizid/session/:sessionid/results', (req: Request, res: Response) => {
+  try {
+    const token = req.header('token');
+    const quizId = parseInt(req.params.quizid);
+    const sessionId = parseInt(req.params.sessionid);
+    const result = adminQuizSessionResults(token, quizId, sessionId);
+    res.json(result);
+  } catch (error: unknown) {
+    res.status(BAD_REQUEST).json({ error: (error as Error).message });
+  }
 });
 
 // ====================================================================

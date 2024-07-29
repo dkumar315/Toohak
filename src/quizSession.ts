@@ -265,3 +265,51 @@ export const adminQuizSessionUpdate = (
   setData(data);
   return {};
 };
+
+/**
+ * Retrieves the final results for a completed quiz session.
+ *
+ * @param {string} token - A unique identifier for a login user.
+ * @param {number} quizId - A unique identifier for a valid quiz.
+ * @param {number} sessionId - A unique identifier for a valid session.
+ *
+ * @returns {object} - An object containing users ranked by score and question results.
+ * @throws {Error} - Throws an error if the token, quizId, or sessionId is invalid, or if the session is not in FINAL_RESULTS state.
+ */
+export function adminQuizSessionResults(token: string, quizId: number, sessionId: number) {
+  const isValidObj = isValidIds(token, quizId);
+  if (!isValidObj.isValid) {
+    throw new Error(isValidObj.errorMsg);
+  }
+
+  const data: Data = getData();
+  const quiz = data.quizzes[isValidObj.quizIndex];
+  if (!quiz) {
+    throw new Error(`Invalid quizId number: ${quizId}`);
+  }
+
+  const session = data.quizSessions.find(s => s.sessionId === sessionId && s.metadata.quizId === quizId);
+  if (!session) {
+    throw new Error(`Invalid sessionId number: ${sessionId}`);
+  }
+
+  if (session.state !== States.FINAL_RESULTS) {
+    throw new Error('Session is not in FINAL_RESULTS state');
+  }
+
+  const usersRankedByScore = session.players
+    .map(player => ({ name: player.name, score: player.score }))
+    .sort((a, b) => b.score - a.score);
+
+  const questionResults = session.metadata.questions.map(question => ({
+    questionId: question.questionId,
+    playersCorrectList: question.playersCorrectList,
+    averageAnswerTime: question.averageAnswerTime,
+    percentCorrect: question.percentCorrect
+  }));
+
+  return {
+    usersRankedByScore,
+    questionResults
+  };
+}
