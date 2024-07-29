@@ -1,5 +1,8 @@
 import {
-  getData, setData, Data, States, Quiz, QuizSession, EmptyObject
+  getData, setData, Data, States, Quiz, QuizSession, EmptyObject,
+  State,
+  Metadata,
+  Player
 } from './dataStore';
 import { isValidIds, IsValid } from './helperFunctions';
 
@@ -21,6 +24,12 @@ export type QuizSessionId = { sessionId: number };
 export type QuizSessions = {
   activeSessions: number[],
   inactiveSessions: number[]
+};
+export type QuizSessionStatus = {
+  state: State,
+  atQuestion: number,
+  players: Player[],
+  metadata: Metadata
 };
 
 /** add a new session copy of current quiz in data.quizSessions
@@ -160,6 +169,7 @@ export const adminQuizSessionCreate = (
  * @param {Action} action - the action to be performed on the session
  *
  * @return {object} success or error message
+ * @throws {Error} error - if token, quizId, sessionId or action is invalid
  */
 export const adminQuizSessionUpdate = (
   token: string,
@@ -264,4 +274,41 @@ export const adminQuizSessionUpdate = (
 
   setData(data);
   return {};
+};
+
+/**
+ * Retrieves the status of a specific quiz session
+ *
+ * @param {string} token - A unique identifier for a logged-in user
+ * @param {number} quizId - A unique identifier for a valid quiz
+ * @param {number} sessionId - A unique identifier for a quiz session
+ *
+ * @returns {object} - An object containing the status of the quiz session
+ * @throws {Error} - Throws an error if the token, quizId, or sessionId is invalid
+ */
+export const adminQuizSessionStatus = (
+  token: string,
+  quizId: number,
+  sessionId: number
+): QuizSessionStatus => {
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
+  if (!isValidObj.isValid) {
+    throw new Error(isValidObj.errorMsg);
+  }
+
+  const data: Data = getData();
+
+  const session: QuizSession | undefined = data.quizSessions.find(
+    session => session.sessionId === sessionId
+  );
+  if (!session) {
+    throw new Error(`Invalid sessionId: ${sessionId}.`);
+  }
+
+  if (session.metadata.quizId !== quizId) {
+    throw new Error('Session Id does not refer to a valid session within this quiz');
+  }
+
+  const { state, atQuestion, players, metadata } = session;
+  return { state, atQuestion, players, metadata };
 };
