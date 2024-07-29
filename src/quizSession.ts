@@ -266,7 +266,6 @@ export const adminQuizSessionUpdate = (
   return {};
 };
 
-
 export function quizSessionResult(playerId: number) {
   const data = getData();
   if (!data.quizSessions.length) {
