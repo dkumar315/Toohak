@@ -375,4 +375,4 @@ export const adminQuizSessionResults = (
     usersRankedByScore,
     questionResults
   };
-}
+};
