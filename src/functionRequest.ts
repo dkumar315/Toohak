@@ -8,7 +8,7 @@ import { EmptyObject, ErrorObject } from './dataStore';
 import { Token, UserDetails } from './auth';
 import { QuizList, QuizId, QuizInfo } from './quiz';
 import { QuestionBody, QuestionId, NewQuestionId } from './quizQuestion';
-import { QuizSessionId, QuizSessions, QuizSessionStatus } from './quizSession';
+import { QuizSessions, QuizSessionId, QuizSessionStatus, QuizSessionResults } from './quizSession';
 import { PlayerId, PlayerStatus } from './player';
 
 export const VALID_EMPTY_RETURN: EmptyObject = {};
@@ -397,6 +397,12 @@ export function requestQuizSessionCreate(
     { token, autoStartNum });
 }
 
+export function requestQuizSessionList(
+  token: string, quizId: number):
+  ApiResponse<{ activeSessions: number[], inactiveSessions: number[] }> {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/sessions`, { token });
+}
+
 export function requestQuizSessionUpdate(
   token: string,
   quizId: number,
@@ -413,6 +419,14 @@ export function requestAdminQuizSessionStatus(
   sessionId: number
 ): ApiResponse<QuizSessionStatus> {
   return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}`, { token });
+}
+
+export function requestQuizSessionResults(
+  token: string,
+  quizId: number,
+  sessionId: number
+): ApiResponse<QuizSessionResults> {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}/results`, { token });
 }
 
 // ============== player =======================================================
