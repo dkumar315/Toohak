@@ -61,6 +61,7 @@ export interface Data {
   trashedQuizzes: Quiz[];
   sessions: Sessions;
   quizSessions: QuizSession[];
+
 }
 
 export interface Sessions {
@@ -156,6 +157,20 @@ export interface Player {
   points: number;
   answerIds: number[];
   timeTaken: number;
+}
+export interface QuestionResult {
+  id: number;
+  result: string;
+}
+
+export interface QuizSessionResult {
+  usersRankedByScore: { name: string, score: number }[];
+  questionResults: {
+    questionId: number;
+    playersCorrectList: string[];
+    averageAnswerTime: number;
+    percentCorrect: number;
+  }[];
 }
 
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY

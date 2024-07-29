@@ -4,7 +4,7 @@ const SERVER_URL: string = `${config.url}:${config.port}`;
 
 // ============== interfaces ===================================================
 import { StatusCodes } from 'http-status-codes';
-import { EmptyObject, ErrorObject } from './dataStore';
+import { EmptyObject, ErrorObject, QuizSessionResult, QuestionResult } from './dataStore';
 import { Token, UserDetails } from './auth';
 import { QuizList, QuizId, QuizInfo } from './quiz';
 import { QuestionBody, QuestionId, NewQuestionId } from './quizQuestion';
@@ -381,6 +381,14 @@ export function requestQuizQuestionDuplicate(
     `/v2/admin/quiz/${quizId}/question/${questionId}/duplicate`, { token });
 }
 
+export function requestQuestionResults(
+  playerId: number,
+  sessionId: number,
+  questionId: number
+): ApiResponse<QuestionResult> {
+  return requestHelper('GET', `/v1/player/${playerId}/session/${sessionId}/question/${questionId}/results`, {});
+}
+
 // ============== adminQuizSession ============================================
 export function requestAdminQuizSessions(
   token: string,
@@ -405,6 +413,12 @@ export function requestQuizSessionUpdate(
 ): ApiResponse<EmptyObject> {
   return requestHelper('PUT', `/v1/admin/quiz/${quizId}/session/${sessionId}`,
     { token, action });
+}
+
+export function requestQuizSessionResult(
+  playerId: number
+): ResQuizSessionResult {
+  return requestHelper<QuizSessionResult>('GET', `/v1/player/${playerId}/results`, {});
 }
 
 // ============== player =======================================================
@@ -438,6 +452,7 @@ export type ResSessionId = ResValid<QuizSessionId>;
 export type ResPlayerId = ResValid<PlayerId>;
 export type ResQuizSessions = ResValid<QuizSessions>;
 export type ResPlayerStatus = ResValid<PlayerStatus>;
+export type ResQuizSessionResult = ApiResponse<QuizSessionResult>;
 
 export const authRegister = (email: string, password: string,
   nameFirst: string, nameLast: string): ResToken =>

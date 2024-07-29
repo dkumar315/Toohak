@@ -2,7 +2,7 @@ import {
   getData, setData, Data, States, Quiz, QuizSession, EmptyObject
 } from './dataStore';
 import { isValidIds, IsValid } from './helperFunctions';
-
+import { StatusCodes } from 'http-status-codes';
 export enum SessionLimits {
   AUTO_START_AND_QUESTIONS_NUM_MIN = 0,
   AUTO_START_NUM_MAX = 50,
@@ -265,3 +265,44 @@ export const adminQuizSessionUpdate = (
   setData(data);
   return {};
 };
+
+
+export function quizSessionResult(playerId: number) {
+  const data = getData();
+  if (!data.quizSessions.length) {
+    console.error('No sessions found');
+    return { status: StatusCodes.BAD_REQUEST, error: 'No sessions found' };
+  }
+  const session = data.quizSessions.find((session) =>
+    session.players.some((player) => player.playerId === playerId)
+  );
+  if (!session) {
+    return {
+      status: StatusCodes.BAD_REQUEST,
+      error: 'Player ID does not exist',
+    };
+  }
+  if (session.state !== 'FINAL_RESULTS') {
+    return {
+      status: StatusCodes.BAD_REQUEST,
+      error: 'Session is not in FINAL_RESULTS state',
+    };
+  }
+  const usersRankedByScore = session.players
+    .sort((a, b) => b.points - a.points)
+    .map((player) => ({ name: player.name, score: player.points }));
+
+  const questionResults = session.metadata.questions.map((question) => ({
+    questionId: question.questionId,
+    playersCorrectList: question.playersCorrectList,
+    averageAnswerTime: question.averageAnswerTime,
+    percentCorrect: question.percentCorrect,
+    thumbnailUrl: question.thumbnailUrl,
+  }));
+
+  return {
+    status: StatusCodes.OK,
+    usersRankedByScore,
+    questionResults,
+  };
+}
