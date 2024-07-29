@@ -8,7 +8,7 @@ import { EmptyObject, ErrorObject } from './dataStore';
 import { Token, UserDetails } from './auth';
 import { QuizList, QuizId, QuizInfo } from './quiz';
 import { QuestionBody, QuestionId, NewQuestionId } from './quizQuestion';
-import { QuizSessionId, QuizSessions } from './quizSession';
+import { QuizSessionId, QuizSessions, QuizSessionStatus } from './quizSession';
 import { PlayerId, PlayerStatus } from './player';
 
 export const VALID_EMPTY_RETURN: EmptyObject = {};
@@ -407,6 +407,14 @@ export function requestQuizSessionUpdate(
     { token, action });
 }
 
+export function requestAdminQuizSessionStatus(
+  token: string,
+  quizId: number,
+  sessionId: number
+): ApiResponse<QuizSessionStatus> {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}`, { token });
+}
+
 // ============== player =======================================================
 export function requestPlayerJoin(
   sessionId: number,
@@ -434,9 +442,10 @@ export type ResQuizId = ResValid<QuizId>;
 export type ResQuizInfo = ResValid<QuizInfo>;
 export type ResQuestionId = ResValid<QuestionId>;
 export type ResNewQuestionId = ResValid<NewQuestionId>;
-export type ResSessionId = ResValid<QuizSessionId>;
-export type ResPlayerId = ResValid<PlayerId>;
 export type ResQuizSessions = ResValid<QuizSessions>;
+export type ResSessionId = ResValid<QuizSessionId>;
+export type ResQuizSessionStatus = ResValid<QuizSessionStatus>;
+export type ResPlayerId = ResValid<PlayerId>;
 export type ResPlayerStatus = ResValid<PlayerStatus>;
 
 export const authRegister = (email: string, password: string,
@@ -461,6 +470,10 @@ export const quizSessionCreate = (token: string, quizId: number,
 export const quizSessionUpdate = (token: string, quizId: number,
   sessionId: number, action: string): ResEmpty =>
   requestQuizSessionUpdate(token, quizId, sessionId, action) as ResEmpty;
+
+export const quizSessionStatus = (token: string, quizId: number,
+  sessionId: number): ResQuizSessionStatus =>
+  requestAdminQuizSessionStatus(token, quizId, sessionId) as ResQuizSessionStatus;
 
 export const playerStatus = (playerId: number): ResPlayerStatus =>
   requestPlayerStatus(playerId) as ResPlayerStatus;
