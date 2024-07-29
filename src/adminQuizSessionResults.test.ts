@@ -1,33 +1,28 @@
-import { OK } from './dataStore';
+import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
 import {
-  authRegister, requestAuthLogout,
-  quizCreate, requestQuizSessionCreate, requestQuizSessionResults, requestClear,
+  requestClear, authRegister, requestAuthLogout, quizCreate,
+  requestQuizSessionResults, quizSessionCreate, ERROR,
+  ResError, ResQuizSessionResults,
 } from './functionRequest';
+import { SessionLimits } from './quizSession';
 
 beforeAll(() => requestClear());
 
 let token: string, quizId: number, sessionId: number;
+const autoStartNum: number = SessionLimits.AUTO_START_NUM_MAX - 1;
+let result: ResQuizSessionResults | ResError;
 
 beforeEach(() => {
   requestClear();
-  const authResponse = authRegister('krishpatel@gmail.com', 'Krishpatel01', 'Krish', 'Patel');
-  if ('token' in authResponse) {
-    token = authResponse.token;
-  }
-  const quizResponse = quizCreate(token, 'Sample Quiz', 'Sample Description');
-  if ('quizId' in quizResponse) {
-    quizId = quizResponse.quizId;
-  }
-  const startResponse = requestQuizSessionCreate(token, quizId, 0);
-  if ('sessionId' in startResponse) {
-    sessionId = startResponse.sessionId;
-  }
+  token = authRegister('krishpatel@gmail.com', 'Krishpatel01', 'Krish', 'Patel').token;
+  quizId = quizCreate(token, 'Sample Quiz', 'Sample Description').quizId;
+  sessionId = quizSessionCreate(token, quizId, autoStartNum).sessionId;
 });
 
 afterAll(() => requestClear());
 
-describe('Testing adminQuizSessionResults', () => {
-  const VALID_RESPONSE = {
+describe('Testing adminQuizSessionResults GET /v1/admin/quiz/{quizId}/session/{sessionId}/results', () => {
+  const VALID_RESULT = {
     usersRankedByScore: expect.any(Array),
     questionResults: expect.any(Array)
   };
@@ -36,29 +31,17 @@ describe('Testing adminQuizSessionResults', () => {
     test('Valid request returns session results', () => {
       const result = requestQuizSessionResults(token, quizId, sessionId);
       if ('status' in result && result.status === OK) {
-        expect(result).toMatchObject(VALID_RESPONSE);
+        expect(result).toMatchObject(VALID_RESULT);
       }
     });
 
     test('Valid request with different token and quizId', () => {
-      const authResponse = authRegister('anotheruser@gmail.com', 'AnotherUser01', 'Another', 'User');
-      let newToken: string;
-      if ('token' in authResponse) {
-        newToken = authResponse.token;
-      }
-      const quizResponse = quizCreate(newToken, 'Another Sample Quiz', 'Another Description');
-      let newQuizId: number;
-      if ('quizId' in quizResponse) {
-        newQuizId = quizResponse.quizId;
-      }
-      const startResponse = requestQuizSessionCreate(newToken, newQuizId, 0);
-      let newSessionId: number;
-      if ('sessionId' in startResponse) {
-        newSessionId = startResponse.sessionId;
-      }
-      const result = requestQuizSessionResults(newToken, newQuizId, newSessionId);
+      const token2 = authRegister('anotheruser@gmail.com', 'AnotherUser01', 'Another', 'User').token;
+      const quizId2 = quizCreate(token2, 'Another Sample Quiz', 'Another Description').quizId;
+      const sessionId2 = quizSessionCreate(token2, quizId2, autoStartNum).sessionId;
+      const result = requestQuizSessionResults(token2, quizId2, sessionId2);
       if ('status' in result && result.status === OK) {
-        expect(result).toMatchObject(VALID_RESPONSE);
+        expect(result).toMatchObject(VALID_RESULT);
       }
     });
   });
@@ -67,153 +50,83 @@ describe('Testing adminQuizSessionResults', () => {
     describe('Invalid token returns UNAUTHORIZED (401)', () => {
       test('User logged out', () => {
         requestAuthLogout(token);
-        try {
-          requestQuizSessionResults(token, quizId, sessionId);
-        } catch (error) {
-          expect((error as Error).message).toStrictEqual('Invalid token string: krishpatel@gmail.com');
-        }
+        result = requestQuizSessionResults(token, quizId, sessionId);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
 
       test('User not exists', () => {
         requestClear();
-        try {
-          requestQuizSessionResults(token, quizId, sessionId);
-        } catch (error) {
-          expect((error as Error).message).toStrictEqual('Invalid token string: krishpatel@gmail.com');
-        }
+        result = requestQuizSessionResults(token, quizId, sessionId);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
 
       test('Invalid token format', () => {
-        try {
-          requestQuizSessionResults('invalid', quizId, sessionId);
-        } catch (error) {
-          expect((error as Error).message).toStrictEqual('Invalid token string: invalid');
-        }
+        result = requestQuizSessionResults('invalid', quizId, sessionId);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
 
       test('Empty token', () => {
-        try {
-          requestQuizSessionResults('', quizId, sessionId);
-        } catch (error) {
-          expect((error as Error).message).toStrictEqual('Invalid token string: ');
-        }
-      });
-
-      test('Token with insufficient permissions', () => {
-        const authResponse = authRegister('limiteduser@gmail.com', 'LimitedUser01', 'Limited', 'User');
-        let limitedToken: string;
-        if ('token' in authResponse) {
-          limitedToken = authResponse.token;
-        }
-        try {
-          requestQuizSessionResults(limitedToken, quizId, sessionId);
-        } catch (error) {
-          expect((error as Error).message).toStrictEqual('Invalid token string: limiteduser@gmail.com');
-        }
-      });
-    });
-
-    describe('Invalid quizId or sessionId returns BAD_REQUEST (400)', () => {
-      test('Invalid quizId format', () => {
-        try {
-          requestQuizSessionResults(token, -1, sessionId);
-        } catch (error) {
-          expect((error as Error).message).toStrictEqual('Invalid quizId number: -1');
-        }
-      });
-
-      test('Invalid sessionId format', () => {
-        try {
-          requestQuizSessionResults(token, quizId, -1);
-        } catch (error) {
-          expect((error as Error).message).toStrictEqual('Invalid sessionId number: -1');
-        }
-      });
-
-      test('Non-existent sessionId', () => {
-        try {
-          requestQuizSessionResults(token, quizId, sessionId + 1);
-        } catch (error) {
-          expect((error as Error).message).toStrictEqual(`Invalid sessionId number: ${sessionId + 1}`);
-        }
-      });
-
-      test('Session not in FINAL_RESULTS state', () => {
-        const startResponse = requestQuizSessionCreate(token, quizId, 0);
-        let newSessionId: number;
-        if ('sessionId' in startResponse) {
-          newSessionId = startResponse.sessionId;
-        }
-        try {
-          requestQuizSessionResults(token, quizId, newSessionId);
-        } catch (error) {
-          expect((error as Error).message).toStrictEqual('Session is not in FINAL_RESULTS state');
-        }
-      });
-
-      test('Session Id does not refer to a valid session within this quiz', () => {
-        const anotherQuizResponse = quizCreate(token, 'Another Quiz', 'Another Description');
-        let anotherQuizId: number;
-        if ('quizId' in anotherQuizResponse) {
-          anotherQuizId = anotherQuizResponse.quizId;
-        }
-        try {
-          requestQuizSessionResults(token, anotherQuizId, sessionId);
-        } catch (error) {
-          expect((error as Error).message).toStrictEqual('Session Id does not refer to a valid session within this quiz');
-        }
+        result = requestQuizSessionResults('', quizId, sessionId);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(UNAUTHORIZED);
       });
     });
 
     describe('Invalid quizId returns FORBIDDEN (403)', () => {
+      test('Invalid quizId format', () => {
+        result = requestQuizSessionResults(token, -1, sessionId);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(FORBIDDEN);
+      });
+
       test('Non-existent quizId', () => {
-        try {
-          requestQuizSessionResults(token, quizId + 1, sessionId);
-        } catch (error) {
-          expect((error as Error).message).toStrictEqual(`Invalid quizId number: ${quizId + 1}`);
-        }
+        result = requestQuizSessionResults(token, quizId + 1, sessionId);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(FORBIDDEN);
       });
 
       test('User is not the owner of the quiz', () => {
-        const authResponse = authRegister('devaanshkumar@gmail.com', 'Devaanshkumar01', 'Devaansh', 'Kumar');
-        let token2: string;
-        if ('token' in authResponse) {
-          token2 = authResponse.token;
-        }
-        try {
-          requestQuizSessionResults(token2, quizId, sessionId);
-        } catch (error) {
-          expect((error as Error).message).toStrictEqual(`Invalid quizId number: ${quizId}`);
-        }
+        const token2 = authRegister('devaanshkumar@gmail.com', 'Devaanshkumar01', 'Devaansh', 'Kumar').token;
+        result = requestQuizSessionResults(token2, quizId, sessionId);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(FORBIDDEN);
       });
     });
 
     describe('Invalid session state or data returns BAD_REQUEST (400)', () => {
-      test('Session with no players', () => {
-        const startResponse = requestQuizSessionCreate(token, quizId, 0);
-        let newSessionId: number;
-        if ('sessionId' in startResponse) {
-          newSessionId = startResponse.sessionId;
-        }
-        // Manually move the new session to FINAL_RESULTS state
-        try {
-          requestQuizSessionResults(token, quizId, newSessionId);
-        } catch (error) {
-          expect((error as Error).message).toStrictEqual('Session has no players');
-        }
+      test('invalid sessionId format', () => {
+        result = requestQuizSessionResults(token, quizId, -1);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
       });
 
-      test('Session with invalid question data', () => {
-        const startResponse = requestQuizSessionCreate(token, quizId, 0);
-        let newSessionId: number;
-        if ('sessionId' in startResponse) {
-          newSessionId = startResponse.sessionId;
-        }
-        try {
-          requestQuizSessionResults(token, quizId, newSessionId);
-        } catch (error) {
-          expect((error as Error).message).toStrictEqual('Invalid question data');
-        }
+      test('sessionId does not exist', () => {
+        result = requestQuizSessionResults(token, quizId, sessionId + 1);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
+      });
+
+      test('Session with no players', () => {
+        const sessionId2 = quizSessionCreate(token, quizId, autoStartNum).sessionId;
+        result = requestQuizSessionResults(token, quizId, sessionId2);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
+      });
+
+      test('Session Id does not refer to a valid session within this quiz', () => {
+        const quizId2 = quizCreate(token, 'Another Quiz', 'Another Description').quizId;
+        result = requestQuizSessionResults(token, quizId2, sessionId);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
+      });
+
+      test('Session not in FINAL_RESULTS state', () => {
+        result = requestQuizSessionResults(token, quizId, sessionId);
+        expect(result).toMatchObject(ERROR);
+        expect(result.status).toStrictEqual(BAD_REQUEST);
       });
     });
   });

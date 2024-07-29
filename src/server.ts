@@ -47,7 +47,8 @@ import {
 } from './quizQuestion';
 import {
   adminQuizSessionList, adminQuizSessionCreate,
-  adminQuizSessionUpdate, adminQuizSessionResults
+  adminQuizSessionUpdate,
+  adminQuizSessionStatus, adminQuizSessionResults
 } from './quizSession';
 import {
   playerJoin, playerStatus
@@ -407,17 +408,20 @@ app.put('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Respons
   res.json(adminQuizSessionUpdate(token, quizId, sessionId, req.body.action));
 });
 
+// Get quiz session status
+app.get('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Response) => {
+  const token: string = req.header('token');
+  const quizId: number = parseInt(req.params.quizid as string);
+  const sessionId: number = parseInt(req.params.sessionid as string);
+  res.json(adminQuizSessionStatus(token, quizId, sessionId));
+});
+
 // Get the final results for a completed quiz session
 app.get('/v1/admin/quiz/:quizid/session/:sessionid/results', (req: Request, res: Response) => {
-  try {
-    const token = req.header('token');
-    const quizId = parseInt(req.params.quizid);
-    const sessionId = parseInt(req.params.sessionid);
-    const result = adminQuizSessionResults(token, quizId, sessionId);
-    res.json(result);
-  } catch (error: unknown) {
-    res.status(BAD_REQUEST).json({ error: (error as Error).message });
-  }
+  const token: string = req.header('token');
+  const quizId: number = parseInt(req.params.quizid as string);
+  const sessionId: number = parseInt(req.params.sessionid as string);
+  res.json(adminQuizSessionResults(token, quizId, sessionId));
 });
 
 // ====================================================================
