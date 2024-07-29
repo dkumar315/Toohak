@@ -1,4 +1,3 @@
-import { Session } from 'inspector';
 import {
   getData, setData, Data, States, Quiz, QuizSession, EmptyObject,
   State,
@@ -36,13 +35,13 @@ export type QuizSessionResults = {
   usersRankedByScore: Array<{
     name: string,
     score: number
-  }>, 
-  questionResults: Array<{ 
+  }>,
+  questionResults: Array<{
     questionId: number,
     playersCorrectList: string[],
     averageAnswerTime: number,
     percentCorrect: number
-  }> 
+  }>
 }
 
 /** add a new session copy of current quiz in data.quizSessions

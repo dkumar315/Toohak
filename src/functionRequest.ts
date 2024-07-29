@@ -459,6 +459,7 @@ export type ResNewQuestionId = ResValid<NewQuestionId>;
 export type ResQuizSessions = ResValid<QuizSessions>;
 export type ResSessionId = ResValid<QuizSessionId>;
 export type ResQuizSessionStatus = ResValid<QuizSessionStatus>;
+export type ResQuizSessionResults = ResValid<QuizSessionResults>;
 export type ResPlayerId = ResValid<PlayerId>;
 export type ResPlayerStatus = ResValid<PlayerStatus>;
 
