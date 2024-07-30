@@ -44,6 +44,8 @@ export type QuizSessionResults = {
   }>
 }
 
+const SKIP_TIME = 3;
+
 /** add a new session copy of current quiz in data.quizSessions
  *
  * @param {object} quiz - origin quiz info
@@ -84,6 +86,12 @@ export interface SessionListReturn {
 }
 
 const sessionTimers: Record<number, ReturnType<typeof setTimeout>> = {};
+
+export function clearAllTimers() {
+  for (const timer of Object.values(sessionTimers)) {
+    clearTimeout(timer);
+  }
+}
 
 function clearTimer(sessionId: number) {
   if (sessionTimers[sessionId]) {
@@ -218,7 +226,7 @@ export const adminQuizSessionUpdate = (
       setData(data);
 
       clearTimer(session.sessionId);
-      setTimer(session.sessionId, 3, () => {
+      setTimer(session.sessionId, SKIP_TIME, () => {
         session.state = States.QUESTION_OPEN;
         setData(data);
         setTimer(session.sessionId, questionDuration, () => {

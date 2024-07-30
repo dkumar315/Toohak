@@ -1,4 +1,5 @@
 import { setData, Data, EmptyObject } from './dataStore';
+import { clearAllTimers } from './quizSession';
 
 /**
  * Reset the state of the application back to the start.
@@ -19,6 +20,8 @@ export function clear(): EmptyObject {
     },
     quizSessions: []
   };
+
+  clearAllTimers();
 
   setData(data);
   return {};
