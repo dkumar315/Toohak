@@ -12,7 +12,10 @@ export enum MessageLimits {
 }
 
 export enum MessageEncrypt {
-  VIGENERE_KEY = 'sEcReT'
+  VIGENERE_KEY = 'sEcReT',
+  ASCII_OFFSET = 32,
+  MAX_PRINTABLE_ASCII = 95,
+  ASCII_BASE_OFFSET = 0
 }
 
 type PlayerIndices = {
@@ -32,19 +35,22 @@ const findSessionPlayer = (playerId: number): PlayerIndices | ErrorObject => {
     return { error: `Invalid playerId number: ${playerId} not exist.` };
   }
 
-  const playerIndex = data.quizSessions[sessionIndex]
+  const playerIndex: number = data.quizSessions[sessionIndex]
     .players.findIndex(player => player.playerId === playerId);
 
   return { sessionIndex, playerIndex };
 };
 
 const shiftChar = (char: string, shift: number): string => {
-  const code = char.charCodeAt(0);
-  return String.fromCharCode((code - 32 + shift + 95) % 95 + 32);
+  const start: number = MessageEncrypt.ASCII_OFFSET;
+  const range: number = MessageEncrypt.MAX_PRINTABLE_ASCII;
+  const code: number = char.charCodeAt(MessageEncrypt.ASCII_BASE_OFFSET);
+  return String.fromCharCode((code - start + shift + range) % range + start);
 };
 
 const vigenereChar = (char: string, keyChar: string, decode: boolean): string => {
-  const shift = keyChar.charCodeAt(0) - 32;
+  const shift: number = keyChar.charCodeAt(MessageEncrypt.ASCII_BASE_OFFSET) -
+   MessageEncrypt.ASCII_OFFSET;
   return decode ? shiftChar(char, -shift) : shiftChar(char, shift);
 };
 
@@ -131,7 +137,10 @@ export const playerChatMessages = (
   const session: QuizSession = data.quizSessions[isvalidPlayer.sessionIndex];
 
   const decryptedMessages = session.messages.map(
-    (message) => ({ ...message, messageBody: decrypt(message.messageBody, message.playerId) })
+    (message) => ({
+      ...message,
+      messageBody: decrypt(message.messageBody, message.playerId)
+    })
   );
 
   return { messages: decryptedMessages };
