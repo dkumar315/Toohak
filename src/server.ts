@@ -53,8 +53,10 @@ import {
 import {
   playerJoin, playerStatus
 } from './player';
+import {
+  playerChatCreate
+} from './playerChat';
 import { clear } from './other';
-// import { request } from 'http';
 
 // ====================================================================
 // ============= ROUTES ARE DEFINED BELOW THIS LINE ===================
@@ -437,6 +439,16 @@ app.post('/v1/player/join', (req: Request, res: Response) => {
 app.get('/v1/player/:playerid', (req: Request, res: Response) => {
   const playerId: number = parseInt(req.params.playerid as string);
   res.json(playerStatus(playerId));
+});
+
+// ====================================================================
+//                          player Chat
+// ====================================================================
+
+// Send chat message in session
+app.post('/v1/player/:playerid/chat', (req: Request, res: Response) => {
+  const playerId: number = parseInt(req.params.playerid as string);
+  res.json(playerChatCreate(playerId, req.body.message));
 });
 
 // ====================================================================
