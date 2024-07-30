@@ -46,13 +46,17 @@ import {
   adminQuizQuestionDelete, adminQuizQuestionMove, adminQuizQuestionDuplicate
 } from './quizQuestion';
 import {
-  adminQuizSessionList, adminQuizSessionCreate, adminQuizSessionUpdate, quizSessionResult
+  adminQuizSessionList, adminQuizSessionCreate,
+  adminQuizSessionUpdate,
+  adminQuizSessionStatus, adminQuizSessionResults, quizSessionResult
 } from './quizSession';
 import {
   playerJoin, playerStatus
 } from './player';
+import {
+  playerChatCreate
+} from './playerChat';
 import { clear } from './other';
-// import { request } from 'http';
 
 // ====================================================================
 // ============= ROUTES ARE DEFINED BELOW THIS LINE ===================
@@ -414,6 +418,22 @@ app.put('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Respons
   res.json(adminQuizSessionUpdate(token, quizId, sessionId, req.body.action));
 });
 
+// Get quiz session status
+app.get('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Response) => {
+  const token: string = req.header('token');
+  const quizId: number = parseInt(req.params.quizid as string);
+  const sessionId: number = parseInt(req.params.sessionid as string);
+  res.json(adminQuizSessionStatus(token, quizId, sessionId));
+});
+
+// Get the final results for a completed quiz session
+app.get('/v1/admin/quiz/:quizid/session/:sessionid/results', (req: Request, res: Response) => {
+  const token: string = req.header('token');
+  const quizId: number = parseInt(req.params.quizid as string);
+  const sessionId: number = parseInt(req.params.sessionid as string);
+  res.json(adminQuizSessionResults(token, quizId, sessionId));
+});
+
 // Session Result
 app.get('/v1/player/:playerid/results', (req: Request, res: Response) => {
   const playerId: number = parseInt(req.params.playerid as string);
@@ -433,6 +453,16 @@ app.post('/v1/player/join', (req: Request, res: Response) => {
 app.get('/v1/player/:playerid', (req: Request, res: Response) => {
   const playerId: number = parseInt(req.params.playerid as string);
   res.json(playerStatus(playerId));
+});
+
+// ====================================================================
+//                          player Chat
+// ====================================================================
+
+// Send chat message in session
+app.post('/v1/player/:playerid/chat', (req: Request, res: Response) => {
+  const playerId: number = parseInt(req.params.playerid as string);
+  res.json(playerChatCreate(playerId, req.body.message));
 });
 
 // ====================================================================
