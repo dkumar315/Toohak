@@ -8,9 +8,12 @@ import { EmptyObject, ErrorObject } from './dataStore';
 import { Token, UserDetails } from './auth';
 import { QuizList, QuizId, QuizInfo } from './quiz';
 import { QuestionBody, QuestionId, NewQuestionId } from './quizQuestion';
-import { QuizSessionId, QuizSessions } from './quizSession';
-import { PlayerId } from './player';
+import {
+  QuizSessions, QuizSessionId, QuizSessionStatus, QuizSessionResults
+} from './quizSession';
+import { PlayerId, PlayerStatus } from './player';
 import { MessageBody } from './playerChat';
+
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
 type Header = EmptyObject | { token: string };
@@ -396,6 +399,12 @@ export function requestQuizSessionCreate(
     { token, autoStartNum });
 }
 
+export function requestQuizSessionList(
+  token: string, quizId: number):
+  ApiResponse<{ activeSessions: number[], inactiveSessions: number[] }> {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/sessions`, { token });
+}
+
 export function requestQuizSessionUpdate(
   token: string,
   quizId: number,
@@ -406,12 +415,34 @@ export function requestQuizSessionUpdate(
     { token, action });
 }
 
+export function requestAdminQuizSessionStatus(
+  token: string,
+  quizId: number,
+  sessionId: number
+): ApiResponse<QuizSessionStatus> {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}`, { token });
+}
+
+export function requestQuizSessionResults(
+  token: string,
+  quizId: number,
+  sessionId: number
+): ApiResponse<QuizSessionResults> {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}/results`, { token });
+}
+
 // ============== player =======================================================
 export function requestPlayerJoin(
   sessionId: number,
   name: string
 ): ApiResponse<PlayerId> {
   return requestHelper('POST', '/v1/player/join', { sessionId, name });
+}
+
+export function requestPlayerStatus(
+  playerId: number
+): ApiResponse<PlayerStatus> {
+  return requestHelper('GET', `/v1/player/${playerId}`, {});
 }
 
 // ============== playerChat ===================================================
@@ -435,9 +466,12 @@ export type ResQuizId = ResValid<QuizId>;
 export type ResQuizInfo = ResValid<QuizInfo>;
 export type ResQuestionId = ResValid<QuestionId>;
 export type ResNewQuestionId = ResValid<NewQuestionId>;
-export type ResSessionId = ResValid<QuizSessionId>;
-export type ResPlayerId = ResValid<PlayerId>;
 export type ResQuizSessions = ResValid<QuizSessions>;
+export type ResSessionId = ResValid<QuizSessionId>;
+export type ResQuizSessionStatus = ResValid<QuizSessionStatus>;
+export type ResQuizSessionResults = ResValid<QuizSessionResults>;
+export type ResPlayerId = ResValid<PlayerId>;
+export type ResPlayerStatus = ResValid<PlayerStatus>;
 
 export const authRegister = (email: string, password: string,
   nameFirst: string, nameLast: string): ResToken =>
@@ -464,3 +498,10 @@ export const quizSessionUpdate = (token: string, quizId: number,
 
 export const playerJoin = (sessionId: number, name: string): ResPlayerId =>
   requestPlayerJoin(sessionId, name) as ResPlayerId;
+
+export const quizSessionStatus = (token: string, quizId: number,
+  sessionId: number): ResQuizSessionStatus =>
+  requestAdminQuizSessionStatus(token, quizId, sessionId) as ResQuizSessionStatus;
+
+export const playerStatus = (playerId: number): ResPlayerStatus =>
+  requestPlayerStatus(playerId) as ResPlayerStatus;

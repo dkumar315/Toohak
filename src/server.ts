@@ -46,11 +46,12 @@ import {
   adminQuizQuestionDelete, adminQuizQuestionMove, adminQuizQuestionDuplicate
 } from './quizQuestion';
 import {
-  adminQuizSessionCreate,
-  adminQuizSessionList, adminQuizSessionUpdate
+  adminQuizSessionList, adminQuizSessionCreate,
+  adminQuizSessionUpdate,
+  adminQuizSessionStatus, adminQuizSessionResults
 } from './quizSession';
 import {
-  playerJoin
+  playerJoin, playerStatus
 } from './player';
 import {
   playerChatCreate
@@ -389,8 +390,8 @@ app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate',
 
 // Get active and inactive session ids for a quiz
 app.get('/v1/admin/quiz/:quizid/sessions', (req: Request, res: Response) => {
-  const token = req.header('token');
-  const quizId = parseInt(req.params.quizid as string);
+  const token: string = req.header('token');
+  const quizId: number = parseInt(req.params.quizid as string);
   res.json(adminQuizSessionList(token, quizId));
 });
 
@@ -409,6 +410,22 @@ app.put('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Respons
   res.json(adminQuizSessionUpdate(token, quizId, sessionId, req.body.action));
 });
 
+// Get quiz session status
+app.get('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Response) => {
+  const token: string = req.header('token');
+  const quizId: number = parseInt(req.params.quizid as string);
+  const sessionId: number = parseInt(req.params.sessionid as string);
+  res.json(adminQuizSessionStatus(token, quizId, sessionId));
+});
+
+// Get the final results for a completed quiz session
+app.get('/v1/admin/quiz/:quizid/session/:sessionid/results', (req: Request, res: Response) => {
+  const token: string = req.header('token');
+  const quizId: number = parseInt(req.params.quizid as string);
+  const sessionId: number = parseInt(req.params.sessionid as string);
+  res.json(adminQuizSessionResults(token, quizId, sessionId));
+});
+
 // ====================================================================
 //                          player
 // ====================================================================
@@ -416,6 +433,12 @@ app.put('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Respons
 // Allow a guest player to join a session
 app.post('/v1/player/join', (req: Request, res: Response) => {
   res.json(playerJoin(req.body.sessionId, req.body.name));
+});
+
+// Get the status of a guest player in a session
+app.get('/v1/player/:playerid', (req: Request, res: Response) => {
+  const playerId: number = parseInt(req.params.playerid as string);
+  res.json(playerStatus(playerId));
 });
 
 // ====================================================================

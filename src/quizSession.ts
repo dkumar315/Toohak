@@ -1,5 +1,8 @@
 import {
-  getData, setData, Data, States, Quiz, QuizSession, EmptyObject
+  getData, setData, Data, States, Quiz, QuizSession, EmptyObject,
+  State,
+  Metadata,
+  Player
 } from './dataStore';
 import { isValidIds, IsValid } from './helperFunctions';
 
@@ -22,6 +25,24 @@ export type QuizSessions = {
   activeSessions: number[],
   inactiveSessions: number[]
 };
+export type QuizSessionStatus = {
+  state: State,
+  atQuestion: number,
+  players: Player[],
+  metadata: Metadata
+};
+export type QuizSessionResults = {
+  usersRankedByScore: Array<{
+    name: string,
+    score: number
+  }>,
+  questionResults: Array<{
+    questionId: number,
+    playersCorrectList: string[],
+    averageAnswerTime: number,
+    percentCorrect: number
+  }>
+}
 
 /** add a new session copy of current quiz in data.quizSessions
  *
@@ -57,6 +78,11 @@ const setNewSession = (quiz: Quiz, autoStartNum: number): number => {
   return newSession.sessionId;
 };
 
+export interface SessionListReturn {
+  activeSessions: Array<number>,
+  inactiveSessions: Array<number>
+}
+
 const sessionTimers: Record<number, ReturnType<typeof setTimeout>> = {};
 
 function clearTimer(sessionId: number) {
@@ -82,7 +108,10 @@ function setTimer(sessionId: number, duration: number, callback: () => void) {
  * @returns {number[]} inactiveSessions - An array of inactive session ids
  * @throws {Error} - Throws an error if the token or quizId is invalid
  */
-export function adminQuizSessionList(token: string, quizId: number) {
+export const adminQuizSessionList = (
+  token: string,
+  quizId: number
+): QuizSessions => {
   const isValidObj: IsValid = isValidIds(token, quizId, true);
   if (!isValidObj.isValid) {
     throw new Error(isValidObj.errorMsg);
@@ -90,18 +119,18 @@ export function adminQuizSessionList(token: string, quizId: number) {
 
   const data: Data = getData();
 
-  const activeSessions = data.quizSessions
+  const activeSessions: Array<number> = data.quizSessions
     .filter(session => session.state !== States.END)
     .map(session => session.sessionId)
     .sort((a, b) => a - b);
 
-  const inactiveSessions = data.quizSessions
+  const inactiveSessions: Array<number> = data.quizSessions
     .filter(session => session.state === States.END)
     .map(session => session.sessionId)
     .sort((a, b) => a - b);
 
   return { activeSessions, inactiveSessions };
-}
+};
 
 /**
  * copies a quiz, and start a new session of a quiz
@@ -152,6 +181,7 @@ export const adminQuizSessionCreate = (
  * @param {Action} action - the action to be performed on the session
  *
  * @return {object} success or error message
+ * @throws {Error} error - if token, quizId, sessionId or action is invalid
  */
 export const adminQuizSessionUpdate = (
   token: string,
@@ -256,4 +286,93 @@ export const adminQuizSessionUpdate = (
 
   setData(data);
   return {};
+};
+
+/**
+ * Retrieves the status of a specific quiz session
+ *
+ * @param {string} token - A unique identifier for a logged-in user
+ * @param {number} quizId - A unique identifier for a valid quiz
+ * @param {number} sessionId - A unique identifier for a quiz session
+ *
+ * @returns {object} - An object containing the status of the quiz session
+ * @throws {Error} - Throws an error if the token, quizId, or sessionId is invalid
+ */
+export const adminQuizSessionStatus = (
+  token: string,
+  quizId: number,
+  sessionId: number
+): QuizSessionStatus => {
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
+  if (!isValidObj.isValid) {
+    throw new Error(isValidObj.errorMsg);
+  }
+
+  const data: Data = getData();
+
+  const session: QuizSession | undefined = data.quizSessions.find(
+    session => session.sessionId === sessionId
+  );
+  if (!session) {
+    throw new Error(`Invalid sessionId: ${sessionId}.`);
+  }
+
+  if (session.metadata.quizId !== quizId) {
+    throw new Error('Session Id does not refer to a valid session within this quiz');
+  }
+
+  const { state, atQuestion, players, metadata } = session;
+  return { state, atQuestion, players, metadata };
+};
+
+/**
+ * Retrieves the final results for a completed quiz session.
+ *
+ * @param {string} token - A unique identifier for a login user.
+ * @param {number} quizId - A unique identifier for a valid quiz.
+ * @param {number} sessionId - A unique identifier for a valid session.
+ *
+ * @returns {object} - An object containing users ranked by score and question results.
+ * @throws {Error} - Throws an error if the token, quizId, or sessionId is invalid, or if the session is not in FINAL_RESULTS state.
+ */
+export const adminQuizSessionResults = (
+  token: string,
+  quizId: number,
+  sessionId: number
+): QuizSessionResults => {
+  const isValidObj = isValidIds(token, quizId);
+  if (!isValidObj.isValid) {
+    throw new Error(isValidObj.errorMsg);
+  }
+
+  const data: Data = getData();
+  const quiz = data.quizzes[isValidObj.quizIndex];
+  if (!quiz) {
+    throw new Error(`Invalid quizId number: ${quizId}`);
+  }
+
+  const session = data.quizSessions.find(s => s.sessionId === sessionId && s.metadata.quizId === quizId);
+  if (!session) {
+    throw new Error(`Invalid sessionId number: ${sessionId}`);
+  }
+
+  if (session.state !== States.FINAL_RESULTS) {
+    throw new Error('Session is not in FINAL_RESULTS state');
+  }
+
+  const usersRankedByScore = session.players
+    .map(player => ({ name: player.name, score: player.score }))
+    .sort((a, b) => b.score - a.score);
+
+  const questionResults = session.metadata.questions.map(question => ({
+    questionId: question.questionId,
+    playersCorrectList: question.playersCorrectList,
+    averageAnswerTime: question.averageAnswerTime,
+    percentCorrect: question.percentCorrect
+  }));
+
+  return {
+    usersRankedByScore,
+    questionResults
+  };
 };
