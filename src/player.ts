@@ -144,3 +144,31 @@ export const playerStatus = (playerId: number): PlayerStatus => {
     atQuestion: session.atQuestion
   };
 };
+
+export function playerResults(playerId: number) {
+  const isvalidPlayer: PlayerIndices | ErrorObject = findSessionPlayer(playerId);
+  if ('error' in isvalidPlayer) throw new Error(isvalidPlayer.error);
+
+  const data: Data = getData();
+  const session: QuizSession = data.quizSessions[isvalidPlayer.sessionIndex];
+
+  if (session.state !== 'FINAL_RESULTS') {
+    throw new Error('Session is not in FINAL_RESULTS state');
+  }
+  const usersRankedByScore = session.players
+    .sort((a, b) => b.points - a.points)
+    .map((player) => ({ name: player.name, score: player.points }));
+
+  const questionResults = session.metadata.questions.map((question) => ({
+    questionId: question.questionId,
+    playersCorrectList: question.playersCorrectList,
+    averageAnswerTime: question.averageAnswerTime,
+    percentCorrect: question.percentCorrect,
+    thumbnailUrl: question.thumbnailUrl,
+  }));
+
+  return {
+    usersRankedByScore,
+    questionResults,
+  };
+}
