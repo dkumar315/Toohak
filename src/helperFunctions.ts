@@ -76,7 +76,7 @@ export const timeStamp = (): number => Math.floor(Date.now() / 1000);
 export const isValidIds = (
   token: string,
   quizId: number,
-  checkTrashQuiz: boolean
+  checkTrashQuiz: boolean = false
 ): IsValid => {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
@@ -94,7 +94,7 @@ export const isValidIds = (
     }
   }
 
-  return isValidQuiz;
+  return isvalidErrorObj(`Invalid quizId number: ${quizId}`);
 };
 
 /**

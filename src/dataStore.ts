@@ -146,7 +146,7 @@ export interface QuestionSession extends Question {
 export interface Message {
   messageBody: string,
   playerId: number,
-  playerName: string
+  playerName: string,
   timeSent: number
 }
 
@@ -156,6 +156,7 @@ export interface Player {
   points: number;
   answerIds: number[];
   timeTaken: number;
+  score: number;
 }
 
 export interface QuestionResult {
