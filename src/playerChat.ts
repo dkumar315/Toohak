@@ -3,11 +3,7 @@ import {
   EmptyObject, ErrorObject
 } from './dataStore';
 import { timeStamp } from './helperFunctions';
-export interface MessageBody {
-  message: {
-    messageBody: string
-  }
-}
+export interface MessageBody { message: { messageBody: string } };
 
 export enum MessageLimits {
   MIN_MSGBODY_LEN = 1,
@@ -41,24 +37,40 @@ const findSessionPlayer = (playerId: number): PlayerIndices | ErrorObject => {
 
 const shiftChar = (char: string, shift: number): string => {
   const code = char.charCodeAt(0);
-  return String.fromCharCode((code - 32 + shift) % 95 + 32);
+  return String.fromCharCode((code - 32 + shift + 95) % 95 + 32);
 };
 
-const vigenereChar = (char: string, keyChar: string): string => {
+const vigenereChar = (char: string, keyChar: string, decode: boolean): string => {
   const shift = keyChar.charCodeAt(0) - 32;
-  return shiftChar(char, shift);
+  return decode ? shiftChar(char, -shift) : shiftChar(char, shift);
 };
 
 const encrypt = (plaintext: string, shift: number): string => {
   // caesar
   const shiftedText = plaintext
-    .split('').map((char, index) => shiftChar(char, shift + index)).join('');
+    .split('')
+    .map((char, index) => shiftChar(char, shift + index))
+    .join('');
 
   // vigenère
   const key: string = MessageEncrypt.VIGENERE_KEY;
   return shiftedText
     .split('')
-    .map((char, i) => vigenereChar(char, key[i % key.length]))
+    .map((char, i) => vigenereChar(char, key[i % key.length], false))
+    .join('');
+};
+
+const decrypt = (ciphertext: string, shift: number): string => {
+  const key: string = MessageEncrypt.VIGENERE_KEY;
+  const unvigenered = ciphertext
+    .split('')
+    .map((char, i) => vigenereChar(char, key[i % key.length], true))
+    .join('');
+
+  // Reverse Caesar cipher
+  return unvigenered
+    .split('')
+    .map((char, index) => shiftChar(char, -(shift + index)))
     .join('');
 };
 
@@ -95,6 +107,5 @@ export const playerChatCreate = (
   });
   setData(data);
 
-  console.log(encrypt('ABC', 1));
   return {};
 };
