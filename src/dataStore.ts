@@ -174,10 +174,10 @@ export interface QuizSessionResult {
   }[];
 }
 
-export interface QuestionResult {
+/* export interface QuestionResult {
   id: number;
   result: string;
-}
+} */
 
 export interface QuestionResults {
   results: QuestionResult[];
