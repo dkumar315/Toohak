@@ -12,7 +12,7 @@ import {
   QuizSessions, QuizSessionId, QuizSessionStatus, QuizSessionResults
 } from './quizSession';
 import { PlayerId, PlayerStatus } from './player';
-import { MessageBody } from './playerChat';
+import { MessageBody, Messages } from './playerChat';
 
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 export const ERROR: ErrorObject = { error: expect.any(String) };
@@ -460,6 +460,12 @@ export function requestPlayerStatus(
 }
 
 // ============== playerChat ===================================================
+export function requestPlayerChatMessages(
+  playerId: number
+): ApiResponse<Messages> {
+  return requestHelper('GET', `/v1/player/${playerId}/chat`, {});
+}
+
 export function requestPlayerChatCreate(
   playerId: number,
   message: MessageBody
@@ -486,6 +492,7 @@ export type ResQuizSessionStatus = ResValid<QuizSessionStatus>;
 export type ResQuizSessionResults = ResValid<QuizSessionResults>;
 export type ResPlayerId = ResValid<PlayerId>;
 export type ResPlayerStatus = ResValid<PlayerStatus>;
+export type ResPlayerChatMessages = ResValid<Messages>;
 export type ResQuizSessionResult = ApiResponse<QuizSessionResult>;
 
 export const authRegister = (email: string, password: string,
@@ -520,3 +527,6 @@ export const quizSessionStatus = (token: string, quizId: number,
 
 export const playerStatus = (playerId: number): ResPlayerStatus =>
   requestPlayerStatus(playerId) as ResPlayerStatus;
+
+export const playerChatMessages = (playerId: number): ResPlayerChatMessages =>
+  requestPlayerChatMessages(playerId) as ResPlayerChatMessages;
