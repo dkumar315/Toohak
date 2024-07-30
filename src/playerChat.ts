@@ -1,6 +1,7 @@
 import {
   setData, getData, Data, QuizSession, Player, INVALID,
-  EmptyObject, ErrorObject
+  EmptyObject, ErrorObject,
+  Message
 } from './dataStore';
 import { timeStamp } from './helperFunctions';
 export interface MessageBody { message: { messageBody: string } }
@@ -11,13 +12,15 @@ export enum MessageLimits {
 }
 
 export enum MessageEncrypt {
-  VIGENERE_KEY = 'sEcReCt'
+  VIGENERE_KEY = 'sEcReT'
 }
 
 type PlayerIndices = {
   sessionIndex: number;
   playerIndex: number;
 };
+
+export type Messages = { messages: Message[] };
 
 const findSessionPlayer = (playerId: number): PlayerIndices | ErrorObject => {
   const data: Data = getData();
@@ -60,19 +63,19 @@ const encrypt = (plaintext: string, shift: number): string => {
     .join('');
 };
 
-// const decrypt = (ciphertext: string, shift: number): string => {
-//   const key: string = MessageEncrypt.VIGENERE_KEY;
-//   const unvigenered = ciphertext
-//     .split('')
-//     .map((char, i) => vigenereChar(char, key[i % key.length], true))
-//     .join('');
+const decrypt = (ciphertext: string, shift: number): string => {
+  const key: string = MessageEncrypt.VIGENERE_KEY;
+  const unvigenered = ciphertext
+    .split('')
+    .map((char, i) => vigenereChar(char, key[i % key.length], true))
+    .join('');
 
-//   // Reverse Caesar cipher
-//   return unvigenered
-//     .split('')
-//     .map((char, index) => shiftChar(char, -(shift + index)))
-//     .join('');
-// };
+  // Reverse Caesar cipher
+  return unvigenered
+    .split('')
+    .map((char, index) => shiftChar(char, -(shift + index)))
+    .join('');
+};
 
 /**
  * Send chat message in session
@@ -108,4 +111,28 @@ export const playerChatCreate = (
   setData(data);
 
   return {};
+};
+
+/**
+ * Get all chat messages in the session of the player
+ *
+ * @param {number} playerId - identifier of a player
+ *
+ * @return {object} - Returns an object with all messages in the session
+ * @throws {Error} - if the playerId is invalid
+ */
+export const playerChatMessages = (
+  playerId: number
+): Messages => {
+  const isvalidPlayer: PlayerIndices | ErrorObject = findSessionPlayer(playerId);
+  if ('error' in isvalidPlayer) throw new Error(isvalidPlayer.error);
+
+  const data: Data = getData();
+  const session: QuizSession = data.quizSessions[isvalidPlayer.sessionIndex];
+
+  const decryptedMessages = session.messages.map(
+    (message) => ({ ...message, messageBody: decrypt(message.messageBody, message.playerId) })
+  );
+
+  return { messages: decryptedMessages };
 };
