@@ -227,8 +227,6 @@ export const adminQuizSessionUpdate = (
 
       clearTimer(session.sessionId);
       setTimer(session.sessionId, SKIP_TIME, () => {
-        // FIXME: Get a new reference to the data, to avoid overwriting more-recent changes
-        const data = getData();
         session.state = States.QUESTION_OPEN;
         setData(data);
         setTimer(session.sessionId, questionDuration, () => {
