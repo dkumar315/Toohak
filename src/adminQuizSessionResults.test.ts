@@ -131,4 +131,3 @@ describe('Testing adminQuizSessionResults GET /v1/admin/quiz/{quizId}/session/{s
     });
   });
 });
-
