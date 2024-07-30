@@ -4,7 +4,7 @@ const SERVER_URL: string = `${config.url}:${config.port}`;
 
 // ============== interfaces ===================================================
 import { StatusCodes } from 'http-status-codes';
-import { EmptyObject, ErrorObject, QuizSessionResult, QuestionResult } from './dataStore';
+import { EmptyObject, ErrorObject, QuizSessionResult, QuestionResult, QuestionResults } from './dataStore';
 import { Token, UserDetails } from './auth';
 import { QuizList, QuizId, QuizInfo } from './quiz';
 import { QuestionBody, QuestionId, NewQuestionId } from './quizQuestion';
@@ -422,7 +422,6 @@ export function requestQuizSessionUpdate(
   return requestHelper('PUT', `/v1/admin/quiz/${quizId}/session/${sessionId}`,
     { token, action });
 }
-
 export function requestAdminQuizSessionStatus(
   token: string,
   quizId: number,
@@ -443,6 +442,12 @@ export function requestQuizSessionResult(
   playerId: number
 ): ResQuizSessionResult {
   return requestHelper<QuizSessionResult>('GET', `/v1/player/${playerId}/results`, {});
+}
+export function requestPlayerQuestionResults(
+  playerId: string,
+  questionPosition: number
+): ApiResponse<QuestionResults> {
+  return requestHelper('GET', `/v1/player/${playerId}/question/${questionPosition}/results`, {});
 }
 
 // ============== player =======================================================

@@ -42,8 +42,8 @@ import {
   adminQuizTrashList, adminQuizRestore, adminQuizTransfer, adminQuizTrashEmpty
 } from './quiz';
 import {
-  adminQuizQuestionCreate, adminQuizQuestionUpdate, adminQuizQuestionDelete,
-  adminQuizQuestionMove, adminQuizQuestionDuplicate
+  adminQuizQuestionCreate, adminQuizQuestionUpdate, adminQuizQuestionResults,
+  adminQuizQuestionDelete, adminQuizQuestionMove, adminQuizQuestionDuplicate
 } from './quizQuestion';
 import {
   adminQuizSessionList, adminQuizSessionCreate,
@@ -391,6 +391,15 @@ app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate',
   const questionId: number = parseInt(req.params.questionid as string);
   res.json(getQuestionResults(playerId, sessionId, questionId));
   }); */
+
+// Get Question Results
+app.get('/v1/player/:playerid/question/:questionposition/:questionid/results',
+  (req: Request, res: Response) => {
+    const playerId = parseInt(req.params.playerid);
+    const questionPosition = parseInt(req.params.questionposition);
+    const questionId = parseInt(req.params.questionid);
+    res.json(adminQuizQuestionResults(playerId, questionPosition, questionId));
+  });
 
 // ====================================================================
 //                          adminQuizSession
