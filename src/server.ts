@@ -47,14 +47,14 @@ import {
 } from './quizQuestion';
 import {
   adminQuizSessionList, adminQuizSessionCreate,
-  adminQuizSessionUpdate,
-  adminQuizSessionStatus, adminQuizSessionResults
+  adminQuizSessionUpdate, adminQuizSessionStatus,
+  adminQuizSessionResults
 } from './quizSession';
 import {
   playerJoin, playerStatus
 } from './player';
 import {
-  playerChatCreate
+  playerChatCreate, playerChatMessages
 } from './playerChat';
 import { clear } from './other';
 
@@ -453,6 +453,12 @@ app.get('/v1/player/:playerid', (req: Request, res: Response) => {
 // ====================================================================
 //                          player Chat
 // ====================================================================
+
+// Get chat messages for a player in a session
+app.get('/v1/player/:playerid/chat', (req: Request, res: Response) => {
+  const playerId: number = parseInt(req.params.playerid as string);
+  res.json(playerChatMessages(playerId));
+});
 
 // Send chat message in session
 app.post('/v1/player/:playerid/chat', (req: Request, res: Response) => {
