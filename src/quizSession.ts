@@ -2,7 +2,7 @@ import {
   getData, setData, Data, States, Quiz, QuizSession, EmptyObject,
   State,
   Metadata,
-  Player, 
+  Player,
   ErrorObject
 } from './dataStore';
 import { isValidIds, IsValid } from './helperFunctions';
