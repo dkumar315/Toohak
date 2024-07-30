@@ -2,10 +2,11 @@ import {
   getData, setData, Data, States, Quiz, QuizSession, EmptyObject,
   State,
   Metadata,
-  Player
+  Player,
+  ErrorObject
 } from './dataStore';
 import { isValidIds, IsValid } from './helperFunctions';
-
+import { findSessionPlayer, PlayerIndices } from './playerChat';
 export enum SessionLimits {
   AUTO_START_AND_QUESTIONS_NUM_MIN = 0,
   AUTO_START_NUM_MAX = 50,
@@ -32,16 +33,16 @@ export type QuizSessionStatus = {
   metadata: Metadata
 };
 export type QuizSessionResults = {
-  usersRankedByScore: Array<{
+  usersRankedByScore: {
     name: string,
     score: number
-  }>,
-  questionResults: Array<{
+  }[],
+  questionResults: {
     questionId: number,
     playersCorrectList: string[],
     averageAnswerTime: number,
     percentCorrect: number
-  }>
+  }[]
 }
 
 const SKIP_TIME = 3;
@@ -384,3 +385,31 @@ export const adminQuizSessionResults = (
     questionResults
   };
 };
+
+export function quizSessionResult(playerId: number) {
+  const isvalidPlayer: PlayerIndices | ErrorObject = findSessionPlayer(playerId);
+  if ('error' in isvalidPlayer) throw new Error(isvalidPlayer.error);
+
+  const data: Data = getData();
+  const session: QuizSession = data.quizSessions[isvalidPlayer.sessionIndex];
+
+  if (session.state !== 'FINAL_RESULTS') {
+    throw new Error('Session is not in FINAL_RESULTS state');
+  }
+  const usersRankedByScore = session.players
+    .sort((a, b) => b.points - a.points)
+    .map((player) => ({ name: player.name, score: player.points }));
+
+  const questionResults = session.metadata.questions.map((question) => ({
+    questionId: question.questionId,
+    playersCorrectList: question.playersCorrectList,
+    averageAnswerTime: question.averageAnswerTime,
+    percentCorrect: question.percentCorrect,
+    thumbnailUrl: question.thumbnailUrl,
+  }));
+
+  return {
+    usersRankedByScore,
+    questionResults,
+  };
+}
