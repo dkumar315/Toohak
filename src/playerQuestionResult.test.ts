@@ -2,7 +2,7 @@ import { QuestionBody } from './quizQuestion';
 import {
   requestClear, authRegister, quizCreate, questionCreate,
   quizSessionCreate, playerJoin, requestUserDetails, ResUserDetails,
-  ResToken, ResQuizId, ResQuestionId, requestPlayerQuestionResults
+  requestPlayerQuestionResults
 } from './functionRequest';
 import { setData, getData, States, BAD_REQUEST } from './dataStore';
 
