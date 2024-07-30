@@ -79,7 +79,7 @@ describe('getQuestionResults', () => {
           }]
         },
         messages: [],
-        players: [{ playerId: playerId, name: 'PlayerName', points: 0, answerIds: [], timeTaken: 0 }]
+        players: [{ playerId: playerId, name: 'PlayerName', points: 0, answerIds: [], timeTaken: 0, score: 0 }]
       }]
     });
   });
@@ -156,7 +156,7 @@ describe('getQuestionResults', () => {
           }]
         },
         messages: [],
-        players: [{ playerId: playerId, name: 'PlayerName', points: 0, answerIds: [], timeTaken: 0 }]
+        players: [{ playerId: playerId, name: 'PlayerName', points: 0, answerIds: [], timeTaken: 0, score: 0 }]
       }]
     });
 
