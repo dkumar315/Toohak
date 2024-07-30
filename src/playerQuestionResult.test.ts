@@ -1,27 +1,27 @@
-import { adminQuizQuestionResults, QuestionBody } from './quizQuestion';
+import { QuestionBody } from './quizQuestion';
 import {
-  requestClear, authRegister, quizCreate, requestQuizQuestionCreate,
-  ResToken, ResQuizId, ResQuestionId
+  requestClear, authRegister, quizCreate, questionCreate,
+  quizSessionCreate, playerJoin, requestUserDetails, ResUserDetails,
+  ResToken, ResQuizId, ResQuestionId, requestPlayerQuestionResults
 } from './functionRequest';
-import { setData, getData, States } from './dataStore';
+import { setData, getData, States, BAD_REQUEST } from './dataStore';
 
 beforeEach(requestClear);
 afterAll(requestClear);
 
 describe('getQuestionResults', () => {
-  let user: ResToken;
-  let quiz: ResQuizId;
-  let questionBody: QuestionBody;
-  let question: ResQuestionId;
-  let session: { sessionId: number };
+  let token: string;
+  let quizId: number;
+  let questionId: number;
+  let sessionId: number;
   let playerId: number;
-  let userId: number; // Manually assign userId
+  let userId: number;
 
   beforeEach(() => {
-    user = authRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar');
-    quiz = quizCreate(user.token, 'My Quiz', 'Quiz on Testing') as ResQuizId;
+    token = authRegister('devk@gmail.com', 'DevaanshK01', 'Devaansh', 'Kumar').token;
+    quizId = quizCreate(token, 'My Quiz', 'Quiz on Testing').quizId;
 
-    questionBody = {
+    const questionBody: QuestionBody = {
       question: 'What is Javascript?',
       duration: 10,
       points: 10,
@@ -34,35 +34,31 @@ describe('getQuestionResults', () => {
       thumbnailUrl: 'http://google.com/img_path.jpg'
     };
 
-    question = requestQuizQuestionCreate(user.token, quiz.quizId, questionBody) as ResQuestionId;
-
-    // Manually assign userId
-    userId = 1; // Assign a mock userId
-
-    // Mock session creation and player joining
-    session = { sessionId: 123 }; // Mock session ID
-    playerId = 456; // Mock player ID
+    questionId = questionCreate(token, quizId, questionBody).questionId;
+    userId = (requestUserDetails(token) as ResUserDetails).user.userId;
+    sessionId = quizSessionCreate(token, quizId, 0).sessionId;
+    playerId = playerJoin(sessionId, '').playerId;
 
     // Setting up the mock data directly
     setData({
       ...getData(),
       quizSessions: [{
-        sessionId: session.sessionId,
+        sessionId: sessionId,
         state: States.ANSWER_SHOW,
         atQuestion: 0,
         autoStartNum: 0,
         metadata: {
-          quizId: quiz.quizId,
+          quizId: quizId,
           name: 'My Quiz',
           timeCreated: Date.now(),
           timeLastEdited: Date.now(),
           description: 'Quiz on Testing',
-          creatorId: userId, // Use the manually assigned userId
+          creatorId: userId,
           numQuestions: 1,
           duration: 10,
           thumbnailUrl: 'http://google.com/img_path.jpg',
           questions: [{
-            questionId: question.questionId,
+            questionId: questionId,
             question: 'What is Javascript?',
             duration: 10,
             points: 10,
@@ -85,51 +81,53 @@ describe('getQuestionResults', () => {
   });
 
   test('Successfully retrieves question results', () => {
-    const result = adminQuizQuestionResults(playerId, session.sessionId, question.questionId);
+    const result = requestPlayerQuestionResults(playerId, 1);
     if ('error' in result) {
       throw new Error('Expected a successful result, but got an error');
     }
     expect(result).toStrictEqual({
-      id: question.questionId,
-      result: JSON.stringify({
-        questionId: question.questionId,
-        playersCorrectList: ['Hayden'],
-        averageAnswerTime: 5,
-        percentCorrect: 75,
-      })
+      status: 200,
+      questionId: questionId,
+      playersCorrectList: ['Hayden'],
+      averageAnswerTime: 5,
+      percentCorrect: 75
     });
   });
 
   test('Error when playerId is invalid', () => {
-    const result = adminQuizQuestionResults(-1, session.sessionId, question.questionId);
-    expect(result).toMatchObject({ error: 'Player not found' });
+    const result = requestPlayerQuestionResults(-1, 1);
+    expect(result).toMatchObject({ error: expect.any(String) });
+    expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 
   test('Error when playerId is missing', () => {
-    const result = adminQuizQuestionResults(0, session.sessionId, question.questionId);
-    expect(result).toMatchObject({ error: 'Player not found' });
-  });
-
-  test('Error when sessionId is invalid', () => {
-    const result = adminQuizQuestionResults(playerId, -1, question.questionId);
-    expect(result).toMatchObject({ error: 'Session not found' });
+    const result = requestPlayerQuestionResults(0, 1);
+    expect(result).toMatchObject({ error: expect.any(String) });
+    expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 
   test('Error when questionId is invalid', () => {
-    const result = adminQuizQuestionResults(playerId, session.sessionId, -1);
-    expect(result).toMatchObject({ error: 'Question not found' });
+    const result = requestPlayerQuestionResults(playerId, -1);
+    expect(result).toMatchObject({ error: expect.any(String) });
+    expect(result.status).toStrictEqual(BAD_REQUEST);
+  });
+
+  test('Error when questionId is invalid', () => {
+    const result = requestPlayerQuestionResults(playerId, 2);
+    expect(result).toMatchObject({ error: expect.any(String) });
+    expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 
   test('Error when session state is not ANSWER_SHOW', () => {
     setData({
       ...getData(),
       quizSessions: [{
-        sessionId: session.sessionId,
+        sessionId: sessionId,
         state: States.QUESTION_OPEN,
         atQuestion: 0,
         autoStartNum: 0,
         metadata: {
-          quizId: quiz.quizId,
+          quizId: quizId,
           name: 'My Quiz',
           timeCreated: Date.now(),
           timeLastEdited: Date.now(),
@@ -139,7 +137,7 @@ describe('getQuestionResults', () => {
           duration: 10,
           thumbnailUrl: 'http://google.com/img_path.jpg',
           questions: [{
-            questionId: question.questionId,
+            questionId: questionId,
             question: 'What is Javascript?',
             duration: 10,
             points: 10,
@@ -160,7 +158,8 @@ describe('getQuestionResults', () => {
       }]
     });
 
-    const result = adminQuizQuestionResults(playerId, session.sessionId, question.questionId);
-    expect(result).toMatchObject({ error: 'Results are not available yet' });
+    const result = requestPlayerQuestionResults(playerId, 1);
+    expect(result).toMatchObject({ error: expect.any(String) });
+    expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 });

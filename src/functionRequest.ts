@@ -463,20 +463,6 @@ export function requestQuizSessionResults(
     `/v1/admin/quiz/${quizId}/session/${sessionId}/results`, { token });
 }
 
-export function requestQuizSessionResult(
-  playerId: number
-): ApiResponse<QuizSessionResult> {
-  return requestHelper('GET', `/v1/player/${playerId}/results`, {});
-}
-
-export function requestPlayerQuestionResults(
-  playerId: string,
-  questionPosition: number
-): ApiResponse<QuestionResults> {
-  return requestHelper('GET',
-    `/v1/player/${playerId}/question/${questionPosition}/results`, {});
-}
-
 // ============== player =======================================================
 export function requestPlayerJoin(
   sessionId: number,
@@ -489,6 +475,21 @@ export function requestPlayerStatus(
   playerId: number
 ): ApiResponse<PlayerStatus> {
   return requestHelper('GET', `/v1/player/${playerId}`, {});
+}
+
+export function requestPlayerResults(
+  playerId: number
+): ApiResponse<QuizSessionResult> {
+  return requestHelper('GET', `/v1/player/${playerId}/results`, {});
+}
+
+// ============== player  Question =============================================
+export function requestPlayerQuestionResults(
+  playerId: number,
+  questionPosition: number
+): ApiResponse<QuestionResults> {
+  return requestHelper('GET',
+    `/v1/player/${playerId}/question/${questionPosition}/results`, {});
 }
 
 // ============== playerChat ===================================================

@@ -1,11 +1,9 @@
 import {
   getData, setData, Data, States, Quiz, QuizSession, EmptyObject,
-  State, Metadata, Player, ErrorObject
+  State, Metadata, Player
 } from './dataStore';
 
-import {
-  isValidIds, IsValid, findSessionPlayer, PlayerIndices
-} from './helperFunctions';
+import { isValidIds, IsValid } from './helperFunctions';
 
 export enum SessionLimits {
   AUTO_START_AND_QUESTIONS_NUM_MIN = 0,

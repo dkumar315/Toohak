@@ -105,7 +105,7 @@ export const playerChatCreate = (
  * @return {object} - Returns an object with all messages in the session
  * @throws {Error} - if the playerId is invalid
  */
-export const playerChatMessages = (playerId: number): Messages => {
+export const playerChatList = (playerId: number): Messages => {
   const isvalidPlayer: PlayerIndices | ErrorObject = findSessionPlayer(playerId);
   if ('error' in isvalidPlayer) throw new Error(isvalidPlayer.error);
 

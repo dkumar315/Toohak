@@ -3,7 +3,6 @@ import request, { HttpVerb, Response } from 'sync-request-curl';
 const config = require('./config.json');
 const SERVER_URL: string = `${config.url}:${config.port}`;
 import { StatusCodes } from 'http-status-codes';
-import { EmptyObject } from './dataStore';
 
 import {
   authRegister, quizCreate, questionCreate,
@@ -98,7 +97,7 @@ routes.forEach(route => {
       .replace(/{playerid}/g, String(playerid))
       .replace(/{questionposition}/g, String(questionposition));
     const result = requestHelper(route.method, path, route.payload);
-    if (result.status === 404) {
+    if (result.status === StatusCodes.NOT_FOUND) {
       throw new Error(`${route.method} ${route.route}`);
     }
   } catch (err) {

@@ -170,6 +170,7 @@ export interface Player {
   timeTaken: number;
   score: number;
 }
+
 export interface QuestionResult {
   id: number;
   result: string;
@@ -184,11 +185,6 @@ export interface QuizSessionResult {
     percentCorrect: number;
   }[];
 }
-
-/* export interface QuestionResult {
-  id: number;
-  result: string;
-} */
 
 export interface QuestionResults {
   results: QuestionResult[];
