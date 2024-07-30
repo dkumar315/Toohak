@@ -1,9 +1,9 @@
 import {
-  setData, getData, Data, QuizSession, Player, Message, INVALID,
+  setData, getData, Data, QuizSession, Player, INVALID,
   EmptyObject, ErrorObject
 } from './dataStore';
 import { timeStamp } from './helperFunctions';
-export interface MessageBody { message: { messageBody: string } };
+export interface MessageBody { message: { messageBody: string } }
 
 export enum MessageLimits {
   MIN_MSGBODY_LEN = 1,
@@ -60,19 +60,19 @@ const encrypt = (plaintext: string, shift: number): string => {
     .join('');
 };
 
-const decrypt = (ciphertext: string, shift: number): string => {
-  const key: string = MessageEncrypt.VIGENERE_KEY;
-  const unvigenered = ciphertext
-    .split('')
-    .map((char, i) => vigenereChar(char, key[i % key.length], true))
-    .join('');
+// const decrypt = (ciphertext: string, shift: number): string => {
+//   const key: string = MessageEncrypt.VIGENERE_KEY;
+//   const unvigenered = ciphertext
+//     .split('')
+//     .map((char, i) => vigenereChar(char, key[i % key.length], true))
+//     .join('');
 
-  // Reverse Caesar cipher
-  return unvigenered
-    .split('')
-    .map((char, index) => shiftChar(char, -(shift + index)))
-    .join('');
-};
+//   // Reverse Caesar cipher
+//   return unvigenered
+//     .split('')
+//     .map((char, index) => shiftChar(char, -(shift + index)))
+//     .join('');
+// };
 
 /**
  * Send chat message in session
