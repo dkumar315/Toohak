@@ -490,9 +490,9 @@ export const quizSessionUpdate = (token: string, quizId: number,
 export const playerJoin = (sessionId: number, name: string): ResPlayerId =>
   requestPlayerJoin(sessionId, name) as ResPlayerId;
 
-export const quizSessionStatus = (token: string, quizId: number,
+/*export const quizSessionStatus = (token: string, quizId: number,
   sessionId: number): ResQuizSessionStatus =>
-  requestAdminQuizSessionStatus(token, quizId, sessionId) as ResQuizSessionStatus;
+  requestAdminQuizSessionStatus(token, quizId, sessionId) as ResQuizSessionStatus;*/
 
 export const playerStatus = (playerId: number): ResPlayerStatus =>
   requestPlayerStatus(playerId) as ResPlayerStatus;
