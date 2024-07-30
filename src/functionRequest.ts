@@ -427,7 +427,8 @@ export function requestQuizSessionResults(
   quizId: number,
   sessionId: number
 ): ApiResponse<QuizSessionResults> {
-  return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}/results`, { token });}
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}/results`, { token });
+}
 export function requestPlayerQuestionResults(
   playerId: string,
   questionPosition: number
