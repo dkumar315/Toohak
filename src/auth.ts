@@ -424,18 +424,6 @@ export const findUserId = (token: string): number => {
       session.token === token
     );
 
-    console.log('\n\n\n========== TOKEN CHECK ==============');
-
-    if (!session) {
-      console.log('Session not found');
-      console.log('All sessions:');
-      console.log(data.sessions.sessionIds);
-    } else if (session.userId !== isValid.userId) {
-      console.log("User IDs don't match");
-      console.log('Session = ', session);
-      console.log('Is valid = ', isValid);
-    }
-
     if (!decoded || !isValid ||
       !session || session.userId !== isValid.userId) return INVALID;
 
