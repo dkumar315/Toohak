@@ -414,7 +414,20 @@ export function requestQuizSessionUpdate(
   return requestHelper('PUT', `/v1/admin/quiz/${quizId}/session/${sessionId}`,
     { token, action });
 }
+export function requestAdminQuizSessionStatus(
+  token: string,
+  quizId: number,
+  sessionId: number
+): ApiResponse<QuizSessionStatus> {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}`, { token });
+}
 
+export function requestQuizSessionResults(
+  token: string,
+  quizId: number,
+  sessionId: number
+): ApiResponse<QuizSessionResults> {
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}/results`, { token });}
 export function requestPlayerQuestionResults(
   playerId: string,
   questionPosition: number
@@ -490,9 +503,9 @@ export const quizSessionUpdate = (token: string, quizId: number,
 export const playerJoin = (sessionId: number, name: string): ResPlayerId =>
   requestPlayerJoin(sessionId, name) as ResPlayerId;
 
-/*export const quizSessionStatus = (token: string, quizId: number,
+export const quizSessionStatus = (token: string, quizId: number,
   sessionId: number): ResQuizSessionStatus =>
-  requestAdminQuizSessionStatus(token, quizId, sessionId) as ResQuizSessionStatus;*/
+  requestAdminQuizSessionStatus(token, quizId, sessionId) as ResQuizSessionStatus;
 
 export const playerStatus = (playerId: number): ResPlayerStatus =>
   requestPlayerStatus(playerId) as ResPlayerStatus;
