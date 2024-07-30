@@ -54,13 +54,14 @@ export type State = States[keyof States];
 // interfaces
 export type EmptyObject = Record<string, never>;
 export type ErrorObject = { error: string };
-
+export type QuestionResultResponse = QuestionResult | { error: string };
 export interface Data {
   users: User[];
   quizzes: Quiz[];
   trashedQuizzes: Quiz[];
   sessions: Sessions;
   quizSessions: QuizSession[];
+
 }
 
 export interface Sessions {
@@ -157,6 +158,30 @@ export interface Player {
   answerIds: number[];
   timeTaken: number;
   score: number;
+}
+export interface QuestionResult {
+  id: number;
+  result: string;
+}
+
+export interface QuizSessionResult {
+  usersRankedByScore: { name: string, score: number }[];
+  questionResults: {
+    questionId: number;
+    playersCorrectList: string[];
+    averageAnswerTime: number;
+    percentCorrect: number;
+  }[];
+}
+
+/* export interface QuestionResult {
+  id: number;
+  result: string;
+} */
+
+export interface QuestionResults {
+  results: QuestionResult[];
+  error?: string;
 }
 
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY

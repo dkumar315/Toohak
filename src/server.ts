@@ -42,13 +42,13 @@ import {
   adminQuizTrashList, adminQuizRestore, adminQuizTransfer, adminQuizTrashEmpty
 } from './quiz';
 import {
-  adminQuizQuestionCreate, adminQuizQuestionUpdate, adminQuizQuestionDelete,
-  adminQuizQuestionMove, adminQuizQuestionDuplicate
+  adminQuizQuestionCreate, adminQuizQuestionUpdate, adminQuizQuestionResults,
+  adminQuizQuestionDelete, adminQuizQuestionMove, adminQuizQuestionDuplicate
 } from './quizQuestion';
 import {
   adminQuizSessionList, adminQuizSessionCreate,
-  adminQuizSessionUpdate, adminQuizSessionStatus,
-  adminQuizSessionResults
+  adminQuizSessionUpdate,
+  adminQuizSessionStatus, adminQuizSessionResults, quizSessionResult
 } from './quizSession';
 import {
   playerJoin, playerStatus
@@ -384,6 +384,23 @@ app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate',
     res.json(adminQuizQuestionDuplicate(token, quizId, questionId));
   });
 
+/* app.get('/v1/player/:playerid/session/:sessionid/question/:questionid/results',
+  (req: Request, res: Response) => {
+  const playerId: number = parseInt(req.params.playerid as string);
+  const sessionId: number = parseInt(req.params.sessionid as string);
+  const questionId: number = parseInt(req.params.questionid as string);
+  res.json(getQuestionResults(playerId, sessionId, questionId));
+  }); */
+
+// Get Question Results
+app.get('/v1/player/:playerid/question/:questionposition/:questionid/results',
+  (req: Request, res: Response) => {
+    const playerId = parseInt(req.params.playerid);
+    const questionPosition = parseInt(req.params.questionposition);
+    const questionId = parseInt(req.params.questionid);
+    res.json(adminQuizQuestionResults(playerId, questionPosition, questionId));
+  });
+
 // ====================================================================
 //                          adminQuizSession
 // ====================================================================
@@ -424,6 +441,12 @@ app.get('/v1/admin/quiz/:quizid/session/:sessionid/results', (req: Request, res:
   const quizId: number = parseInt(req.params.quizid as string);
   const sessionId: number = parseInt(req.params.sessionid as string);
   res.json(adminQuizSessionResults(token, quizId, sessionId));
+});
+
+// Session Result
+app.get('/v1/player/:playerid/results', (req: Request, res: Response) => {
+  const playerId: number = parseInt(req.params.playerid as string);
+  res.json(quizSessionResult(playerId));
 });
 
 // ====================================================================

@@ -1,6 +1,6 @@
 import {
   setData, getData, INVALID, Colours,
-  Data, Colour, Quiz, Question, Answer, EmptyObject
+  Data, Colour, Quiz, Question, Answer, QuestionResultResponse, EmptyObject
 } from './dataStore';
 import {
   timeStamp, isvalidErrorObj, isValidIds, isValidImgUrl
@@ -410,3 +410,38 @@ const generateRandomColor = (): Colour => {
   const randomIndex: number = Math.floor(Math.random() * colours.length);
   return colours[randomIndex];
 };
+
+export function adminQuizQuestionResults(playerId: number, sessionId: number, questionId: number): QuestionResultResponse {
+  const data = getData();
+  const session = data.quizSessions.find(session => session.sessionId === sessionId);
+
+  if (!session) {
+    return { error: 'Session not found' };
+  }
+
+  const player = session.players.find(player => player.playerId === playerId);
+
+  if (!player) {
+    return { error: 'Player not found' };
+  }
+
+  const question = session.metadata.questions.find(question => question.questionId === questionId);
+
+  if (!question) {
+    return { error: 'Question not found' };
+  }
+
+  if (session.state !== 'ANSWER_SHOW') { // Ensure this matches the state used in your tests
+    return { error: 'Results are not available yet' };
+  }
+
+  return {
+    id: question.questionId,
+    result: JSON.stringify({
+      questionId: question.questionId,
+      playersCorrectList: question.playersCorrectList,
+      averageAnswerTime: question.averageAnswerTime,
+      percentCorrect: question.percentCorrect,
+    }),
+  };
+}

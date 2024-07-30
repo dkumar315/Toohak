@@ -18,14 +18,14 @@ export enum MessageEncrypt {
   ASCII_BASE_OFFSET = 0
 }
 
-type PlayerIndices = {
+export type PlayerIndices = {
   sessionIndex: number;
   playerIndex: number;
 };
 
 export type Messages = { messages: Message[] };
 
-const findSessionPlayer = (playerId: number): PlayerIndices | ErrorObject => {
+export const findSessionPlayer = (playerId: number): PlayerIndices | ErrorObject => {
   const data: Data = getData();
   const sessionIndex: number = data.quizSessions
     .findIndex((session: QuizSession) => session
@@ -56,7 +56,7 @@ const vigenereChar = (char: string, keyChar: string, decode: boolean): string =>
 
 const encrypt = (plaintext: string, shift: number): string => {
   // caesar
-  const shiftedText = plaintext
+  const shiftedText: string = plaintext
     .split('')
     .map((char, index) => shiftChar(char, shift + index))
     .join('');
@@ -65,15 +65,15 @@ const encrypt = (plaintext: string, shift: number): string => {
   const key: string = MessageEncrypt.VIGENERE_KEY;
   return shiftedText
     .split('')
-    .map((char, i) => vigenereChar(char, key[i % key.length], false))
+    .map((char, index) => vigenereChar(char, key[index % key.length], false))
     .join('');
 };
 
 const decrypt = (ciphertext: string, shift: number): string => {
   const key: string = MessageEncrypt.VIGENERE_KEY;
-  const unvigenered = ciphertext
+  const unvigenered: string = ciphertext
     .split('')
-    .map((char, i) => vigenereChar(char, key[i % key.length], true))
+    .map((char, index) => vigenereChar(char, key[index % key.length], true))
     .join('');
 
   // Reverse Caesar cipher
@@ -127,9 +127,7 @@ export const playerChatCreate = (
  * @return {object} - Returns an object with all messages in the session
  * @throws {Error} - if the playerId is invalid
  */
-export const playerChatMessages = (
-  playerId: number
-): Messages => {
+export const playerChatMessages = (playerId: number): Messages => {
   const isvalidPlayer: PlayerIndices | ErrorObject = findSessionPlayer(playerId);
   if ('error' in isvalidPlayer) throw new Error(isvalidPlayer.error);
 
