@@ -1,9 +1,8 @@
 import {
   setData, getData, Data, QuizSession, Player, INVALID,
-  EmptyObject, ErrorObject,
-  Message
+  EmptyObject, ErrorObject, Message
 } from './dataStore';
-import { timeStamp } from './helperFunctions';
+import { timeStamp, findSessionPlayer, PlayerIndices } from './helperFunctions';
 export interface MessageBody { message: { messageBody: string } }
 
 export enum MessageLimits {
@@ -18,28 +17,7 @@ export enum MessageEncrypt {
   ASCII_BASE_OFFSET = 0
 }
 
-export type PlayerIndices = {
-  sessionIndex: number;
-  playerIndex: number;
-};
-
 export type Messages = { messages: Message[] };
-
-export const findSessionPlayer = (playerId: number): PlayerIndices | ErrorObject => {
-  const data: Data = getData();
-  const sessionIndex: number = data.quizSessions
-    .findIndex((session: QuizSession) => session
-      .players.some((player: Player) => player.playerId === playerId));
-
-  if (sessionIndex === INVALID) {
-    return { error: `Invalid playerId number: ${playerId} not exist.` };
-  }
-
-  const playerIndex: number = data.quizSessions[sessionIndex]
-    .players.findIndex(player => player.playerId === playerId);
-
-  return { sessionIndex, playerIndex };
-};
 
 const shiftChar = (char: string, shift: number): string => {
   const start: number = MessageEncrypt.ASCII_OFFSET;
@@ -96,8 +74,8 @@ export const playerChatCreate = (
   playerId: number,
   message: MessageBody
 ): EmptyObject => {
-  const isvalidPlayer: PlayerIndices | ErrorObject = findSessionPlayer(playerId);
-  if ('error' in isvalidPlayer) throw new Error(isvalidPlayer.error);
+  const isValidPlayer: PlayerIndices | ErrorObject = findSessionPlayer(playerId);
+  if ('error' in isValidPlayer) throw new Error(isValidPlayer.error);
 
   const messageBody: string = message.message.messageBody;
   const messageBodyLen: number = messageBody.length;
@@ -107,11 +85,11 @@ export const playerChatCreate = (
   }
 
   const data: Data = getData();
-  const session: QuizSession = data.quizSessions[isvalidPlayer.sessionIndex];
+  const session: QuizSession = data.quizSessions[isValidPlayer.sessionIndex];
   session.messages.push({
     messageBody: encrypt(messageBody, playerId),
     playerId,
-    playerName: session.players[isvalidPlayer.playerIndex].name,
+    playerName: session.players[isValidPlayer.playerIndex].name,
     timeSent: timeStamp()
   });
   setData(data);

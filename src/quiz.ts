@@ -2,9 +2,8 @@ import {
   getData, setData, Data, Quiz, Question,
   EmptyObject, ErrorObject, INVALID
 } from './dataStore';
-import { findUserId } from './auth';
 import {
-  isValidIds, IsValid, timeStamp, isValidImgUrl
+  findUserId, isValidIds, IsValid, timeStamp, isValidImgUrl
 } from './helperFunctions';
 
 enum QuizLimits {

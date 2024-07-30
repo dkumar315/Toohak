@@ -1,7 +1,8 @@
 import {
   setData, getData, States, Data, INVALID,
-  QuizSession, Player
+  QuizSession, Player, ErrorObject
 } from './dataStore';
+import { findSessionPlayer, PlayerIndices } from './helperFunctions';
 
 enum NameGen {
   LETTERS = 'abcdefghijklmnopqrstuvwxyz',
@@ -18,6 +19,49 @@ export interface PlayerStatus {
   numQuestions: number;
   atQuestion: number;
 }
+
+/**
+ * find a seesion given a sessionId
+ *
+ * @param {number} sessionId - uniqueId for a session
+ *
+ * @return {number} sessionIndex - where session store in the data
+ */
+const findSession = (sessionId: number): number => {
+  const data: Data = getData();
+  return data.quizSessions.findIndex((session: QuizSession) =>
+    session.sessionId === sessionId);
+};
+
+/**
+ * generate a unique random name for a session
+ *
+ * @param {object} players - the player of the session
+ *
+ * @return {string} name - a unique random name for a guest player in a session
+ */
+const generateName = (players: Player[]): string => {
+  const shuffle = (str: string) =>
+    [...str].sort(() => Math.random() - NameGen.RANDOM_SORT_PIVOT).join('');
+
+  const name: string =
+    shuffle(NameGen.LETTERS).slice(0, NameGen.RANDOM_LETTER_LEN) +
+    shuffle(NameGen.NUMBERS).slice(0, NameGen.RANDOM_NUMBER_LEN);
+
+  return isExistName(name, players) ? generateName(players) : name;
+};
+
+/**
+ * check if a name exist in a session
+ *
+ * @param {string} name - name of a player
+ * @param {object} players - the player of the session
+ *
+ * @return {boolean} true - if the name not exist in a player
+ */
+const isExistName = (name: string, players: Player[]): boolean => {
+  return players.some((player: Player) => player.name === name);
+};
 
 /**
  * add a player
@@ -71,47 +115,23 @@ export const playerJoin = (sessionId: number, name: string): PlayerId => {
  * @return {object} errorObject - if player ID does not exist
  */
 export const playerStatus = (playerId: number): PlayerStatus => {
+  const isValidPlayer: PlayerIndices | ErrorObject = findSessionPlayer(playerId);
+  if ('error' in isValidPlayer) throw new Error(isValidPlayer.error);
+
   const data: Data = getData();
+  const session: QuizSession = data.quizSessions[isValidPlayer.sessionIndex];
 
-  for (const session of data.quizSessions) {
-    const player = session.players.find(p => p.playerId === playerId);
-    if (player) {
-      if (session.atQuestion === 0) {
-        return {
-          state: session.state,
-          numQuestions: session.metadata.questions.length,
-          atQuestion: session.atQuestion + 1
-        };
-      }
-
-      return {
-        state: session.state,
-        numQuestions: session.metadata.questions.length,
-        atQuestion: session.atQuestion
-      };
-    }
+  if (session.atQuestion === 0) {
+    return {
+      state: session.state,
+      numQuestions: session.metadata.questions.length,
+      atQuestion: session.atQuestion + 1
+    };
   }
 
-  throw new Error(`Invalid playerId: ${playerId}.`);
-};
-
-const findSession = (sessionId: number): number => {
-  const data: Data = getData();
-  return data.quizSessions.findIndex((session: QuizSession) =>
-    session.sessionId === sessionId);
-};
-
-const generateName = (players: Player[]): string => {
-  const shuffle = (str: string) =>
-    [...str].sort(() => Math.random() - NameGen.RANDOM_SORT_PIVOT).join('');
-
-  const name: string =
-    shuffle(NameGen.LETTERS).slice(0, NameGen.RANDOM_LETTER_LEN) +
-    shuffle(NameGen.NUMBERS).slice(0, NameGen.RANDOM_NUMBER_LEN);
-
-  return isExistName(name, players) ? generateName(players) : name;
-};
-
-const isExistName = (name: string, players: Player[]): boolean => {
-  return players.some((player: Player) => player.name === name);
+  return {
+    state: session.state,
+    numQuestions: session.metadata.questions.length,
+    atQuestion: session.atQuestion
+  };
 };
