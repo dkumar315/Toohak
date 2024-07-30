@@ -15,9 +15,7 @@ import {
 } from './quizSession';
 import { PlayerId, PlayerStatus } from './player';
 import { MessageBody, Messages } from './playerChat';
-
 export const VALID_EMPTY_RETURN: EmptyObject = {};
-export const ERROR: ErrorObject = { error: expect.any(String) };
 type Header = EmptyObject | { token: string };
 export type ResError = {
   status: StatusCodes;

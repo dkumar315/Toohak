@@ -1,6 +1,6 @@
-import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
+import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, ErrorObject } from './dataStore';
 import {
-  ERROR, ResError, ResEmpty, ResToken, ResQuizId, ResQuizInfo,
+  ResError, ResEmpty, ResToken, ResQuizId, ResQuizInfo,
   authRegister, quizCreate, validQuizInfo,
   questionCreate, requestQuizQuestionDelete, requestClear,
   ResQuestionId,
@@ -49,6 +49,8 @@ const falseAnswer3: AnswerInput = {
   answer: 'None of the Above',
   correct: false
 };
+
+const ERROR: ErrorObject = { error: expect.any(String) };
 
 beforeEach(requestClear);
 afterAll(requestClear);

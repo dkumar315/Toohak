@@ -1,11 +1,11 @@
-import { OK, BAD_REQUEST, Actions, States } from './dataStore';
+import { OK, BAD_REQUEST, Actions, States, ErrorObject } from './dataStore';
 import { QuestionBody } from './quizQuestion';
 import { PlayerId } from './player';
 import {
   authRegister, quizCreate, requestQuizRemove, requestQuizEmptyTrash,
   questionCreate, quizSessionCreate, requestPlayerJoin, requestClear,
   quizSessionUpdate, ResQuizSessionStatus, quizSessionStatus, playerJoin,
-  ERROR, ResError, ResPlayerId, playerStatus, ResPlayerStatus
+  ResError, ResPlayerId, playerStatus, ResPlayerStatus
 } from './functionRequest';
 
 beforeAll(requestClear);
@@ -13,6 +13,7 @@ beforeAll(requestClear);
 let token: string, quizId: number, sessionId: number;
 let result: ResPlayerId | ResError;
 const validPlayerAdd: PlayerId = { playerId: expect.any(Number) };
+const ERROR: ErrorObject = { error: expect.any(String) };
 
 beforeEach(() => {
   requestClear();

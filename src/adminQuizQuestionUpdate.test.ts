@@ -1,13 +1,15 @@
-// request functions
+import {
+  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN,
+  Answer, Colours, Colour, ErrorObject
+} from './dataStore';
+
 import {
   authRegister, requestAuthLogout,
   quizCreate, validQuizInfo, requestQuizRemove,
   questionCreate, requestQuizQuestionUpdate, requestQuizQuestionDelete,
-  requestClear, ResQuizInfo, ResEmpty, ERROR, ResError, VALID_EMPTY_RETURN
+  requestClear, ResQuizInfo, ResEmpty, ResError, VALID_EMPTY_RETURN
 } from './functionRequest';
-import {
-  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Colours, Colour
-} from './dataStore';
+
 import {
   QuestionBody, AnswerInput, MAX_DURATIONS_SECS,
   QuestionLimit, AnswersLimit, DurationLimit, PointsLimit
@@ -53,6 +55,8 @@ const falseAnswer3: AnswerInput = {
 
 let token: string, quizId: number, questionId: number, questionBody: QuestionBody;
 let result: ResEmpty | ResError;
+const ERROR: ErrorObject = { error: expect.any(String) };
+
 beforeEach(() => {
   requestClear();
   token = authRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;

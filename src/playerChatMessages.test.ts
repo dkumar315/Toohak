@@ -1,10 +1,10 @@
-import { OK, BAD_REQUEST } from './dataStore';
+import { OK, BAD_REQUEST, ErrorObject } from './dataStore';
 import { QuestionBody } from './quizQuestion';
 import { MessageBody } from './playerChat';
 import {
   authRegister, quizCreate, questionCreate, quizSessionCreate,
   playerJoin, requestClear, playerChatMessages, requestPlayerChatCreate,
-  ERROR, ResError, ResPlayerChatMessages
+  ResError, ResPlayerChatMessages
 } from './functionRequest';
 
 beforeAll(requestClear);
@@ -12,6 +12,7 @@ afterAll(requestClear);
 
 let sessionId: number, playerId: number, message: MessageBody;
 let result: ResPlayerChatMessages | ResError;
+const ERROR: ErrorObject = { error: expect.any(String) };
 
 beforeEach(() => {
   requestClear();

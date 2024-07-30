@@ -1,14 +1,15 @@
-import { OK, UNAUTHORIZED } from './dataStore';
+import { OK, UNAUTHORIZED, ErrorObject } from './dataStore';
 import { UserDetail } from './auth';
 import {
   authRegister, requestAuthLogin, requestAuthLogout, requestAuthLogoutV1,
   requestUserDetails, requestUserDetailsUpdate,
   requestUserPasswordUpdate, requestClear, VALID_EMPTY_RETURN,
-  ERROR, ResToken, ResUserDetails, ResEmpty, ResError
+  ResToken, ResUserDetails, ResEmpty, ResError
 } from './functionRequest';
 
 let email: string, password: string, nameFirst: string, nameLast: string;
 let token1: string, token2: string, result: ResEmpty | ResError;
+const ERROR: ErrorObject = { error: expect.any(String) };
 
 beforeEach(() => {
   requestClear();

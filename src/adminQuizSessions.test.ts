@@ -1,20 +1,22 @@
-import { FORBIDDEN, OK, UNAUTHORIZED } from './dataStore';
+import { FORBIDDEN, OK, UNAUTHORIZED, ErrorObject } from './dataStore';
 import {
   authRegister, requestAuthLogout, quizCreate,
   requestQuizRemove, requestQuizEmptyTrash,
   requestAdminQuizSessions, requestClear,
-  ResQuizSessions, ResError, ERROR
+  ResQuizSessions, ResError
 } from './functionRequest';
 
 beforeAll(requestClear);
 let token: string, quizId: number;
 let result: ResQuizSessions | ResError;
+const ERROR: ErrorObject = { error: expect.any(String) };
 
 beforeEach(() => {
   requestClear();
   token = authRegister('krishpatel@gmail.com', 'Krishpatel01', 'Krish', 'Patel').token;
   quizId = quizCreate(token, 'Random Sample Quiz', 'Random Description').quizId;
 });
+
 afterAll(requestClear);
 
 describe('Testing adminQuizSessions', () => {

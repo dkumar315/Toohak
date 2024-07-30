@@ -1,7 +1,7 @@
-import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
+import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, ErrorObject } from './dataStore';
 import {
   requestClear, authRegister, requestAuthLogout, quizCreate,
-  requestQuizSessionResults, quizSessionCreate, ERROR,
+  requestQuizSessionResults, quizSessionCreate,
   ResError, ResQuizSessionResults,
 } from './functionRequest';
 import { SessionLimits } from './quizSession';
@@ -11,6 +11,7 @@ beforeAll(() => requestClear());
 let token: string, quizId: number, sessionId: number;
 const autoStartNum: number = SessionLimits.AUTO_START_NUM_MAX - 1;
 let result: ResQuizSessionResults | ResError;
+const ERROR: ErrorObject = { error: expect.any(String) };
 
 beforeEach(() => {
   requestClear();

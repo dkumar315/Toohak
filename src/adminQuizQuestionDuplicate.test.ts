@@ -1,10 +1,10 @@
-import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Question } from './dataStore';
+import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Question, ErrorObject } from './dataStore';
 import { QuestionBody, MAX_DURATIONS_SECS } from './quizQuestion';
 import {
   authRegister, requestAuthLogout, quizCreate, validQuizInfo,
   requestQuizRemove, questionCreate, requestQuizQuestionDuplicate,
   ResQuizInfo, ResNewQuestionId, requestQuizQuestionDelete,
-  requestClear, ERROR, ResError, VALID_EMPTY_RETURN,
+  requestClear, ResError, VALID_EMPTY_RETURN,
   requestQuizQuestionCreateV1, requestQuizQuestionUpdateV1,
   requestQuizQuestionDuplicateV1, requestQuizQuestionDeleteV1,
   requestQuizQuestionMoveV1, ResQuestionId
@@ -26,6 +26,8 @@ const questionBody: QuestionBody = {
   ],
   thumbnailUrl: 'http://google.com/img_path.jpg'
 };
+
+const ERROR: ErrorObject = { error: expect.any(String) };
 
 const questionDuplicate = (token: string, quizId: number,
   questionId: number): ResNewQuestionId => {

@@ -1,11 +1,11 @@
-import { OK, BAD_REQUEST, UNAUTHORIZED, EmptyObject } from './dataStore';
+import { OK, BAD_REQUEST, UNAUTHORIZED, EmptyObject, ErrorObject } from './dataStore';
 import { UserDetail } from './auth';
 import {
   authRegister, requestAuthLogin, requestAuthLogout,
   requestUserDetails, requestUserDetailsV1,
   requestUserDetailsUpdate, requestUserDetailsUpdateV1,
   requestUserPasswordUpdate, requestUserPasswordUpdateV1,
-  requestClear, VALID_EMPTY_RETURN, ERROR, ResToken,
+  requestClear, VALID_EMPTY_RETURN, ResToken,
   ResError, ResEmpty, ResUserDetails
 } from './functionRequest';
 
@@ -31,6 +31,8 @@ beforeEach(() => {
 });
 
 afterAll(requestClear);
+
+const ERROR: ErrorObject = { error: expect.any(String) };
 
 describe('testing adminUserDetails (GET /v2/admin/user/details)', () => {
   let result: ResUserDetails | ResError;
