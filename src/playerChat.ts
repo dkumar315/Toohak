@@ -1,5 +1,5 @@
 import {
-  setData, getData, Data, QuizSession, Player, INVALID,
+  setData, getData, Data, QuizSession,
   EmptyObject, ErrorObject, Message
 } from './dataStore';
 import { timeStamp, findSessionPlayer, PlayerIndices } from './helperFunctions';

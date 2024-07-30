@@ -470,6 +470,7 @@ export function requestQuizSessionResult(
 ): ApiResponse<QuizSessionResult> {
   return requestHelper('GET', `/v1/player/${playerId}/results`, {});
 }
+
 export function requestPlayerQuestionResults(
   playerId: string,
   questionPosition: number
