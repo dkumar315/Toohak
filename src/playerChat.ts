@@ -15,14 +15,14 @@ export enum MessageEncrypt {
   VIGENERE_KEY = 'sEcReT'
 }
 
-type PlayerIndices = {
+export type PlayerIndices = {
   sessionIndex: number;
   playerIndex: number;
 };
 
 export type Messages = { messages: Message[] };
 
-const findSessionPlayer = (playerId: number): PlayerIndices | ErrorObject => {
+export const findSessionPlayer = (playerId: number): PlayerIndices | ErrorObject => {
   const data: Data = getData();
   const sessionIndex: number = data.quizSessions
     .findIndex((session: QuizSession) => session

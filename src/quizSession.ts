@@ -2,10 +2,11 @@ import {
   getData, setData, Data, States, Quiz, QuizSession, EmptyObject,
   State,
   Metadata,
-  Player
+  Player, 
+  ErrorObject
 } from './dataStore';
 import { isValidIds, IsValid } from './helperFunctions';
-
+import { findSessionPlayer, PlayerIndices } from './playerChat';
 export enum SessionLimits {
   AUTO_START_AND_QUESTIONS_NUM_MIN = 0,
   AUTO_START_NUM_MAX = 50,
@@ -386,17 +387,12 @@ export const adminQuizSessionResults = (
 };
 
 export function quizSessionResult(playerId: number) {
-  const data = getData();
-  if (!data.quizSessions.length) {
-    console.error('No sessions found');
-    throw new Error('No sessions found');
-  }
-  const session = data.quizSessions.find((session) =>
-    session.players.some((player) => player.playerId === playerId)
-  );
-  if (!session) {
-    throw new Error('Player ID does not exist');
-  }
+  const isvalidPlayer: PlayerIndices | ErrorObject = findSessionPlayer(playerId);
+  if ('error' in isvalidPlayer) throw new Error(isvalidPlayer.error);
+
+  const data: Data = getData();
+  const session: QuizSession = data.quizSessions[isvalidPlayer.sessionIndex];
+
   if (session.state !== 'FINAL_RESULTS') {
     throw new Error('Session is not in FINAL_RESULTS state');
   }

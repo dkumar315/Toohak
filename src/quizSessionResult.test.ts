@@ -49,8 +49,8 @@ const mockData: Data = {
       },
       messages: [],
       players: [
-        { playerId: 1, name: 'Player1', points: 10, answerIds: [1], timeTaken: 5 },
-        { playerId: 2, name: 'Player2', points: 20, answerIds: [1], timeTaken: 5 },
+        { playerId: 1, name: 'Player1', points: 10, answerIds: [1], timeTaken: 5, score:0 },
+        { playerId: 2, name: 'Player2', points: 20, answerIds: [1], timeTaken: 5, score:0 },
       ],
     },
   ],
