@@ -5,7 +5,7 @@ const SERVER_URL: string = `${config.url}:${config.port}`;
 // ============== interfaces ===================================================
 import { StatusCodes } from 'http-status-codes';
 import {
-  EmptyObject, ErrorObject, QuizSessionResult, QuestionResult, QuestionResults
+  EmptyObject, ErrorObject, QuizSessionResult, QuestionResult, QuestionResults, PlayerQuestionResponse
 } from './dataStore';
 import { Token, UserDetails } from './auth';
 import { QuizList, QuizId, QuizInfo } from './quiz';
@@ -501,6 +501,13 @@ export function requestPlayerQuestionResults(
     `/v1/player/${playerId}/question/${questionPosition}/results`, {});
 }
 
+export function requestPlayerQuestionPosition(
+  playerId: number,
+  questionPosition: number
+): ApiResponse<PlayerQuestionResponse> {
+  return requestHelper('GET', `/v1/player/${playerId}/question/${questionPosition}`, {});
+}
+
 // ============== playerChat ===================================================
 export function requestPlayerChatMessages(
   playerId: number
@@ -536,6 +543,7 @@ export type ResPlayerId = ResValid<PlayerId>;
 export type ResPlayerStatus = ResValid<PlayerStatus>;
 export type ResPlayerChatMessages = ResValid<Messages>;
 export type ResQuizSessionResult = ApiResponse<QuizSessionResult>;
+export type ResQuestionResults = ResValid<QuestionResults>;
 export type ResCSVResult = ApiResponse<CSVResult>;
 
 export const authRegister = (email: string, password: string,
