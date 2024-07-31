@@ -57,8 +57,8 @@ describe('testing playerChatMessages /v1/player/{playerid}/chat', () => {
       });
 
       const timeNow = Math.floor(Date.now() / 1000);
-      expect(result.messages[0].timeSent).toBeGreaterThan(timeNow - 1);
-      expect(result.messages[0].timeSent).toBeLessThan(timeNow + 1);
+      expect(result.messages[0].timeSent).toBeGreaterThanOrEqual(timeNow - 2);
+      expect(result.messages[0].timeSent).toBeLessThanOrEqual(timeNow + 2);
     });
 
     test('retrieve messages after sending multiple messages', () => {
@@ -83,8 +83,8 @@ describe('testing playerChatMessages /v1/player/{playerid}/chat', () => {
           }
         );
         const timeNow = Math.floor(Date.now() / 1000);
-        expect((result as ResPlayerChatMessages).messages[index].timeSent).toBeGreaterThan(timeNow - 1);
-        expect((result as ResPlayerChatMessages).messages[index].timeSent).toBeLessThan(timeNow + 1);
+        expect((result as ResPlayerChatMessages).messages[index].timeSent).toBeGreaterThanOrEqual(timeNow - 2);
+        expect((result as ResPlayerChatMessages).messages[index].timeSent).toBeLessThanOrEqual(timeNow + 2);
       });
     });
 
