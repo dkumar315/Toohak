@@ -42,20 +42,19 @@ import {
   adminQuizTrashList, adminQuizRestore, adminQuizTransfer, adminQuizTrashEmpty
 } from './quiz';
 import {
-  adminQuizQuestionCreate, adminQuizQuestionUpdate, adminQuizQuestionResults,
+  adminQuizQuestionCreate, adminQuizQuestionUpdate,
   adminQuizQuestionDelete, adminQuizQuestionMove, adminQuizQuestionDuplicate
 } from './quizQuestion';
 import {
   adminQuizSessionList, adminQuizSessionCreate,
   adminQuizSessionUpdate,
-  adminQuizSessionStatus, adminQuizSessionResults, quizSessionResult
+  adminQuizSessionStatus, adminQuizSessionResults
 } from './quizSession';
+import { playerJoin, playerStatus, playerResults } from './player';
 import {
-  playerJoin, playerStatus
-} from './player';
-import {
-  playerChatCreate, playerChatMessages
-} from './playerChat';
+  playerQuestionResults
+} from './playerQuestion';
+import { playerChatCreate, playerChatList } from './playerChat';
 import { clear } from './other';
 
 // ====================================================================
@@ -384,23 +383,6 @@ app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate',
     res.json(adminQuizQuestionDuplicate(token, quizId, questionId));
   });
 
-/* app.get('/v1/player/:playerid/session/:sessionid/question/:questionid/results',
-  (req: Request, res: Response) => {
-  const playerId: number = parseInt(req.params.playerid as string);
-  const sessionId: number = parseInt(req.params.sessionid as string);
-  const questionId: number = parseInt(req.params.questionid as string);
-  res.json(getQuestionResults(playerId, sessionId, questionId));
-  }); */
-
-// Get Question Results
-app.get('/v1/player/:playerid/question/:questionposition/:questionid/results',
-  (req: Request, res: Response) => {
-    const playerId = parseInt(req.params.playerid);
-    const questionPosition = parseInt(req.params.questionposition);
-    const questionId = parseInt(req.params.questionid);
-    res.json(adminQuizQuestionResults(playerId, questionPosition, questionId));
-  });
-
 // ====================================================================
 //                          adminQuizSession
 // ====================================================================
@@ -443,12 +425,6 @@ app.get('/v1/admin/quiz/:quizid/session/:sessionid/results', (req: Request, res:
   res.json(adminQuizSessionResults(token, quizId, sessionId));
 });
 
-// Session Result
-app.get('/v1/player/:playerid/results', (req: Request, res: Response) => {
-  const playerId: number = parseInt(req.params.playerid as string);
-  res.json(quizSessionResult(playerId));
-});
-
 // ====================================================================
 //                          player
 // ====================================================================
@@ -464,6 +440,24 @@ app.get('/v1/player/:playerid', (req: Request, res: Response) => {
   res.json(playerStatus(playerId));
 });
 
+// Session Result
+app.get('/v1/player/:playerid/results', (req: Request, res: Response) => {
+  const playerId: number = parseInt(req.params.playerid as string);
+  res.json(playerResults(playerId));
+});
+
+// ====================================================================
+//                          player Question
+// ====================================================================
+
+// Get Question Results
+app.get('/v1/player/:playerid/question/:questionposition/results',
+  (req: Request, res: Response) => {
+    const playerId = parseInt(req.params.playerid);
+    const questionPosition = parseInt(req.params.questionposition);
+    res.json(playerQuestionResults(playerId, questionPosition));
+  });
+
 // ====================================================================
 //                          player Chat
 // ====================================================================
@@ -471,7 +465,7 @@ app.get('/v1/player/:playerid', (req: Request, res: Response) => {
 // Get chat messages for a player in a session
 app.get('/v1/player/:playerid/chat', (req: Request, res: Response) => {
   const playerId: number = parseInt(req.params.playerid as string);
-  res.json(playerChatMessages(playerId));
+  res.json(playerChatList(playerId));
 });
 
 // Send chat message in session

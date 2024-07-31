@@ -1,11 +1,12 @@
-import { OK, BAD_REQUEST } from './dataStore';
+import { OK, BAD_REQUEST, ErrorObject } from './dataStore';
 import { QuestionBody } from './quizQuestion';
 import {
   authRegister, quizCreate, questionCreate,
   quizSessionCreate, requestPlayerJoin, requestPlayerStatus,
-  requestClear, ERROR, ResError, ResPlayerStatus,
-  ResPlayerId
+  requestClear, ResError, ResPlayerStatus, ResPlayerId
 } from './functionRequest';
+
+const ERROR: ErrorObject = { error: expect.any(String) };
 
 beforeAll(requestClear);
 

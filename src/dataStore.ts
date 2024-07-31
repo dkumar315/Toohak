@@ -49,7 +49,17 @@ export enum States {
   FINAL_RESULTS = 'FINAL_RESULTS',
   END = 'END'
 }
+
 export type State = States[keyof States];
+
+export enum Actions {
+  NEXT_QUESTION = 'NEXT_QUESTION',
+  SKIP_COUNTDOWN = 'SKIP_COUNTDOWN',
+  GO_TO_ANSWER = 'GO_TO_ANSWER',
+  GO_TO_FINAL_RESULTS = 'GO_TO_FINAL_RESULTS',
+  END = 'END'
+}
+export type Action = Actions[keyof Actions];
 
 // interfaces
 export type EmptyObject = Record<string, never>;
@@ -134,7 +144,8 @@ export interface QuizSession {
   players: Player[]
 }
 
-export interface Metadata extends Omit<Quiz, 'questions' | 'sessionIds' | 'questionCounter' > {
+export interface Metadata
+extends Omit<Quiz, 'questions' | 'sessionIds' | 'questionCounter' > {
   questions: QuestionSession[]
 }
 
@@ -159,6 +170,7 @@ export interface Player {
   timeTaken: number;
   score: number;
 }
+
 export interface QuestionResult {
   id: number;
   result: string;
@@ -173,11 +185,6 @@ export interface QuizSessionResult {
     percentCorrect: number;
   }[];
 }
-
-/* export interface QuestionResult {
-  id: number;
-  result: string;
-} */
 
 export interface QuestionResults {
   results: QuestionResult[];

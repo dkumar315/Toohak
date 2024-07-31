@@ -1,6 +1,6 @@
-import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
+import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, ErrorObject } from './dataStore';
 import {
-  ERROR, authRegister, requestAuthLogout,
+  authRegister, requestAuthLogout,
   quizCreate, validQuizInfo, requestQuizRemove,
   requestQuizRestore, requestClear,
   ResError, ResEmpty, ResQuizId, ResQuizInfo,
@@ -10,6 +10,7 @@ let token: string;
 let otherToken: string;
 let quizId: number;
 let otherQuizId: number;
+const ERROR: ErrorObject = { error: expect.any(String) };
 
 beforeEach(() => {
   requestClear();

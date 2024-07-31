@@ -1,5 +1,5 @@
 import { getData, setData } from './dataStore';
-import { requestQuizSessionResult } from './functionRequest';
+import { requestPlayerResults } from './functionRequest';
 import { OK, BAD_REQUEST } from './dataStore';
 import { Data, States, Colours } from './dataStore';
 
@@ -68,28 +68,28 @@ describe('Testing quizSessionResult with mock data', () => {
 
   test.skip('Valid request returns users ranked by score and question results', () => {
     const playerId = 1;
-    const result = requestQuizSessionResult(playerId);
+    const result = requestPlayerResults(playerId);
     expect(result).toMatchObject(VALID_RESPONSE);
     expect(result.status).toStrictEqual(OK);
   });
 
   test('Non-existent playerId', () => {
     const playerId = 3; // Non-existent playerId
-    const result = requestQuizSessionResult(playerId);
+    const result = requestPlayerResults(playerId);
     expect(result).toMatchObject({ error: expect.any(String) });
     expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 
   test('Invalid playerId format', () => {
     const playerId = -1;
-    const result = requestQuizSessionResult(playerId);
+    const result = requestPlayerResults(playerId);
     expect(result).toMatchObject({ error: expect.any(String) });
     expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 
   test('PlayerId as a string', () => {
     const playerId = 'invalid' as unknown as number;
-    const result = requestQuizSessionResult(playerId);
+    const result = requestPlayerResults(playerId);
     expect(result).toMatchObject({ error: expect.any(String) });
     expect(result.status).toStrictEqual(BAD_REQUEST);
   });
@@ -100,7 +100,7 @@ describe('Testing quizSessionResult with mock data', () => {
     setData(alteredData);
 
     const playerId = 1;
-    const result = requestQuizSessionResult(playerId);
+    const result = requestPlayerResults(playerId);
     expect(result).toMatchObject({ error: expect.any(String) });
     expect(result.status).toStrictEqual(BAD_REQUEST);
   });

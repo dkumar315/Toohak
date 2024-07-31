@@ -1,9 +1,12 @@
-import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
+import {
+  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN,
+  ErrorObject
+} from './dataStore';
 import {
   authRegister, requestAuthLogout, quizCreate, requestQuizRemove,
   requestQuizEmptyTrash, questionCreate, requestQuizQuestionDelete,
   requestQuizSessionCreate, quizSessionCreate, requestAdminQuizSessions,
-  ResQuizSessions, requestClear, ResSessionId, ERROR, ResError
+  ResQuizSessions, requestClear, ResSessionId, ResError
 } from './functionRequest';
 import {
   QuestionBody
@@ -18,6 +21,7 @@ afterAll(requestClear);
 let token: string, quizId: number, questionId: number;
 const autoStartNum: number = SessionLimits.AUTO_START_NUM_MAX - 1;
 let result: ResSessionId | ResError;
+const ERROR: ErrorObject = { error: expect.any(String) };
 
 beforeEach(() => {
   requestClear();
@@ -38,7 +42,7 @@ beforeEach(() => {
       }],
     thumbnailUrl: 'http://google.com/img_path.jpg'
   };
-  questionId = questionCreate(token, quizId, questionBody).questionId; // https://url.jpg
+  questionId = questionCreate(token, quizId, questionBody).questionId;
 });
 
 describe('testing adminQuizSessionCreate POST /v1/admin/quiz/{quizid}/session/start', () => {

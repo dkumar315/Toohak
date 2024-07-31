@@ -1,9 +1,8 @@
-import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Colours } from './dataStore';
+import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, Answer, Colours, ErrorObject } from './dataStore';
 import {
-  authRegister, requestAuthLogout,
-  quizCreate, validQuizInfo, requestQuizRemove,
-  requestQuizQuestionCreate, questionCreate,
-  requestClear, ERROR, ResError, ResQuestionId, ResQuizInfo,
+  authRegister, requestAuthLogout, quizCreate, validQuizInfo, requestQuizRemove,
+  requestQuizQuestionCreate, questionCreate, requestClear,
+  ResError, ResQuestionId, ResQuizInfo,
 } from './functionRequest';
 import {
   QuestionBody, AnswerInput, MAX_DURATIONS_SECS,
@@ -23,6 +22,7 @@ const trueAnswer3: AnswerInput = { answer: 'the Wicked Queen', correct: true };
 const falseAnswer1: AnswerInput = { answer: 'mirror', correct: false };
 const falseAnswer2: AnswerInput = { answer: 'Poisoned Apple', correct: false };
 const falseAnswer3: AnswerInput = { answer: 'Prince Florian', correct: false };
+const ERROR: ErrorObject = { error: expect.any(String) };
 
 let token: string, quizId: number, questionBody: QuestionBody;
 let result: ResQuestionId | ResError;

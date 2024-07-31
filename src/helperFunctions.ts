@@ -1,4 +1,4 @@
-import { getData, INVALID, Quiz, Data } from './dataStore';
+import { getData, INVALID, Quiz, Data, ErrorObject, Player, QuizSession } from './dataStore';
 import { findUserId } from './auth';
 export interface IsValid {
   isValid: boolean;
@@ -13,7 +13,7 @@ export interface IsValid {
  *
  * @return {number} userId - corresponding userId of a token
  */
-// findUserId
+export { findUserId } from './auth';
 
 /**
  * Check if a given quizId is exist and own by the current authorized User
@@ -110,4 +110,25 @@ export const isValidImgUrl = (thumbnailUrl: string): boolean => {
   const validExtension = /\.(jpe?g|png)$/i.test(thumbnailUrl);
   const validProtocol = /^(http:\/\/|https:\/\/)/.test(thumbnailUrl);
   return validExtension && validProtocol;
+};
+
+export type PlayerIndices = {
+  sessionIndex: number;
+  playerIndex: number;
+};
+
+export const findSessionPlayer = (playerId: number): PlayerIndices | ErrorObject => {
+  const data: Data = getData();
+  const sessionIndex: number = data.quizSessions
+    .findIndex((session: QuizSession) => session
+      .players.some((player: Player) => player.playerId === playerId));
+
+  if (sessionIndex === INVALID) {
+    return { error: `Invalid playerId number: ${playerId} not exist.` };
+  }
+
+  const playerIndex: number = data.quizSessions[sessionIndex]
+    .players.findIndex(player => player.playerId === playerId);
+
+  return { sessionIndex, playerIndex };
 };

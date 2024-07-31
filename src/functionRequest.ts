@@ -4,7 +4,9 @@ const SERVER_URL: string = `${config.url}:${config.port}`;
 
 // ============== interfaces ===================================================
 import { StatusCodes } from 'http-status-codes';
-import { EmptyObject, ErrorObject, QuizSessionResult, QuestionResult, QuestionResults } from './dataStore';
+import {
+  EmptyObject, ErrorObject, QuizSessionResult, QuestionResult, QuestionResults
+} from './dataStore';
 import { Token, UserDetails } from './auth';
 import { QuizList, QuizId, QuizInfo } from './quiz';
 import { QuestionBody, QuestionId, NewQuestionId } from './quizQuestion';
@@ -13,9 +15,7 @@ import {
 } from './quizSession';
 import { PlayerId, PlayerStatus } from './player';
 import { MessageBody, Messages } from './playerChat';
-
 export const VALID_EMPTY_RETURN: EmptyObject = {};
-export const ERROR: ErrorObject = { error: expect.any(String) };
 type Header = EmptyObject | { token: string };
 export type ResError = {
   status: StatusCodes;
@@ -205,26 +205,34 @@ export function requestQuizInfo(
 }
 
 export function requestQuizNameUpdateV1(
-  token: string, quizId: number, name: string
+  token: string,
+  quizId: number,
+  name: string
 ): ApiResponse<EmptyObject> {
   return requestHelper('PUT', `/v1/admin/quiz/${quizId}/name`, { token, name });
 }
 
 export function requestQuizNameUpdate(
-  token: string, quizId: number, name: string
+  token: string,
+  quizId: number,
+  name: string
 ): ApiResponse<EmptyObject> {
   return requestHelper('PUT', `/v2/admin/quiz/${quizId}/name`, { token, name });
 }
 
 export function requestQuizDescriptionUpdateV1(
-  token: string, quizId: number, description: string
+  token: string,
+  quizId: number,
+  description: string
 ): ApiResponse<EmptyObject> {
   return requestHelper('PUT', `/v1/admin/quiz/${quizId}/description`,
     { token, description });
 }
 
 export function requestQuizDescriptionUpdate(
-  token: string, quizId: number, description: string
+  token: string,
+  quizId: number,
+  description: string
 ): ApiResponse<EmptyObject> {
   return requestHelper('PUT', `/v2/admin/quiz/${quizId}/description`,
     { token, description });
@@ -273,21 +281,27 @@ export function requestQuizEmptyTrash(
 }
 
 export function requestQuizTransferV1(
-  token: string, quizId: number, email: string
+  token: string,
+  quizId: number,
+  email: string
 ): ApiResponse<EmptyObject> {
   return requestHelper('POST', `/v1/admin/quiz/${quizId}/transfer`,
     { token, quizId, email });
 }
 
 export function requestQuizTransfer(
-  token: string, quizId: number, email: string
+  token: string,
+  quizId: number,
+  email: string
 ): ApiResponse<EmptyObject> {
   return requestHelper('POST', `/v2/admin/quiz/${quizId}/transfer`,
     { token, quizId, email });
 }
 
 export function requestUpdateQuizThumbnail(
-  token: string, quizId: number, imgUrl: string
+  token: string,
+  quizId: number,
+  imgUrl: string
 ): ApiResponse<EmptyObject> {
   return requestHelper('PUT', `/v1/admin/quiz/${quizId}/thumbnail`,
     { token, imgUrl });
@@ -313,14 +327,20 @@ export function requestQuizQuestionCreate(
 }
 
 export function requestQuizQuestionUpdateV1(
-  token: string, quizId: number, questionId: number, questionBody: QuestionBody
+  token: string,
+  quizId: number,
+  questionId: number,
+  questionBody: QuestionBody
 ): ApiResponse<EmptyObject> {
   return requestHelper('PUT', `/v1/admin/quiz/${quizId}/question/${questionId}`,
     { token, questionBody });
 }
 
 export function requestQuizQuestionUpdate(
-  token: string, quizId: number, questionId: number, questionBody: QuestionBody
+  token: string,
+  quizId: number,
+  questionId: number,
+  questionBody: QuestionBody
 ): ApiResponse<EmptyObject> {
   return requestHelper('PUT', `/v2/admin/quiz/${quizId}/question/${questionId}`,
     { token, questionBody });
@@ -401,15 +421,18 @@ export function requestAdminQuizSessions(
 }
 
 export function requestQuizSessionCreate(
-  token: string, quizId: number, autoStartNum: number
+  token: string,
+  quizId: number,
+  autoStartNum: number
 ): ApiResponse<QuizSessionId> {
   return requestHelper('POST', `/v1/admin/quiz/${quizId}/session/start`,
     { token, autoStartNum });
 }
 
 export function requestQuizSessionList(
-  token: string, quizId: number):
-  ApiResponse<{ activeSessions: number[], inactiveSessions: number[] }> {
+  token: string,
+  quizId: number
+): ApiResponse<QuizSessions> {
   return requestHelper('GET', `/v1/admin/quiz/${quizId}/sessions`, { token });
 }
 
@@ -427,7 +450,8 @@ export function requestAdminQuizSessionStatus(
   quizId: number,
   sessionId: number
 ): ApiResponse<QuizSessionStatus> {
-  return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}`, { token });
+  return requestHelper('GET',
+    `/v1/admin/quiz/${quizId}/session/${sessionId}`, { token });
 }
 
 export function requestQuizSessionResults(
@@ -435,19 +459,8 @@ export function requestQuizSessionResults(
   quizId: number,
   sessionId: number
 ): ApiResponse<QuizSessionResults> {
-  return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}/results`, { token });
-}
-
-export function requestQuizSessionResult(
-  playerId: number
-): ResQuizSessionResult {
-  return requestHelper<QuizSessionResult>('GET', `/v1/player/${playerId}/results`, {});
-}
-export function requestPlayerQuestionResults(
-  playerId: string,
-  questionPosition: number
-): ApiResponse<QuestionResults> {
-  return requestHelper('GET', `/v1/player/${playerId}/question/${questionPosition}/results`, {});
+  return requestHelper('GET',
+    `/v1/admin/quiz/${quizId}/session/${sessionId}/results`, { token });
 }
 
 // ============== player =======================================================
@@ -462,6 +475,21 @@ export function requestPlayerStatus(
   playerId: number
 ): ApiResponse<PlayerStatus> {
   return requestHelper('GET', `/v1/player/${playerId}`, {});
+}
+
+export function requestPlayerResults(
+  playerId: number
+): ApiResponse<QuizSessionResult> {
+  return requestHelper('GET', `/v1/player/${playerId}/results`, {});
+}
+
+// ============== player  Question =============================================
+export function requestPlayerQuestionResults(
+  playerId: number,
+  questionPosition: number
+): ApiResponse<QuestionResults> {
+  return requestHelper('GET',
+    `/v1/player/${playerId}/question/${questionPosition}/results`, {});
 }
 
 // ============== playerChat ===================================================

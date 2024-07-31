@@ -1,6 +1,6 @@
-import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
+import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, ErrorObject } from './dataStore';
 import {
-  ERROR, ResError, ResEmpty, ResToken, ResQuizId, ResQuizInfo,
+  ResError, ResEmpty, ResToken, ResQuizId, ResQuizInfo,
   authRegister, quizCreate, validQuizInfo,
   requestQuizQuestionCreate, requestQuizQuestionMove, requestClear,
   ResQuestionId
@@ -52,6 +52,8 @@ const falseAnswer3: AnswerInput = {
 
 beforeEach(requestClear);
 afterAll(requestClear);
+
+const ERROR: ErrorObject = { error: expect.any(String) };
 
 describe('adminQuizQuestionDelete', () => {
   let user: ResToken;
