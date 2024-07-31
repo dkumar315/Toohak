@@ -51,7 +51,7 @@ beforeEach(() => {
 
 afterAll(requestClear);
 
-describe('GET /v1/player/:playerid/question/:questionposition', () => {
+describe('Testing /v1/player/:playerid/question/:questionposition', () => {
   describe('Valid Returns', () => {
     test('Valid player ID and question position', () => {
       let sessionStatusResponse = requestAdminQuizSessionStatus(token, quizId, sessionId);
@@ -61,8 +61,8 @@ describe('GET /v1/player/:playerid/question/:questionposition', () => {
       }
 
       if ('state' in sessionStatusResponse) {
-        expect(sessionStatusResponse.status).toBe(OK);
-        expect(sessionStatusResponse.state).toBe('QUESTION_OPEN');
+        expect(sessionStatusResponse.status).toStrictEqual(OK);
+        expect(sessionStatusResponse.state).toStrictEqual('QUESTION_OPEN');
       }
 
       result = requestPlayerQuestionPosition(playerId, 1) as ResQuestionResults;
