@@ -42,6 +42,7 @@ export type QuizSessionResults = {
     percentCorrect: number
   }[]
 }
+export type CSVResults = { url: string };
 
 const SKIP_TIME = 3;
 
@@ -53,7 +54,7 @@ const SKIP_TIME = 3;
  * @return {number} sessionId - the global unique identifier of a quiz session
  */
 const setNewSession = (quiz: Quiz, autoStartNum: number): number => {
-  const { sessionIds, questions, questionCounter, ...metaQuiz } = quiz;
+  const { sessionIds, questionCounter, ...metaQuiz } = quiz;
   const data: Data = getData();
   const newSession: QuizSession = {
     sessionId: ++data.sessions.quizSessionCounter,
@@ -61,15 +62,15 @@ const setNewSession = (quiz: Quiz, autoStartNum: number): number => {
     atQuestion: 0,
     players: [],
     autoStartNum,
-    metadata: {
-      ...metaQuiz,
-      questions: questions.map(question => ({
-        ...question,
-        playersCorrectList: [],
-        averageAnswerTime: 0,
-        percentCorrect: 0
-      }))
-    },
+    metadata: { ...metaQuiz },
+    questionSessions: metaQuiz.questions.map(question => ({
+      questionId: question.questionId,
+      playersCorrectList: [],
+      averageAnswerTime: 0,
+      percentCorrect: 0,
+      playerAnswers: [],
+      thumbnailUrl: question.thumbnailUrl
+    })),
     messages: []
   };
   data.quizSessions.push(newSession);
@@ -168,8 +169,8 @@ export const adminQuizSessionCreate = (
     throw new Error(`Invalid quiz question number: ${quiz.numQuestions}.`);
   }
 
-  const activeQuizzesNum: number = data.quizSessions.filter((session: QuizSession) =>
-    session.state !== States.END &&
+  const activeQuizzesNum: number = data.quizSessions
+    .filter((session: QuizSession) => session.state !== States.END &&
       session.metadata.quizId === quizId).length;
   if (activeQuizzesNum >= SessionLimits.ACTIVE_SESSIONS_NUM_MAX) {
     throw new Error(`Invalid activeSessionNum: ${activeQuizzesNum}.`);
@@ -325,7 +326,7 @@ export const adminQuizSessionStatus = (
   }
 
   if (session.metadata.quizId !== quizId) {
-    throw new Error('Session Id does not refer to a valid session within this quiz');
+    throw new Error('Session Id does not refer to a valid session within this quiz.');
   }
 
   const { state, atQuestion, players, metadata } = session;
@@ -360,18 +361,18 @@ export const adminQuizSessionResults = (
 
   const session = data.quizSessions.find(s => s.sessionId === sessionId && s.metadata.quizId === quizId);
   if (!session) {
-    throw new Error(`Invalid sessionId number: ${sessionId}`);
+    throw new Error(`Invalid sessionId number: ${sessionId}.`);
   }
 
   if (session.state !== States.FINAL_RESULTS) {
-    throw new Error('Session is not in FINAL_RESULTS state');
+    throw new Error('Session is not in FINAL_RESULTS state.');
   }
 
   const usersRankedByScore = session.players
     .map(player => ({ name: player.name, score: player.score }))
     .sort((a, b) => b.score - a.score);
 
-  const questionResults = session.metadata.questions.map(question => ({
+  const questionResults = session.questionSessions.map(question => ({
     questionId: question.questionId,
     playersCorrectList: question.playersCorrectList,
     averageAnswerTime: question.averageAnswerTime,
@@ -383,3 +384,51 @@ export const adminQuizSessionResults = (
     questionResults
   };
 };
+
+/**
+ * a link of CSV format of results, ordered in alphabetical order of player name
+ *
+ * @param {string} token - A unique identifier for a login user
+ * @param {number} quizId - A unique identifier for a valid quiz
+ * @param {number} sessionId - A unique identifier for a valid session
+ *
+ * @returns {object} - An url of csv users results
+ * @throws {Error} - Throws an error if the token, quizId, or sessionId is invalid,
+ * or if the session is not in FINAL_RESULTS state.
+ */
+export const adminQuizSessionResultsCSV = (
+  token: string,
+  quizId: number,
+  sessionId: number
+): CSVResults => {
+  // const isValidObj = isValidIds(token, quizId);
+  // if (!isValidObj.isValid) {
+  //   throw new Error(isValidObj.errorMsg);
+  // }
+
+  // const data: Data = getData();
+  // const session: QuizSession = data.quizSessions.find((session: QuizSession) =>
+  //   session.sessionId === sessionId);
+  // if (!session) {
+  //   throw new Error(`Invalid sessionId number: ${sessionId}.`);
+  // }
+  // if (session.state !== States.FINAL_RESULTS) {
+  //   throw new Error(`Invalid session state: ${session.state}, `+
+  //     'must be FINAL_RESULTS.');
+  // }
+
+  // const results =
+
+  // const [...].sort((playerA, playerB) => (
+  //   playerA.name.localeCompare(playerB.name)
+  //   ));
+  return { url: 'http' };
+};
+
+// const resultsAnalysis = (
+//   sessionId: number
+// ): void => {
+//   const data: Data = getData();
+//   const session: QuizSession = data.quizSessions.find((session: QuizSession) =>
+//     session.sessionId === sessionId);
+// };

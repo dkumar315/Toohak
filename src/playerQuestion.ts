@@ -34,7 +34,7 @@ export const playerQuestionResults = (
     throw new Error(`Results are not available in state: ${session.state}.`);
   }
 
-  const question: QuestionSession = session.metadata.questions[questionPosition - 1];
+  const question: QuestionSession = session.questionSessions[questionPosition - 1];
   return {
     questionId: question.questionId,
     playersCorrectList: question.playersCorrectList,

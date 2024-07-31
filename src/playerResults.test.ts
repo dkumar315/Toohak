@@ -40,18 +40,35 @@ const mockData: Data = {
               { answerId: 1, answer: 'Answer 1', colour: Colours.RED, correct: true },
               { answerId: 2, answer: 'Answer 2', colour: Colours.BLUE, correct: false },
             ],
-            playersCorrectList: ['1'],
-            averageAnswerTime: 5,
-            percentCorrect: 100,
-            thumbnailUrl: 'http://example.com/question_image.png',
-          },
+            thumbnailUrl: 'http://google.com/img_path.jpg'
+          }
         ],
       },
       messages: [],
       players: [
-        { playerId: 1, name: 'Player1', points: 10, answerIds: [1], timeTaken: 5, score: 0 },
-        { playerId: 2, name: 'Player2', points: 20, answerIds: [1], timeTaken: 5, score: 0 },
+        { playerId: 1, name: 'Player1', points: 10, timeTaken: 5, score: 0 },
+        { playerId: 2, name: 'Player2', points: 20, timeTaken: 5, score: 0 },
       ],
+      questionSessions: [{
+        questionId: 1,
+        thumbnailUrl: 'http://google.com/img_path.jpg',
+        playersCorrectList: ['Player1'],
+        averageAnswerTime: 5,
+        percentCorrect: 50,
+        playerAnswers: [{
+          playerId: 1,
+          answerIds: [1],
+          correct: true,
+          timeSent: Date.now()
+        },
+        {
+          playerId: 2,
+          answerIds: [1, 2],
+          correct: false,
+          timeSent: Date.now()
+        }
+        ]
+      }]
     },
   ],
 };
