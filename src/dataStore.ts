@@ -140,19 +140,23 @@ export interface QuizSession {
   atQuestion: number;
   autoStartNum: number;
   metadata: Metadata;
+  players: Player[];
+  questionSessions: QuestionSession[];
   messages: Message[];
-  players: Player[]
 }
 
 export interface Metadata
-extends Omit<Quiz, 'questions' | 'sessionIds' | 'questionCounter' > {
-  questions: QuestionSession[]
+extends Omit<Quiz, 'sessionIds' | 'questionCounter'> {
 }
 
-export interface QuestionSession extends Question {
+export interface QuestionSession {
+  questionId: number;
   playersCorrectList: string[];
   averageAnswerTime: number;
   percentCorrect: number;
+  // if answer added / edited, will be the end of the list
+  playerAnswers: PlayerAnswer[];
+  thumbnailUrl: string;
 }
 
 export interface Message {
@@ -166,9 +170,15 @@ export interface Player {
   playerId: number;
   name: string;
   points: number;
-  answerIds: number[];
   timeTaken: number;
   score: number;
+}
+
+interface PlayerAnswer {
+  playerId: number;
+  answerIds: number[];
+  correct: boolean;
+  timeSent: number;
 }
 
 export interface QuestionResult {

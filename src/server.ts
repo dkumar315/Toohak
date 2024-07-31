@@ -46,9 +46,8 @@ import {
   adminQuizQuestionDelete, adminQuizQuestionMove, adminQuizQuestionDuplicate
 } from './quizQuestion';
 import {
-  adminQuizSessionList, adminQuizSessionCreate,
-  adminQuizSessionUpdate,
-  adminQuizSessionStatus, adminQuizSessionResults
+  adminQuizSessionList, adminQuizSessionCreate, adminQuizSessionUpdate,
+  adminQuizSessionStatus, adminQuizSessionResults, adminQuizSessionResultsCSV
 } from './quizSession';
 import { playerJoin, playerStatus, playerResults } from './player';
 import {
@@ -424,6 +423,15 @@ app.get('/v1/admin/quiz/:quizid/session/:sessionid/results', (req: Request, res:
   const sessionId: number = parseInt(req.params.sessionid as string);
   res.json(adminQuizSessionResults(token, quizId, sessionId));
 });
+
+// Get qizsession final results in CSV format
+app.get('/v1/admin/quiz/:quizid/session/:sessionid/results/csv',
+  (req: Request, res: Response) => {
+    const token: string = req.header('token');
+    const quizId: number = parseInt(req.params.quizid as string);
+    const sessionId: number = parseInt(req.params.sessionid as string);
+    res.json(adminQuizSessionResultsCSV(token, quizId, sessionId));
+  });
 
 // ====================================================================
 //                          player

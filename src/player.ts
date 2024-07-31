@@ -98,7 +98,6 @@ export const playerJoin = (sessionId: number, name: string): PlayerId => {
     playerId,
     name,
     points: 0,
-    answerIds: [],
     timeTaken: 0,
     score: 0
   };
@@ -159,12 +158,12 @@ export function playerResults(playerId: number) {
     .sort((a, b) => b.points - a.points)
     .map((player) => ({ name: player.name, score: player.points }));
 
-  const questionResults = session.metadata.questions.map((question) => ({
+  const questionResults = session.questionSessions.map((question) => ({
     questionId: question.questionId,
     playersCorrectList: question.playersCorrectList,
     averageAnswerTime: question.averageAnswerTime,
     percentCorrect: question.percentCorrect,
-    thumbnailUrl: question.thumbnailUrl,
+    thumbnailUrl: question.thumbnailUrl
   }));
 
   return {

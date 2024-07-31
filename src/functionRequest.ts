@@ -11,7 +11,7 @@ import { Token, UserDetails } from './auth';
 import { QuizList, QuizId, QuizInfo } from './quiz';
 import { QuestionBody, QuestionId, NewQuestionId } from './quizQuestion';
 import {
-  QuizSessions, QuizSessionId, QuizSessionStatus, QuizSessionResults
+  QuizSessions, QuizSessionId, QuizSessionStatus, QuizSessionResults, CSVResult
 } from './quizSession';
 import { PlayerId, PlayerStatus } from './player';
 import { MessageBody, Messages } from './playerChat';
@@ -463,6 +463,15 @@ export function requestQuizSessionResults(
     `/v1/admin/quiz/${quizId}/session/${sessionId}/results`, { token });
 }
 
+export function requestQuizSessionResultsCSV(
+  token: string,
+  quizId: number,
+  sessionId: number
+): ApiResponse<CSVResult> {
+  return requestHelper('GET',
+    `/v1/admin/quiz/${quizId}/session/${sessionId}/results/csv`, { token });
+}
+
 // ============== player =======================================================
 export function requestPlayerJoin(
   sessionId: number,
@@ -527,6 +536,7 @@ export type ResPlayerId = ResValid<PlayerId>;
 export type ResPlayerStatus = ResValid<PlayerStatus>;
 export type ResPlayerChatMessages = ResValid<Messages>;
 export type ResQuizSessionResult = ApiResponse<QuizSessionResult>;
+export type ResCSVResult = ApiResponse<CSVResult>;
 
 export const authRegister = (email: string, password: string,
   nameFirst: string, nameLast: string): ResToken =>

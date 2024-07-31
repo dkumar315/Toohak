@@ -68,14 +68,24 @@ describe('getQuestionResults', () => {
               { answerId: 3, answer: 'Bird', colour: 'green', correct: false },
               { answerId: 4, answer: 'None of the Above', colour: 'yellow', correct: false }
             ],
-            thumbnailUrl: 'http://google.com/img_path.jpg',
-            playersCorrectList: ['Hayden'], // Example player name
-            averageAnswerTime: 5,
-            percentCorrect: 75,
+            thumbnailUrl: 'http://google.com/img_path.jpg'
           }]
         },
         messages: [],
-        players: [{ playerId: playerId, name: 'PlayerName', points: 0, answerIds: [], timeTaken: 0, score: 0 }]
+        players: [{ playerId: playerId, name: 'PlayerName', points: 0, timeTaken: 0, score: 0 }],
+        questionSessions: [{
+          questionId: questionId,
+          thumbnailUrl: 'http://google.com/img_path.jpg',
+          playersCorrectList: ['PlayerName'],
+          averageAnswerTime: 5,
+          percentCorrect: 75,
+          playerAnswers: [{
+            playerId: playerId,
+            answerIds: [1],
+            correct: true,
+            timeSent: Date.now()
+          }]
+        }]
       }]
     });
   });
@@ -88,7 +98,7 @@ describe('getQuestionResults', () => {
     expect(result).toStrictEqual({
       status: 200,
       questionId: questionId,
-      playersCorrectList: ['Hayden'],
+      playersCorrectList: ['PlayerName'],
       averageAnswerTime: 5,
       percentCorrect: 75
     });
@@ -147,14 +157,24 @@ describe('getQuestionResults', () => {
               { answerId: 3, answer: 'Bird', colour: 'green', correct: false },
               { answerId: 4, answer: 'None of the Above', colour: 'yellow', correct: false }
             ],
-            thumbnailUrl: 'http://google.com/img_path.jpg',
-            playersCorrectList: ['Hayden'],
-            averageAnswerTime: 5,
-            percentCorrect: 75,
+            thumbnailUrl: 'http://google.com/img_path.jpg'
           }]
         },
         messages: [],
-        players: [{ playerId: playerId, name: 'PlayerName', points: 0, answerIds: [], timeTaken: 0, score: 0 }]
+        players: [{ playerId: playerId, name: 'PlayerName', points: 0, timeTaken: 0, score: 0 }],
+        questionSessions: [{
+          questionId: questionId,
+          thumbnailUrl: 'http://google.com/img_path.jpg',
+          playersCorrectList: ['PlayerName'],
+          averageAnswerTime: 5,
+          percentCorrect: 75,
+          playerAnswers: [{
+            playerId: playerId,
+            answerIds: [1],
+            correct: true,
+            timeSent: Date.now()
+          }]
+        }]
       }]
     });
 
