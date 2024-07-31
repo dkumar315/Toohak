@@ -42,7 +42,7 @@ export type QuizSessionResults = {
     percentCorrect: number
   }[]
 }
-export type CSVResults = { url: string };
+export type CSVResult = { url: string };
 
 const SKIP_TIME = 3;
 
@@ -400,7 +400,7 @@ export const adminQuizSessionResultsCSV = (
   token: string,
   quizId: number,
   sessionId: number
-): CSVResults => {
+): CSVResult => {
   // const isValidObj = isValidIds(token, quizId);
   // if (!isValidObj.isValid) {
   //   throw new Error(isValidObj.errorMsg);
@@ -422,6 +422,10 @@ export const adminQuizSessionResultsCSV = (
   // const [...].sort((playerA, playerB) => (
   //   playerA.name.localeCompare(playerB.name)
   //   ));
+
+  // const baseURL = 'http://kahoot.com';
+  // const path = '/adminQuiz/session/result/CSV';
+  // const params = { sessionId, quizId, format: 'csv' };
   return { url: 'http' };
 };
 
