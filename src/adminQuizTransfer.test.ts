@@ -127,7 +127,6 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
     });
 
     test('test3.7 transferring a quiz after token expiration', () => {
-  
       const result = requestQuizTransfer('expiredToken', quizId, 'johnsmith@gmail.com');
       expect(result).toStrictEqual({ status: UNAUTHORIZED, error: expect.any(String) });
     });

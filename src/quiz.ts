@@ -409,7 +409,6 @@ export const adminQuizTransfer = (
   return {};
 };
 
-
 /**
  * This function update the imgUrl of a quiz
  *
