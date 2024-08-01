@@ -436,10 +436,10 @@ export const adminQuizSessionResultsCSV = (
   return { url: 'http' };
 };
 
-// const resultsAnalysis = (
-//   sessionId: number
-// ): void => {
-//   const data: Data = getData();
-//   const session: QuizSession = data.quizSessions.find((session: QuizSession) =>
-//     session.sessionId === sessionId);
-// };
+const resultsAnalysis = (
+  sessionId: number
+): void => {
+  const data: Data = getData();
+  const session: QuizSession = data.quizSessions.find((session: QuizSession) =>
+    session.sessionId === sessionId);
+};

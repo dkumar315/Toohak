@@ -50,8 +50,7 @@ import {
   adminQuizSessionStatus, adminQuizSessionResults, adminQuizSessionResultsCSV
 } from './quizSession';
 import { playerJoin, playerStatus, playerResults } from './player';
-import { playerQuestionPosition } from './playerIdQuestion';
-import { playerQuestionAnswer, playerQuestionResults } from './playerQuestion';
+import { playerQuestionInfo, playerQuestionAnswer, playerQuestionResults } from './playerQuestion';
 import { playerChatCreate, playerChatList } from './playerChat';
 import { clear } from './other';
 
@@ -461,7 +460,7 @@ app.get('/v1/player/:playerid/results', (req: Request, res: Response) => {
 app.get('/v1/player/:playerid/question/:questionposition', (req: Request, res: Response) => {
   const playerId: number = parseInt(req.params.playerid as string);
   const questionPosition: number = parseInt(req.params.questionposition as string);
-  res.json(playerQuestionPosition(playerId, questionPosition));
+  res.json(playerQuestionInfo(playerId, questionPosition));
 });
 
 // Allow the current player to submit answer(s)
