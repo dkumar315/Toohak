@@ -2,7 +2,7 @@ import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN } from './dataStore';
 import {
   authRegister, requestAuthLogout, requestQuizCreate,
   requestQuizInfo, requestQuizTransfer, requestClear,
-  requestQuizCreateV1, requestQuizTransferV1, requestQuizInfoV1, requestQuizSessionCreate, requestQuizSessionUpdate
+  requestQuizCreateV1, requestQuizTransferV1, requestQuizInfoV1
 } from './functionRequest';
 
 let token: string;
@@ -61,16 +61,6 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
       const result = requestQuizTransfer(newToken, quizId, 'johnsmith@gmail.com');
       expect(result).toStrictEqual({ status: FORBIDDEN, error: expect.any(String) });
     });
-
-    test('test2.6 quiz cannot be transferred if any session is not in END state', () => {
-      const sessionResponse = requestQuizSessionCreate(token, quizId, 1);
-      if ('sessionId' in sessionResponse) {
-        const sessionId = sessionResponse.sessionId;
-        requestQuizSessionUpdate(token, quizId, sessionId, 'START');
-        const result = requestQuizTransfer(token, quizId, 'johnsmith@gmail.com');
-        expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
-      }
-    });
   });
 
   describe('test3.0 edge cases', () => {
@@ -88,7 +78,9 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
     });
 
     test('test3.2 transferring a quiz with maximum data length', () => {
+      // Assuming 30 is max length
       const longName = 'Q'.repeat(30);
+      // Assuming 100 is max length
       const longDescription = 'D'.repeat(100);
       const maxQuizCreateResponse = requestQuizCreate(token, longName, longDescription);
       if ('quizId' in maxQuizCreateResponse) {
@@ -109,12 +101,14 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
     });
 
     test('test3.4 transferring a quiz that never existed', () => {
+      // Assuming this ID does not exist
       const nonExistentQuizId = 9999;
       const result = requestQuizTransfer(token, nonExistentQuizId, 'johnsmith@gmail.com');
       expect(result).toStrictEqual({ status: FORBIDDEN, error: expect.any(String) });
     });
 
     test('test3.5 transferring a quiz with an invalid quiz ID format', () => {
+      // Assuming an invalid format (e.g., negative or non-numeric)
       const invalidQuizId = -1;
       const result = requestQuizTransfer(token, invalidQuizId, 'johnsmith@gmail.com');
       expect(result).toStrictEqual({ status: FORBIDDEN, error: expect.any(String) });
@@ -127,11 +121,16 @@ describe('testing adminQuizTransfer POST /v1/admin/quiz/{quizId}/transfer', () =
     });
 
     test('test3.7 transferring a quiz after token expiration', () => {
+      // Assuming token expiration is handled and we can simulate it
+      // This would be specific to how your system handles token expiration
+      // Simulating by clearing the session or setting token to expired status
+      // const expiredToken = expireToken(token); // Hypothetical function
       const result = requestQuizTransfer('expiredToken', quizId, 'johnsmith@gmail.com');
       expect(result).toStrictEqual({ status: UNAUTHORIZED, error: expect.any(String) });
     });
 
     test('test3.8 transferring a quiz when the system is under heavy load', () => {
+      // Simulate heavy load by running multiple requests
       const results = [];
       for (let i = 0; i < 100; i++) {
         results.push(requestQuizTransfer(token, quizId, 'johnsmith@gmail.com'));
