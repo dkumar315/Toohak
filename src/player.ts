@@ -107,10 +107,8 @@ export const playerJoin = (sessionId: number, name: string): PlayerId => {
   // autoStart
   if (session.autoStartNum !== NOT_AUTOSTART &&
   session.players.length >= session.autoStartNum) {
-    console.log('questionCountDown')
     questionCountDown(sessionIndex);
   }
-  console.log(getData())
 
   return { playerId };
 };
