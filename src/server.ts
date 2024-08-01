@@ -55,6 +55,7 @@ import {
 } from './playerQuestion';
 import { playerChatCreate, playerChatList } from './playerChat';
 import { clear } from './other';
+import { playerQuestionPosition } from './playerIdQuestion';
 
 // ====================================================================
 // ============= ROUTES ARE DEFINED BELOW THIS LINE ===================
@@ -465,6 +466,18 @@ app.get('/v1/player/:playerid/question/:questionposition/results',
     const questionPosition = parseInt(req.params.questionposition);
     res.json(playerQuestionResults(playerId, questionPosition));
   });
+
+// Get information about a question for a player
+app.get('/v1/player/:playerid/question/:questionposition', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerid);
+  const questionPosition = parseInt(req.params.questionposition);
+  try {
+    const result = playerQuestionPosition(playerId, questionPosition);
+    res.json(result);
+  } catch (error) {
+    res.status(BAD_REQUEST).json({ error: (error as Error).message });
+  }
+});
 
 // ====================================================================
 //                          player Chat

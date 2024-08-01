@@ -201,6 +201,19 @@ export interface QuestionResults {
   error?: string;
 }
 
+export interface PlayerQuestionResponse {
+  questionId: number;
+  question: string;
+  duration: number;
+  thumbnailUrl: string;
+  points: number;
+  answers: {
+    answerId: number;
+    answer: string;
+    colour: string;
+  }[];
+}
+
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY
 
 // YOU SHOULDNT NEED TO MODIFY THE FUNCTIONS BELOW IN ITERATION 1
