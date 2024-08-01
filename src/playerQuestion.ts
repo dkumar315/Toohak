@@ -1,11 +1,11 @@
 import {
   getData, setData, Data, QuizSession,
   ErrorObject, States, QuestionSession,
-  EmptyObject
+  EmptyObject, INVALID, Answer
 } from './dataStore';
 
 import {
-  PlayerIndices, findSessionPlayer
+  PlayerIndices, findSessionPlayer, timeStamp,
 } from './helperFunctions';
 
 const QUESTION_POSITION_START = 1;
@@ -20,23 +20,21 @@ export type PlayerQuestionResults = {
 export const playerQuestionInfo = (playerId: number, questionPosition: number) => {
   const data = getData();
 
-  const session = data.quizSessions.find(session => session.players.some(player => player.playerId === playerId));
+  const session = data.quizSessions.find(session =>
+    session.players.some(player => player.playerId === playerId));
   if (!session) {
-    throw new Error(`Player ID ${playerId} does not exist`);
+    throw new Error(`Player ID ${playerId} does not exist.`);
   }
 
   if (questionPosition < 1 || questionPosition > session.questionSessions.length) {
-    throw new Error(`Question position ${questionPosition} is not valid for the session`);
+    throw new Error(`Question position ${questionPosition} is invalid for the session.`);
   }
 
-  const invalidStates: State[] = [States.LOBBY, States.QUESTION_COUNTDOWN, States.FINAL_RESULTS, States.END];
-  if (invalidStates.includes(session.state)) {
+  if (session.state !== States.QUESTION_OPEN) {
     throw new Error(`Session is in an invalid state: ${session.state}`);
   }
 
-  const questionSession = session.questionSessions[questionPosition - 1];
-  const quiz = data.quizzes.find(quiz => quiz.quizId === session.metadata.quizId);
-  const question = quiz.questions.find(q => q.questionId === questionSession.questionId);
+  const question = session.metadata.questions[questionPosition - 1];
 
   return {
     questionId: question.questionId,
@@ -71,11 +69,6 @@ export const playerQuestionAnswer = (
     throw new Error(`Question position ${questionPosition} is not valid for the session`);
   }
 
-  const questionSession = session.questionSessions[questionPosition - 1];
-  const quiz = data.quizzes.find(quiz => quiz.quizId === session.metadata.quizId);
-  const question = quiz.questions.find(q => q.questionId === questionSession.questionId);
-
-  const validAnswerIds = new Set(question.answers.map(answer => answer.answerId));
   if (answerIds.length < 1) {
     throw new Error('At least one answer ID must be submitted');
   }
@@ -84,27 +77,35 @@ export const playerQuestionAnswer = (
     throw new Error('Duplicate answer IDs are not allowed');
   }
 
-  for (const id of answerIds) {
-    if (!validAnswerIds.has(id)) {
-      throw new Error(`Answer ID ${id} is not valid for this question`);
-    }
+  const questionSession = session.questionSessions[questionPosition - 1];
+  const answers = session.metadata.questions[questionPosition - 1].answers;
+  
+  const validIds = answers.filter(ans => answerIds.includes(ans.answerId));
+  if (validIds.length !== answerIds.length) {
+    throw new Error(`Answer ${answerIds} is not valid for this question`);
   }
 
-  const existingAnswer = questionSession.playerAnswers.find(pa => pa.playerId === playerId);
-  if (existingAnswer) {
-    existingAnswer.answerIds = answerIds;
-    existingAnswer.timeSent = Math.floor(Date.now() / 1000);
-    existingAnswer.correct = answerIds.some(id => question.answers.find(a => a.answerId === id).correct);
-  } else {
-    questionSession.playerAnswers.push({
-      playerId,
-      answerIds,
-      correct: answerIds.some(id => question.answers.find(a => a.answerId === id).correct),
-      timeSent: Math.floor(Date.now() / 1000)
-    });
+  const correctAnswer = (answerIds: number[], answers: Answer[]) => 
+  answerIds.every((id: number) => 
+    answers.find(ans => ans.answerId === id).correct
+  );
+  const answerNum = answers.filter(ans => ans.correct === true).length;
+
+  const answerIndex = questionSession.playerAnswers
+  .findIndex(p => p.playerId === playerId);
+  if (answerIndex !== INVALID) {
+    questionSession.playerAnswers.splice(answerIndex, 1);
   }
+
+  questionSession.playerAnswers.push({
+    playerId,
+    answerIds,
+    correct: correctAnswer && answerNum === answerIds.length,
+    timeSent: timeStamp()
+  });
 
   setData(data);
+
   return {};
 };
 

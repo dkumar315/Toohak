@@ -467,7 +467,7 @@ app.get('/v1/player/:playerid/question/:questionposition', (req: Request, res: R
 app.put('/v1/player/:playerid/question/:questionposition/answer', (req: Request, res: Response) => {
   const playerId: number = parseInt(req.params.playerid as string);
   const questionPosition: number = parseInt(req.params.questionposition as string);
-  res.json(playerQuestionAnswer(playerId, questionPosition, req.body));
+  res.json(playerQuestionAnswer(playerId, questionPosition, req.body.answerIds));
 });
 
 // Get Question Results

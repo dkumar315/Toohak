@@ -32,10 +32,8 @@ beforeEach(() => {
 afterAll(requestClear);
 
 describe('Testing /v1/player/:playerid/question/:questionposition/answer', () => {
-  test.skip('Valid answer submission', () => {
-    quizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
-    quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
-
+  test('Valid answer submission', () => {
+    quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN')
     const response = requestPlayerQuestionAnswer(playerId, 1, [1]);
     expect(response.status).toStrictEqual(OK);
   });
