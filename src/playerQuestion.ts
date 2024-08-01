@@ -1,5 +1,7 @@
 import {
-  getData, Data, QuizSession, ErrorObject, States, QuestionSession
+  getData, setData, Data, QuizSession,
+  ErrorObject, States, QuestionSession,
+  EmptyObject
 } from './dataStore';
 
 import {
@@ -14,6 +16,62 @@ export type PlayerQuestionResults = {
   averageAnswerTime: number,
   percentCorrect: number
 }
+
+export const playerQuestionAnswer = (
+  playerId: number,
+  questionPosition: number,
+  answerIds: number[]
+): EmptyObject | ErrorObject => {
+  const isvalidPlayer: PlayerIndices | ErrorObject = findSessionPlayer(playerId);
+  if ('error' in isvalidPlayer) throw new Error(isvalidPlayer.error);
+
+  const data: Data = getData();
+  const session: QuizSession = data.quizSessions[isvalidPlayer.sessionIndex];
+
+  if (session.state !== States.QUESTION_OPEN) {
+    throw new Error(`Session is not in the correct state: ${session.state}`);
+  }
+
+  if (questionPosition < 1 || questionPosition > session.metadata.numQuestions) {
+    throw new Error(`Question position ${questionPosition} is not valid for the session`);
+  }
+
+  const questionSession = session.questionSessions[questionPosition - 1];
+  const quiz = data.quizzes.find(quiz => quiz.quizId === session.metadata.quizId);
+  const question = quiz.questions.find(q => q.questionId === questionSession.questionId);
+
+  const validAnswerIds = new Set(question.answers.map(answer => answer.answerId));
+  if (answerIds.length < 1) {
+    throw new Error('At least one answer ID must be submitted');
+  }
+
+  if (new Set(answerIds).size !== answerIds.length) {
+    throw new Error('Duplicate answer IDs are not allowed');
+  }
+
+  for (const id of answerIds) {
+    if (!validAnswerIds.has(id)) {
+      throw new Error(`Answer ID ${id} is not valid for this question`);
+    }
+  }
+
+  const existingAnswer = questionSession.playerAnswers.find(pa => pa.playerId === playerId);
+  if (existingAnswer) {
+    existingAnswer.answerIds = answerIds;
+    existingAnswer.timeSent = Math.floor(Date.now() / 1000);
+    existingAnswer.correct = answerIds.some(id => question.answers.find(a => a.answerId === id).correct);
+  } else {
+    questionSession.playerAnswers.push({
+      playerId,
+      answerIds,
+      correct: answerIds.some(id => question.answers.find(a => a.answerId === id).correct),
+      timeSent: Math.floor(Date.now() / 1000)
+    });
+  }
+
+  setData(data);
+  return {};
+};
 
 export const playerQuestionResults = (
   playerId: number,

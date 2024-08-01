@@ -492,20 +492,31 @@ export function requestPlayerResults(
   return requestHelper('GET', `/v1/player/${playerId}/results`, {});
 }
 
-// ============== player  Question =============================================
-export function requestPlayerQuestionResults(
-  playerId: number,
-  questionPosition: number
-): ApiResponse<QuestionResults> {
-  return requestHelper('GET',
-    `/v1/player/${playerId}/question/${questionPosition}/results`, {});
-}
-
+// ============== playerQuestion =============================================
 export function requestPlayerQuestionPosition(
   playerId: number,
   questionPosition: number
 ): ApiResponse<PlayerQuestionResponse> {
   return requestHelper('GET', `/v1/player/${playerId}/question/${questionPosition}`, {});
+}
+
+export function requestPlayerQuestionAnswer(
+  playerId: number,
+  questionPosition: number,
+  answerIds: number[]
+): ApiResponse<EmptyObject> {
+  return requestHelper(
+    'PUT', `/v1/player/${playerId}/question/${questionPosition}/answer`, { answerIds }
+  );
+}
+
+export function requestPlayerQuestionResults(
+  playerId: number,
+  questionPosition: number
+): ApiResponse<QuestionResults> {
+  return requestHelper(
+    'GET', `/v1/player/${playerId}/question/${questionPosition}/results`, {}
+  );
 }
 
 // ============== playerChat ===================================================
