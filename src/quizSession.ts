@@ -209,6 +209,11 @@ export const adminQuizSessionUpdate = (
     throw new Error(`Invalid sessionId: ${sessionId}.`);
   }
 
+  if (session.state === States.LOBBY) {
+    session.atQuestion = 0;
+    setData(data);
+  }
+
   let questionDuration: number;
   switch (action) {
     case Action.NEXT_QUESTION:
@@ -276,6 +281,7 @@ export const adminQuizSessionUpdate = (
       }
 
       session.state = States.FINAL_RESULTS;
+      session.atQuestion = 0;
       setData(data);
 
       clearTimer(session.sessionId);
@@ -283,6 +289,7 @@ export const adminQuizSessionUpdate = (
 
     case Action.END:
       session.state = States.END;
+      session.atQuestion = 0;
       setData(data);
 
       clearTimer(session.sessionId);

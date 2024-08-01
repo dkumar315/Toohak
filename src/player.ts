@@ -129,14 +129,6 @@ export const playerStatus = (playerId: number): PlayerStatus => {
   const data: Data = getData();
   const session: QuizSession = data.quizSessions[isValidPlayer.sessionIndex];
 
-  if (session.atQuestion === 0) {
-    return {
-      state: session.state,
-      numQuestions: session.metadata.questions.length,
-      atQuestion: session.atQuestion + 1
-    };
-  }
-
   return {
     state: session.state,
     numQuestions: session.metadata.questions.length,

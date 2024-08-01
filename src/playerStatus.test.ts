@@ -1,9 +1,9 @@
 import { OK, BAD_REQUEST, ErrorObject } from './dataStore';
 import { QuestionBody } from './quizQuestion';
 import {
-  authRegister, quizCreate, questionCreate,
-  quizSessionCreate, requestPlayerJoin, requestPlayerStatus,
-  requestClear, ResError, ResPlayerStatus, ResPlayerId
+  authRegister, quizCreate, questionCreate, quizSessionCreate,
+  quizSessionUpdate, requestPlayerJoin, requestPlayerStatus,
+  requestClear, ResError, ResPlayerStatus, ResPlayerId,
 } from './functionRequest';
 
 const ERROR: ErrorObject = { error: expect.any(String) };
@@ -74,6 +74,17 @@ describe('testing playerStatus GET /v1/player/:playerId', () => {
       result = requestPlayerStatus(playerId);
       expect(result).toMatchObject({
         state: 'LOBBY',
+        numQuestions: 1,
+        atQuestion: 0
+      });
+      expect(result.status).toStrictEqual(OK);
+    });
+
+    test('test 3.2 player state after action NEXT_QUESTION', () => {
+      quizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
+      result = requestPlayerStatus(playerId);
+      expect(result).toMatchObject({
+        state: 'QUESTION_COUNTDOWN',
         numQuestions: 1,
         atQuestion: 1
       });
