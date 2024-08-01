@@ -1,5 +1,5 @@
 import {
-  setData, getData, INVALID, Colours,
+  setData, getData, INVALID, Colours, States,
   Data, Colour, Quiz, Question, Answer, EmptyObject
 } from './dataStore';
 import {
@@ -145,6 +145,14 @@ export const adminQuizQuestionDelete = (
 
   const data: Data = getData();
   const quiz = data.quizzes[isValidObj.quizIndex];
+
+  // Check if any session for this quiz is not in the END state
+  const activeSessions = data.quizSessions.some(session =>
+    session.metadata.quizId === quizId && session.state !== States.END);
+
+  if (activeSessions) {
+    throw new Error('Cannot delete a question while any session is not in the END state.');
+  }
 
   quiz.questions.splice(isValidObj.questionIndex, 1);
   quiz.numQuestions -= 1;

@@ -2,7 +2,7 @@ import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, ErrorObject } from './dataSto
 import {
   ResError, ResEmpty, ResToken, ResQuizId, ResQuizInfo,
   authRegister, quizCreate, validQuizInfo,
-  questionCreate, requestQuizQuestionDelete, requestClear,
+  questionCreate, requestQuizQuestionDelete, requestClear, quizSessionCreate, quizSessionUpdate,
   ResQuestionId,
 } from './functionRequest';
 import {
@@ -143,5 +143,14 @@ describe('adminQuizQuestionDelete', () => {
     const result = requestQuizQuestionDelete(user2.token, quiz.quizId, question1.questionId) as ResError;
     expect(result).toMatchObject(ERROR);
     expect(result.status).toStrictEqual(FORBIDDEN);
+  });
+
+  test('Error when trying to delete a question while a session is not in END state', () => {
+    const session = quizSessionCreate(user.token, quiz.quizId, 1);
+    quizSessionUpdate(user.token, quiz.quizId, session.sessionId, 'START');
+
+    const result = requestQuizQuestionDelete(user.token, quiz.quizId, question1.questionId) as ResError;
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 });

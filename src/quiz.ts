@@ -1,6 +1,6 @@
 import {
   getData, setData, Data, Quiz, Question,
-  EmptyObject, ErrorObject, INVALID
+  EmptyObject, ErrorObject, INVALID, QuizSession, States
 } from './dataStore';
 import {
   findUserId, isValidIds, IsValid, timeStamp, isValidImgUrl
@@ -378,7 +378,13 @@ export const adminQuizTransfer = (
 
   const data: Data = getData();
 
-  // Find the new owner's user ID by their email
+  const quizSessions = data.quizSessions.filter((session: QuizSession) => session.metadata.quizId === quizId);
+  for (const session of quizSessions) {
+    if (session.state !== States.END) {
+      throw new Error(`Cannot transfer quiz ${quizId} while any session is not in END state.`);
+    }
+  }
+
   const newOwner = data.users.find(user => user.email === userEmail);
   if (!newOwner) {
     throw new Error(`User with email ${userEmail} does not exist.`);
