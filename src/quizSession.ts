@@ -44,7 +44,7 @@ export type QuizSessionResults = {
 }
 export type CSVResult = { url: string };
 
-const SKIP_TIME = 3;
+const COUNTDOWN_SEC = 3;
 
 /** add a new session copy of current quiz in data.quizSessions
  *
@@ -106,20 +106,17 @@ const setTimer = (sessionId: number, duration: number, callback: () => void) => 
 };
 
 export const questionCountDown = (sessionIndex: number) => {
-  let data: Data = getData();
+  const data: Data = getData();
   const session: QuizSession = data.quizSessions[sessionIndex];
 
   session.state = States.QUESTION_COUNTDOWN;
-  setData(data);
-
-  const questionDuration: number = session.metadata
-    .questions[session.atQuestion].duration;
   session.atQuestion += 1;
   setData(data);
-
-  data = getData();
+  
+  const questionDuration: number = session.metadata
+    .questions[session.atQuestion - 1].duration;
   clearTimer(session.sessionId);
-  setTimer(session.sessionId, SKIP_TIME, () => {
+  setTimer(session.sessionId, COUNTDOWN_SEC, () => {
     session.state = States.QUESTION_OPEN;
     setData(data);
     setTimer(session.sessionId, questionDuration, () => {
@@ -252,12 +249,11 @@ export const adminQuizSessionUpdate = (
           `Cannot perform SKIP_COUNTDOWN action in the current state: ${session.state}.`
         );
       }
-
       session.state = States.QUESTION_OPEN;
       setData(data);
 
       const questionDuration: number = session.metadata
-      .questions[session.atQuestion].duration
+      .questions[session.atQuestion - 1].duration
       clearTimer(session.sessionId);
       setTimer(session.sessionId, questionDuration, () => {
         session.state = States.QUESTION_CLOSE;
@@ -272,7 +268,6 @@ export const adminQuizSessionUpdate = (
           `Cannot perform GO_TO_ANSWER action in the current state: ${session.state}.`
         );
       }
-
       session.state = States.ANSWER_SHOW;
       setData(data);
 
