@@ -3,7 +3,8 @@ import {
   QuizSession, Player, ErrorObject
 } from './dataStore';
 import { findSessionPlayer, PlayerIndices } from './helperFunctions';
-// import { questionCountDown } from './quizSession';
+import { questionCountDown } from './quizSession';
+const NOT_AUTOSTART = 0;
 
 enum NameGen {
   LETTERS = 'abcdefghijklmnopqrstuvwxyz',
@@ -81,7 +82,6 @@ export const playerJoin = (sessionId: number, name: string): PlayerId => {
 
   const data: Data = getData();
   const session: QuizSession = data.quizSessions[sessionIndex];
-
   if (session.state !== States.LOBBY) {
     throw new Error(`Invalid state ${session.state}, sessionId: ${sessionId}.`);
   }
@@ -105,11 +105,12 @@ export const playerJoin = (sessionId: number, name: string): PlayerId => {
   setData(data);
 
   // autoStart
-  // if (session.autoStartNum !== NOT_AUTOSTART &&
-  // session.players.length >= session.autoStartNum) {
-  //   questionCountDown(session);
-  //   setData(data);
-  // }
+  if (session.autoStartNum !== NOT_AUTOSTART &&
+  session.players.length >= session.autoStartNum) {
+    console.log('questionCountDown')
+    questionCountDown(sessionIndex);
+  }
+  console.log(getData())
 
   return { playerId };
 };

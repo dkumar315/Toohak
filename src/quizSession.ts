@@ -1,6 +1,6 @@
 import {
   getData, setData, Data, States, Quiz, QuizSession, EmptyObject,
-  State, Metadata, Player
+  State, Metadata, Player, INVALID
 } from './dataStore';
 
 import { isValidIds, IsValid } from './helperFunctions';
@@ -87,22 +87,46 @@ export interface SessionListReturn {
 
 const sessionTimers: Record<number, ReturnType<typeof setTimeout>> = {};
 
-export function clearAllTimers() {
+export const clearAllTimers = () => {
   for (const timer of Object.values(sessionTimers)) {
     clearTimeout(timer);
   }
 }
 
-function clearTimer(sessionId: number) {
+const clearTimer = (sessionId: number) => {
   if (sessionTimers[sessionId]) {
     clearTimeout(sessionTimers[sessionId]);
     delete sessionTimers[sessionId];
   }
 }
 
-function setTimer(sessionId: number, duration: number, callback: () => void) {
+const setTimer = (sessionId: number, duration: number, callback: () => void) => {
   clearTimer(sessionId);
   sessionTimers[sessionId] = setTimeout(callback, duration * 1000);
+}
+
+export const questionCountDown = (sessionIndex: number) => {
+  let data: Data = getData();
+  const session: QuizSession = data.quizSessions[sessionIndex];
+
+  session.state = States.QUESTION_COUNTDOWN;
+  setData(data);
+
+  const questionDuration: number = session.metadata
+  .questions[session.atQuestion].duration;
+  session.atQuestion += 1;
+  setData(data);
+
+  data = getData();
+  clearTimer(session.sessionId);
+  setTimer(session.sessionId, SKIP_TIME, () => {
+    session.state = States.QUESTION_OPEN;
+    setData(data);
+    setTimer(session.sessionId, questionDuration, () => {
+      session.state = States.QUESTION_CLOSE;
+      setData(data);
+    });
+  });
 }
 
 /**
@@ -197,22 +221,19 @@ export const adminQuizSessionUpdate = (
   sessionId: number,
   action: Action
 ): EmptyObject => {
+  console.log('adminQuizSessionUpdate');
   const isValidObj: IsValid = isValidIds(token, quizId, false);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
-
-  const session: QuizSession | undefined = data.quizSessions.find(
-    session => session.sessionId === sessionId
+  const sessionIndex: number = data.quizSessions.findIndex(session => 
+    session.sessionId === sessionId
   );
-  if (!session) {
+
+  if (sessionIndex === INVALID) {
     throw new Error(`Invalid sessionId: ${sessionId}.`);
   }
-
-  if (session.state === States.LOBBY) {
-    session.atQuestion = 0;
-    setData(data);
-  }
+  const session: QuizSession = data.quizSessions[sessionIndex];
 
   let questionDuration: number;
   switch (action) {
@@ -224,21 +245,8 @@ export const adminQuizSessionUpdate = (
           `Cannot perform NEXT_QUESTION action in the current state: ${session.state}.`
         );
       }
-
-      session.state = States.QUESTION_COUNTDOWN;
-      questionDuration = session.metadata.questions[session.atQuestion].duration;
-      session.atQuestion += 1;
-      setData(data);
-
-      clearTimer(session.sessionId);
-      setTimer(session.sessionId, SKIP_TIME, () => {
-        session.state = States.QUESTION_OPEN;
-        setData(data);
-        setTimer(session.sessionId, questionDuration, () => {
-          session.state = States.QUESTION_CLOSE;
-          setData(data);
-        });
-      });
+      console.log('questionCountDown')
+      questionCountDown(sessionIndex);
       break;
 
     case Action.SKIP_COUNTDOWN:
@@ -298,8 +306,6 @@ export const adminQuizSessionUpdate = (
     default:
       throw new Error(`Invalid action: ${action}.`);
   }
-
-  setData(data);
   return {};
 };
 

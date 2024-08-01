@@ -88,7 +88,7 @@ describe('testing playerJoin POST /v1/player/join', () => {
       expect(result.status).toStrictEqual(BAD_REQUEST);
     });
 
-    test.skip('test 2.2 session not in LOBBY state', () => {
+    test('test 2.2 session not in LOBBY state', () => {
       quizSessionUpdate(token, quizId, sessionId, Actions.NEXT_QUESTION);
       result = requestPlayerJoin(sessionId, 'name');
       expect(result).toMatchObject(ERROR);
@@ -106,7 +106,7 @@ describe('testing playerJoin POST /v1/player/join', () => {
     });
   });
   describe('test 3.0 player data setup correctly', () => {
-    test.skip('test 3.1 sessionInfo & playerinfo: initial & autostart', () => {
+    test('test 3.1 sessionInfo & playerinfo: initial & autostart', () => {
       const autoStartNum: number = 2;
       sessionId = quizSessionCreate(token, quizId, autoStartNum).sessionId;
 
@@ -130,6 +130,7 @@ describe('testing playerJoin POST /v1/player/join', () => {
       }
 
       // question start, session info
+      quizSessionStatus(token, quizId, sessionId);
       sessionInfo = quizSessionStatus(token, quizId, sessionId);
       expect(sessionInfo.state).toStrictEqual(States.QUESTION_COUNTDOWN);
       expect(sessionInfo.atQuestion).toStrictEqual(1);
@@ -145,7 +146,7 @@ describe('testing playerJoin POST /v1/player/join', () => {
       expect(result.status).toStrictEqual(BAD_REQUEST);
     });
 
-    test.skip('test 3.2 sessionInfo: initial, no autoStart', () => {
+    test('test 3.2 sessionInfo: initial, no autoStart', () => {
       // initial session info
       let sessionInfo: ResQuizSessionStatus = quizSessionStatus(token, quizId, sessionId);
       expect(sessionInfo.state).toStrictEqual(States.LOBBY);
