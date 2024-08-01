@@ -91,19 +91,19 @@ export const clearAllTimers = () => {
   for (const timer of Object.values(sessionTimers)) {
     clearTimeout(timer);
   }
-}
+};
 
 const clearTimer = (sessionId: number) => {
   if (sessionTimers[sessionId]) {
     clearTimeout(sessionTimers[sessionId]);
     delete sessionTimers[sessionId];
   }
-}
+};
 
 const setTimer = (sessionId: number, duration: number, callback: () => void) => {
   clearTimer(sessionId);
   sessionTimers[sessionId] = setTimeout(callback, duration * 1000);
-}
+};
 
 export const questionCountDown = (sessionIndex: number) => {
   let data: Data = getData();
@@ -113,7 +113,7 @@ export const questionCountDown = (sessionIndex: number) => {
   setData(data);
 
   const questionDuration: number = session.metadata
-  .questions[session.atQuestion].duration;
+    .questions[session.atQuestion].duration;
   session.atQuestion += 1;
   setData(data);
 
@@ -127,7 +127,7 @@ export const questionCountDown = (sessionIndex: number) => {
       setData(data);
     });
   });
-}
+};
 
 /**
  * Retrieves active and inactive session ids for a quiz.
@@ -225,7 +225,7 @@ export const adminQuizSessionUpdate = (
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
-  const sessionIndex: number = data.quizSessions.findIndex(session => 
+  const sessionIndex: number = data.quizSessions.findIndex(session =>
     session.sessionId === sessionId
   );
 
@@ -234,7 +234,6 @@ export const adminQuizSessionUpdate = (
   }
   const session: QuizSession = data.quizSessions[sessionIndex];
 
-  let questionDuration: number;
   switch (action) {
     case Action.NEXT_QUESTION:
       if (session.state !== States.LOBBY &&
@@ -257,6 +256,8 @@ export const adminQuizSessionUpdate = (
       session.state = States.QUESTION_OPEN;
       setData(data);
 
+      const questionDuration: number = session.metadata
+      .questions[session.atQuestion].duration
       clearTimer(session.sessionId);
       setTimer(session.sessionId, questionDuration, () => {
         session.state = States.QUESTION_CLOSE;
