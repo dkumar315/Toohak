@@ -221,7 +221,6 @@ export const adminQuizSessionUpdate = (
   sessionId: number,
   action: Action
 ): EmptyObject => {
-  console.log('adminQuizSessionUpdate');
   const isValidObj: IsValid = isValidIds(token, quizId, false);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
@@ -245,7 +244,6 @@ export const adminQuizSessionUpdate = (
           `Cannot perform NEXT_QUESTION action in the current state: ${session.state}.`
         );
       }
-      console.log('questionCountDown')
       questionCountDown(sessionIndex);
       break;
 
