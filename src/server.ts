@@ -50,12 +50,10 @@ import {
   adminQuizSessionStatus, adminQuizSessionResults, adminQuizSessionResultsCSV
 } from './quizSession';
 import { playerJoin, playerStatus, playerResults } from './player';
-import {
-  playerQuestionResults
-} from './playerQuestion';
+import { playerQuestionPosition } from './playerIdQuestion';
+import { playerQuestionAnswer, playerQuestionResults } from './playerQuestion';
 import { playerChatCreate, playerChatList } from './playerChat';
 import { clear } from './other';
-import { playerQuestionPosition } from './playerIdQuestion';
 
 // ====================================================================
 // ============= ROUTES ARE DEFINED BELOW THIS LINE ===================
@@ -456,31 +454,33 @@ app.get('/v1/player/:playerid/results', (req: Request, res: Response) => {
 });
 
 // ====================================================================
-//                          player Question
+//                          playerQuestion
 // ====================================================================
+
+// Get information about a question for a player
+app.get('/v1/player/:playerid/question/:questionposition', (req: Request, res: Response) => {
+  const playerId: number = parseInt(req.params.playerid as string);
+  const questionPosition: number = parseInt(req.params.questionposition as string);
+  res.json(playerQuestionPosition(playerId, questionPosition));
+});
+
+// Allow the current player to submit answer(s)
+app.put('/v1/player/:playerid/question/:questionposition/answer', (req: Request, res: Response) => {
+  const playerId: number = parseInt(req.params.playerid as string);
+  const questionPosition: number = parseInt(req.params.questionposition as string);
+  res.json(playerQuestionAnswer(playerId, questionPosition, req.body));
+});
 
 // Get Question Results
 app.get('/v1/player/:playerid/question/:questionposition/results',
   (req: Request, res: Response) => {
-    const playerId = parseInt(req.params.playerid);
-    const questionPosition = parseInt(req.params.questionposition);
+    const playerId: number = parseInt(req.params.playerid as string);
+    const questionPosition: number = parseInt(req.params.questionposition as string);
     res.json(playerQuestionResults(playerId, questionPosition));
   });
 
-// Get information about a question for a player
-app.get('/v1/player/:playerid/question/:questionposition', (req: Request, res: Response) => {
-  const playerId = parseInt(req.params.playerid);
-  const questionPosition = parseInt(req.params.questionposition);
-  try {
-    const result = playerQuestionPosition(playerId, questionPosition);
-    res.json(result);
-  } catch (error) {
-    res.status(BAD_REQUEST).json({ error: (error as Error).message });
-  }
-});
-
 // ====================================================================
-//                          player Chat
+//                          playerChat
 // ====================================================================
 
 // Get chat messages for a player in a session
