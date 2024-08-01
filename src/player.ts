@@ -154,7 +154,6 @@ export function playerResults(playerId: number) {
     playersCorrectList: question.playersCorrectList,
     averageAnswerTime: question.averageAnswerTime,
     percentCorrect: question.percentCorrect,
-    thumbnailUrl: question.thumbnailUrl
   }));
 
   return {
