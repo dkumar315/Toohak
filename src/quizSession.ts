@@ -336,10 +336,6 @@ export const adminQuizSessionStatus = (
     throw new Error(`Invalid sessionId: ${sessionId}.`);
   }
 
-  if (session.metadata.quizId !== quizId) {
-    throw new Error('Session Id does not refer to a valid session within this quiz.');
-  }
-
   const { state, atQuestion, players, metadata } = session;
   return { state, atQuestion, players, metadata };
 };
@@ -365,11 +361,6 @@ export const adminQuizSessionResults = (
   }
 
   const data: Data = getData();
-  const quiz = data.quizzes[isValidObj.quizIndex];
-  if (!quiz) {
-    throw new Error(`Invalid quizId number: ${quizId}`);
-  }
-
   const session = data.quizSessions.find(s => s.sessionId === sessionId && s.metadata.quizId === quizId);
   if (!session) {
     throw new Error(`Invalid sessionId number: ${sessionId}.`);
