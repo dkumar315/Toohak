@@ -1,127 +1,78 @@
-test('fixme', () => {
-  expect(1 + 1).toBe(2);
+import { OK, BAD_REQUEST, ErrorObject } from './dataStore';
+import { QuestionBody } from './quizQuestion';
+import {
+  authRegister, quizCreate, questionCreate, quizSessionCreate,
+  quizSessionUpdate, playerJoin, requestPlayerResults,
+  requestClear, ResError, ResQuizSessionResult,
+} from './functionRequest';
+
+const ERROR: ErrorObject = { error: expect.any(String) };
+
+beforeAll(requestClear);
+
+let token: string, quizId: number,
+  sessionId: number, playerId: number,
+  result: ResQuizSessionResult | ResError;
+
+beforeEach(() => {
+  requestClear();
+  token = authRegister('e@mail.com', 'Passw0rd', 'nameFirst', 'nameLast').token;
+  quizId = quizCreate(token, 'time to start a kahoot', 'test you skill').quizId;
+  const questionBody: QuestionBody = {
+    question: `question of quiz ${quizId}`,
+    duration: 10,
+    points: 8,
+    answers: [
+      {
+        answer: '1 right answer at least',
+        correct: true
+      },
+      {
+        answer: '2 answers minimum',
+        correct: true
+      }
+    ],
+    thumbnailUrl: 'http://google.com/img_path.jpg'
+  };
+  questionCreate(token, quizId, questionBody);
+  sessionId = quizSessionCreate(token, quizId, 10).sessionId;
+  playerId = playerJoin(sessionId, 'Player1').playerId;
 });
-// import { getData, setData } from './dataStore';
-// import { requestPlayerResults } from './functionRequest';
-// import { OK, BAD_REQUEST } from './dataStore';
-// import { Data, States, Colours } from './dataStore';
 
-// const mockData: Data = {
-//   users: [],
-//   quizzes: [],
-//   trashedQuizzes: [],
-//   sessions: {
-//     tokenCounter: 0,
-//     quizCounter: 0,
-//     quizSessionCounter: 0,
-//     playerCounter: 0,
-//     sessionIds: [],
-//   },
-//   quizSessions: [
-//     {
-//       sessionId: 1,
-//       state: States.FINAL_RESULTS,
-//       atQuestion: 0,
-//       autoStartNum: 0,
-//       metadata: {
-//         quizId: 1,
-//         name: 'Sample Quiz',
-//         timeCreated: Date.now(),
-//         timeLastEdited: Date.now(),
-//         description: 'A sample quiz',
-//         creatorId: 1,
-//         numQuestions: 1,
-//         duration: 60,
-//         thumbnailUrl: 'http://example.com/image.png',
-//         questions: [
-//           {
-//             questionId: 1,
-//             question: 'Sample Question',
-//             duration: 30,
-//             points: 10,
-//             answers: [
-//               { answerId: 1, answer: 'Answer 1', colour: Colours.RED, correct: true },
-//               { answerId: 2, answer: 'Answer 2', colour: Colours.BLUE, correct: false },
-//             ],
-//             thumbnailUrl: 'http://google.com/img_path.jpg'
-//           }
-//         ],
-//       },
-//       messages: [],
-//       players: [
-//         { playerId: 1, name: 'Player1', points: 10, timeTaken: 5, score: 0 },
-//         { playerId: 2, name: 'Player2', points: 20, timeTaken: 5, score: 0 },
-//       ],
-//       questionSessions: [{
-//         questionId: 1,
-//         thumbnailUrl: 'http://google.com/img_path.jpg',
-//         playersCorrectList: ['Player1'],
-//         averageAnswerTime: 5,
-//         percentCorrect: 50,
-//         playerAnswers: [{
-//           playerId: 1,
-//           answerIds: [1],
-//           correct: true,
-//           timeSent: Date.now()
-//         },
-//         {
-//           playerId: 2,
-//           answerIds: [1, 2],
-//           correct: false,
-//           timeSent: Date.now()
-//         }
-//         ]
-//       }]
-//     },
-//   ],
-// };
+afterAll(requestClear);
 
-// beforeEach(() => {
-//   setData(mockData);
-// });
+describe('Testing playerResults /v1/player/{playerid}/results', () => {
+  const VALID_RESPONSE = {
+    usersRankedByScore: expect.any(Array),
+    questionResults: expect.any(Array),
+  };
 
-// describe('Testing quizSessionResult with mock data', () => {
-//   const VALID_RESPONSE = {
-//     usersRankedByScore: expect.any(Array),
-//     questionResults: expect.any(Array),
-//   };
+  test('Valid request returns users ranked by score and question results', () => {
+    quizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
+    quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
+    quizSessionUpdate(token, quizId, sessionId, 'GO_TO_ANSWER');
+    quizSessionUpdate(token, quizId, sessionId, 'GO_TO_FINAL_RESULTS');
+    result = requestPlayerResults(playerId);
+    expect(result).toMatchObject(VALID_RESPONSE);
+    expect(result.status).toStrictEqual(OK);
+  });
 
-//   test.skip('Valid request returns users ranked by score and question results', () => {
-//     const playerId = 1;
-//     const result = requestPlayerResults(playerId);
-//     expect(result).toMatchObject(VALID_RESPONSE);
-//     expect(result.status).toStrictEqual(OK);
-//   });
+  test('Non-existent playerId', () => {
+    result = requestPlayerResults(playerId + 1);
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
+  });
 
-//   test('Non-existent playerId', () => {
-//     const playerId = 3; // Non-existent playerId
-//     const result = requestPlayerResults(playerId);
-//     expect(result).toMatchObject({ error: expect.any(String) });
-//     expect(result.status).toStrictEqual(BAD_REQUEST);
-//   });
+  test('Invalid playerId format', () => {
+    result = requestPlayerResults(-1);
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
+  });
 
-//   test('Invalid playerId format', () => {
-//     const playerId = -1;
-//     const result = requestPlayerResults(playerId);
-//     expect(result).toMatchObject({ error: expect.any(String) });
-//     expect(result.status).toStrictEqual(BAD_REQUEST);
-//   });
-
-//   test('PlayerId as a string', () => {
-//     const playerId = 'invalid' as unknown as number;
-//     const result = requestPlayerResults(playerId);
-//     expect(result).toMatchObject({ error: expect.any(String) });
-//     expect(result.status).toStrictEqual(BAD_REQUEST);
-//   });
-
-//   test('Session state is not FINAL_RESULTS', () => {
-//     const alteredData = getData();
-//     alteredData.quizSessions[0].state = States.QUESTION_CLOSE;
-//     setData(alteredData);
-
-//     const playerId = 1;
-//     const result = requestPlayerResults(playerId);
-//     expect(result).toMatchObject({ error: expect.any(String) });
-//     expect(result.status).toStrictEqual(BAD_REQUEST);
-//   });
-// });
+  test('Session state is not FINAL_RESULTS', () => {
+    quizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
+    result = requestPlayerResults(playerId);
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
+  });
+});
