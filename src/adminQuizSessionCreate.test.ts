@@ -70,17 +70,6 @@ describe('testing adminQuizSessionCreate POST /v1/admin/quiz/{quizid}/session/st
     test('test 1.3 Edge Case: 10 sessions is active (check test 2.2.3)', () => {
     });
 
-    test('test 1.4 session start before quiz remove', () => {
-      result = requestQuizSessionCreate(token, quizId, autoStartNum);
-      requestQuizRemove(token, quizId);
-      expect(result).toMatchObject(VALID_CREATE);
-      expect(result.status).toStrictEqual(OK);
-
-      result = requestQuizSessionCreate(token, quizId, autoStartNum);
-      expect(result).toMatchObject(ERROR);
-      expect(result.status).toStrictEqual(BAD_REQUEST);
-    });
-
     test('test 1.5 quiz set in data correctly', () => {
       const sessionId: number = quizSessionCreate(token, quizId, autoStartNum).sessionId;
       const expectList: ResQuizSessions =

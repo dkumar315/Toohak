@@ -54,9 +54,10 @@ const COUNTDOWN_SEC = 3;
  *
  * @return {number} sessionId - the global unique identifier of a quiz session
  */
-const setNewSession = (quiz: Quiz, autoStartNum: number): number => {
-  const { sessionIds, questionCounter, ...metaQuiz } = quiz;
+const setNewSession = (quizIndex: number, autoStartNum: number): number => {
   const data: Data = getData();
+  const quiz: Quiz = data.quizzes[quizIndex];
+  const { sessionIds, questionCounter, ...metaQuiz } = quiz;
   const newSession: QuizSession = {
     sessionId: ++data.sessions.quizSessionCounter,
     state: States.LOBBY,
@@ -198,7 +199,7 @@ export const adminQuizSessionCreate = (
     throw new Error(`Invalid activeSessionNum: ${activeQuizzesNum}.`);
   }
 
-  const sessionId: number = setNewSession(quiz, autoStartNum);
+  const sessionId: number = setNewSession(isValidObj.quizIndex, autoStartNum);
   return { sessionId };
 };
 

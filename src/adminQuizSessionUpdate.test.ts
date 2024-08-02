@@ -156,14 +156,6 @@ describe('testing adminQuizSessionUpdate PUT /v1/admin/quiz/{quizId}/session/{se
         expect(result.status).toStrictEqual(FORBIDDEN);
       });
 
-      test('test 2.2.3 quizId is permanently removed', () => {
-        requestQuizRemove(token, quizId);
-        requestQuizEmptyTrash(token, [quizId]);
-        result = quizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(FORBIDDEN);
-      });
-
       test('test 2.2.4 user is not the owner of the quiz', () => {
         const token2: string = authRegister('email@gmail.com', 'passw0rd', 'nameFirst', 'nameLast').token;
         result = quizSessionUpdate(token2, quizId, sessionId, 'NEXT_QUESTION');

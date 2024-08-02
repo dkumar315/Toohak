@@ -168,7 +168,7 @@ describe('adminQuizRemove tests', () => {
     expect(result).toStrictEqual({ status: UNAUTHORIZED, error: expect.any(String) });
   });
 
-  test.skip('Error shown when removing a quiz which is not in the END state', () => {
+  test('Error shown when removing a quiz which is not in the END state', () => {
     const questionBody: QuestionBody = {
       question: `Sample question for quiz ${quizId1.quizId}`,
       duration: 10,

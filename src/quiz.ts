@@ -155,10 +155,10 @@ export const adminQuizRemove = (
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
-
   const quiz = data.quizzes[isValidObj.quizIndex];
   const hasActiveSessions = quiz.sessionIds.some(sessionId => {
-    const session = data.quizSessions.find(s => s.sessionId === sessionId);
+    const session = data.quizSessions.find(session => 
+      session.metadata.quizId === quizId);
     return session && session.state !== States.END;
   });
 
