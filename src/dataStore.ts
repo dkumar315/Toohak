@@ -64,7 +64,7 @@ export type Action = Actions[keyof Actions];
 // interfaces
 export type EmptyObject = Record<string, never>;
 export type ErrorObject = { error: string };
-export type QuestionResultResponse = QuestionResult | { error: string };
+
 export interface Data {
   users: User[];
   quizzes: Quiz[];
@@ -183,26 +183,6 @@ export interface PlayerAnswer {
 export interface PlayerScore {
   name: string;
   [key: string]: string | number;
-}
-
-export interface QuestionResult {
-  id: number;
-  result: string;
-}
-
-export interface QuizSessionResult {
-  usersRankedByScore: { name: string, score: number }[];
-  questionResults: {
-    questionId: number;
-    playersCorrectList: string[];
-    averageAnswerTime: number;
-    percentCorrect: number;
-  }[];
-}
-
-export interface QuestionResults {
-  results: QuestionResult[];
-  error?: string;
 }
 
 export interface PlayerQuestionResponse {

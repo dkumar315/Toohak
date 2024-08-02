@@ -4,16 +4,15 @@ const SERVER_URL: string = `${config.url}:${config.port}`;
 
 // ============== interfaces ===================================================
 import { StatusCodes } from 'http-status-codes';
-import {
-  EmptyObject, ErrorObject, QuizSessionResult, QuestionResult, QuestionResults, PlayerQuestionResponse
-} from './dataStore';
+import { EmptyObject, ErrorObject, PlayerQuestionResponse } from './dataStore';
 import { Token, UserDetails } from './auth';
 import { QuizList, QuizId, QuizInfo } from './quiz';
 import { QuestionBody, QuestionId, NewQuestionId } from './quizQuestion';
 import {
   QuizSessions, QuizSessionId, QuizSessionStatus, QuizSessionResults, CSVResult
 } from './quizSession';
-import { PlayerId, PlayerStatus } from './player';
+import { PlayerQuestionResults } from './playerQuestion';
+import { PlayerId, PlayerStatus, PlayerResults } from './player';
 import { MessageBody, Messages } from './playerChat';
 export const VALID_EMPTY_RETURN: EmptyObject = {};
 type Header = EmptyObject | { token: string };
@@ -408,7 +407,7 @@ export function requestQuestionResults(
   playerId: number,
   sessionId: number,
   questionId: number
-): ApiResponse<QuestionResult> {
+): ApiResponse<PlayerQuestionResults> {
   return requestHelper('GET', `/v1/player/${playerId}/session/${sessionId}/question/${questionId}/results`, {});
 }
 
@@ -488,7 +487,7 @@ export function requestPlayerStatus(
 
 export function requestPlayerResults(
   playerId: number
-): ApiResponse<QuizSessionResult> {
+): ApiResponse<PlayerResults> {
   return requestHelper('GET', `/v1/player/${playerId}/results`, {});
 }
 
@@ -513,7 +512,7 @@ export function requestPlayerQuestionAnswer(
 export function requestPlayerQuestionResults(
   playerId: number,
   questionPosition: number
-): ApiResponse<QuestionResults> {
+): ApiResponse<PlayerQuestionResults> {
   return requestHelper(
     'GET', `/v1/player/${playerId}/question/${questionPosition}/results`, {}
   );
@@ -553,8 +552,8 @@ export type ResQuizSessionResults = ResValid<QuizSessionResults>;
 export type ResPlayerId = ResValid<PlayerId>;
 export type ResPlayerStatus = ResValid<PlayerStatus>;
 export type ResPlayerChatMessages = ResValid<Messages>;
-export type ResQuizSessionResult = ApiResponse<QuizSessionResult>;
-export type ResQuestionResults = ResValid<QuestionResults>;
+export type ResPlayerResults = ApiResponse<PlayerResults>;
+export type ResQuestionResults = ApiResponse<PlayerQuestionResults>;
 export type ResCSVResult = ApiResponse<CSVResult>;
 
 export const authRegister = (email: string, password: string,

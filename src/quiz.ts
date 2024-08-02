@@ -151,13 +151,13 @@ export const adminQuizRemove = (
   token: string,
   quizId: number
 ): EmptyObject => {
-  const isValidObj: IsValid = isValidIds(token, quizId);
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
   const quiz = data.quizzes[isValidObj.quizIndex];
   const hasActiveSessions = quiz.sessionIds.some(sessionId => {
-    const session = data.quizSessions.find(session => 
+    const session = data.quizSessions.find(session =>
       session.metadata.quizId === quizId);
     return session && session.state !== States.END;
   });
@@ -187,7 +187,7 @@ export const adminQuizInfo = (
   token: string,
   quizId: number
 ): QuizInfo => {
-  const isValidObj: IsValid = isValidIds(token, quizId);
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
@@ -220,7 +220,7 @@ export const adminQuizNameUpdate = (
   quizId: number,
   name: string
 ): EmptyObject => {
-  const isValidObj: IsValid = isValidIds(token, quizId);
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
@@ -250,7 +250,7 @@ export const adminQuizDescriptionUpdate = (
   quizId: number,
   description: string
 ): EmptyObject => {
-  const isValidObj: IsValid = isValidIds(token, quizId);
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const descriptionCheck: Helper = isValidDescription(description);
@@ -384,7 +384,7 @@ export const adminQuizTransfer = (
   quizId: number,
   userEmail: string
 ): EmptyObject => {
-  const isValidObj: IsValid = isValidIds(token, quizId);
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
@@ -428,7 +428,7 @@ export const adminQuizThumbnailUpdate = (
   imgUrl: string,
   token: string
 ): EmptyObject => {
-  const isValidObj: IsValid = isValidIds(token, quizId);
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   if (!isValidImgUrl(imgUrl)) {

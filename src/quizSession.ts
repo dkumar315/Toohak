@@ -3,7 +3,7 @@ import {
   State, Metadata, Player, INVALID, PlayerScore
 } from './dataStore';
 import fs from 'fs';
-import { isValidIdSession as isValidIds, IsValid } from './helperFunctions';
+import { isValidIds, IsValid } from './helperFunctions';
 import { resultsAnalysis } from './resultsAnalysis';
 
 export enum SessionLimits {

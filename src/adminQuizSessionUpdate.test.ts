@@ -1,7 +1,6 @@
 import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, ErrorObject } from './dataStore';
 import {
-  requestClear, authRegister, requestAuthLogout,
-  quizCreate, requestQuizRemove, requestQuizEmptyTrash,
+  requestClear, authRegister, requestAuthLogout, quizCreate,
   questionCreate, quizSessionCreate, quizSessionUpdate,
   quizSessionStatus, ResError, ResEmpty
 } from './functionRequest';
