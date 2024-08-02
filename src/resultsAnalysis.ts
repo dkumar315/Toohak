@@ -68,6 +68,14 @@ const playerQuestinResults = (session: QuizSession): PlayerScore[] => {
         });
     });
 
+  session.players.forEach((player: Player) => {
+    const playerScore = playerScores.get(String(player.playerId));
+    const totalScore = Object.keys(playerScore)
+      .filter(key => key.endsWith('score'))
+      .reduce((sum, key) => sum + Number(playerScore[key]), 0);
+    player.score = totalScore;
+  });
+
   return Array.from(playerScores.values()).sort((a, b) =>
     a.name.localeCompare(b.name)
   );

@@ -67,6 +67,7 @@ describe('testing adminQuizSessionResultsCSV ' +
 
     quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_ANSWER);
     quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_FINAL_RESULTS);
+
     result = requestCSVResult(token, quizId, sessionId);
     expect(result).toMatchObject({ url: expect.any(String) });
     expect(result.status).toStrictEqual(OK);

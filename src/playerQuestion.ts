@@ -85,11 +85,10 @@ export const playerQuestionAnswer = (
     throw new Error(`Answer ${answerIds} is not valid for this question`);
   }
 
-  const correctAnswer = (answerIds: number[], answers: Answer[]) =>
-    answerIds.every((id: number) =>
-      answers.find(ans => ans.answerId === id).correct
-    );
+  const correctAnswer = (answerIds: number[], answers: Answer[]) => answerIds
+    .every((id: number) => answers.find(ans => ans.answerId === id).correct);
   const answerNum = answers.filter(ans => ans.correct === true).length;
+  const correct: boolean = correctAnswer && answerNum === answerIds.length;
 
   const answerIndex = questionSession.playerAnswers
     .findIndex(p => p.playerId === playerId);
@@ -103,7 +102,7 @@ export const playerQuestionAnswer = (
   questionSession.playerAnswers.push({
     playerId,
     answerIds,
-    correct: correctAnswer && answerNum === answerIds.length,
+    correct,
     timeTaken,
   });
   session.players[isvalidPlayer.playerIndex].timeTaken += timeTaken;
