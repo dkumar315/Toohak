@@ -21,10 +21,10 @@ const questionResults = (session: QuizSession): QuizSession => {
     const correctPlayers = correctAnswers.length;
 
     questionSession.playersCorrectList = correctAnswers
-      .map((answer: PlayerAnswer) => {
-        const player = session.players.find((p: Player) => p.playerId === answer.playerId);
-        return player ? player.name : '';
-      });
+      .map((answer: PlayerAnswer) =>
+        session.players.find((player: Player) =>
+          player.playerId === answer.playerId).name
+      );
 
     if (correctPlayers > 0) {
       const totalTime = correctAnswers
@@ -61,12 +61,10 @@ const playerQuestinResults = (session: QuizSession): PlayerScore[] => {
         .filter((ans: PlayerAnswer) => ans.correct === true)
         .forEach((answer: PlayerAnswer, index: number) => {
           const playerScore = playerScores.get(String(answer.playerId));
-          if (playerScore) {
-            const rank = index + 1;
-            playerScore[`question${questionNumber}score`] =
-        Math.round(questionPoints / rank);
-            playerScore[`question${questionNumber}rank`] = rank;
-          }
+          const rank = index + 1;
+          playerScore[`question${questionNumber}score`] =
+          Math.round(questionPoints / rank);
+          playerScore[`question${questionNumber}rank`] = rank;
         });
     });
 
