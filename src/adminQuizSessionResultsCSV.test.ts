@@ -1,5 +1,5 @@
 import {
-  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, ErrorObject, Actions, getData
+  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, ErrorObject, Actions
 } from './dataStore';
 import { QuestionBody } from './quizQuestion';
 import {

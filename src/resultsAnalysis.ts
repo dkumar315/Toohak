@@ -1,9 +1,7 @@
 import {
-  getData, setData, Data, States, Quiz, QuizSession, EmptyObject,
-  State, Metadata, Player, INVALID, QuestionSession, PlayerScore,
-  Answer, PlayerAnswer
+  getData, setData, Data, QuizSession, Player,
+  QuestionSession, PlayerScore, PlayerAnswer
 } from './dataStore';
-import { isValidIds, IsValid } from './helperFunctions';
 
 export const resultsAnalysis = (sessionIndex: number): void => {
   const data: Data = getData();
@@ -16,7 +14,7 @@ export const resultsAnalysis = (sessionIndex: number): void => {
   setData(data);
 };
 
-const questionResults = (session: QuizSession) => {
+const questionResults = (session: QuizSession): QuizSession => {
   session.questionSessions.forEach((questionSession: QuestionSession) => {
     const correctAnswers = questionSession.playerAnswers
       .filter((answer: PlayerAnswer) => answer.correct);
@@ -51,28 +49,28 @@ const playerQuestinResults = (session: QuizSession): PlayerScore[] => {
 
   session.questionSessions.forEach(
     (questionSession: QuestionSession, questionIndex: number) => {
-    const questionPoints = session.metadata.questions[questionIndex].points;
-    const questionNumber = questionIndex + 1;
+      const questionPoints = session.metadata.questions[questionIndex].points;
+      const questionNumber = questionIndex + 1;
 
-    playerScores.forEach(playerScore => {
-      playerScore[`question${questionNumber}score`] = 0;
-      playerScore[`question${questionNumber}rank`] = 0;
-    });
+      playerScores.forEach(playerScore => {
+        playerScore[`question${questionNumber}score`] = 0;
+        playerScore[`question${questionNumber}rank`] = 0;
+      });
 
-    questionSession.playerAnswers
-    .filter((ans: PlayerAnswer) => ans.correct === true)
-    .forEach((answer: PlayerAnswer, index: number) => {
-      const playerScore = playerScores.get(String(answer.playerId));
-      if (playerScore) {
-        const rank = index + 1;
-        playerScore[`question${questionNumber}score`] = 
+      questionSession.playerAnswers
+        .filter((ans: PlayerAnswer) => ans.correct === true)
+        .forEach((answer: PlayerAnswer, index: number) => {
+          const playerScore = playerScores.get(String(answer.playerId));
+          if (playerScore) {
+            const rank = index + 1;
+            playerScore[`question${questionNumber}score`] =
         Math.round(questionPoints / rank);
-        playerScore[`question${questionNumber}rank`] = rank;
-      }
+            playerScore[`question${questionNumber}rank`] = rank;
+          }
+        });
     });
-  });
 
   return Array.from(playerScores.values()).sort((a, b) =>
     a.name.localeCompare(b.name)
   );
-}
+};

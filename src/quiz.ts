@@ -151,7 +151,7 @@ export const adminQuizRemove = (
   token: string,
   quizId: number
 ): EmptyObject => {
-  const isValidObj: IsValid = isValidIds(token, quizId, false);
+  const isValidObj: IsValid = isValidIds(token, quizId);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
@@ -176,7 +176,7 @@ export const adminQuizInfo = (
   token: string,
   quizId: number
 ): QuizInfo => {
-  const isValidObj: IsValid = isValidIds(token, quizId, false);
+  const isValidObj: IsValid = isValidIds(token, quizId);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
@@ -209,7 +209,7 @@ export const adminQuizNameUpdate = (
   quizId: number,
   name: string
 ): EmptyObject => {
-  const isValidObj: IsValid = isValidIds(token, quizId, false);
+  const isValidObj: IsValid = isValidIds(token, quizId);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
@@ -239,7 +239,7 @@ export const adminQuizDescriptionUpdate = (
   quizId: number,
   description: string
 ): EmptyObject => {
-  const isValidObj: IsValid = isValidIds(token, quizId, false);
+  const isValidObj: IsValid = isValidIds(token, quizId);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const descriptionCheck: Helper = isValidDescription(description);
@@ -373,7 +373,7 @@ export const adminQuizTransfer = (
   quizId: number,
   userEmail: string
 ): EmptyObject => {
-  const isValidObj: IsValid = isValidIds(token, quizId, false);
+  const isValidObj: IsValid = isValidIds(token, quizId);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
@@ -417,7 +417,7 @@ export const adminQuizThumbnailUpdate = (
   imgUrl: string,
   token: string
 ): EmptyObject => {
-  const isValidObj: IsValid = isValidIds(token, quizId, false);
+  const isValidObj: IsValid = isValidIds(token, quizId);
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   if (!isValidImgUrl(imgUrl)) {

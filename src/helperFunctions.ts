@@ -75,8 +75,7 @@ export const timeStamp = (): number => Math.floor(Date.now() / 1000);
  */
 export const isValidIds = (
   token: string,
-  quizId: number,
-  checkTrashQuiz: boolean = false
+  quizId: number
 ): IsValid => {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
@@ -84,15 +83,8 @@ export const isValidIds = (
   }
 
   const data: Data = getData();
-  let isValidQuiz: IsValid = findQuizIndex(data.quizzes, quizId, authUserId);
+  const isValidQuiz: IsValid = findQuizIndex(data.quizzes, quizId, authUserId);
   if (isValidQuiz.isValid) return isValidQuiz;
-
-  if (checkTrashQuiz) {
-    isValidQuiz = findQuizIndex(data.trashedQuizzes, quizId, authUserId);
-    if (isValidQuiz.isValid) {
-      return isvalidErrorObj(`Invalid quiz in trash: ${quizId}`);
-    }
-  }
 
   return isvalidErrorObj(`Invalid quizId number: ${quizId}`);
 };

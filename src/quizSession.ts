@@ -231,6 +231,7 @@ export const adminQuizSessionUpdate = (
     throw new Error(`Invalid sessionId: ${sessionId}.`);
   }
   const session: QuizSession = data.quizSessions[sessionIndex];
+  let questionDuration: number;
 
   switch (action) {
     case Action.NEXT_QUESTION:
@@ -253,7 +254,7 @@ export const adminQuizSessionUpdate = (
       session.state = States.QUESTION_OPEN;
       setData(data);
 
-      const questionDuration: number = session.metadata
+      questionDuration = session.metadata
         .questions[session.atQuestion - 1].duration;
       clearTimer(session.sessionId);
       setTimer(session.sessionId, questionDuration, () => {
@@ -417,7 +418,7 @@ export const adminQuizSessionResultsCSV = (
 
   const data: Data = getData();
   const sessionIndex: number = data.quizSessions
-  .findIndex((session: QuizSession) => session.sessionId === sessionId);
+    .findIndex((session: QuizSession) => session.sessionId === sessionId);
   if (sessionIndex === INVALID) {
     throw new Error(`Invalid sessionId: ${sessionId}.`);
   }
@@ -429,7 +430,7 @@ export const adminQuizSessionResultsCSV = (
   const csvContent = arrayToCSV(session.playerScores);
   const url: string = `https://quiz/${quizId}/session/${sessionId}/results.csv`;
   fs.writeFile(url, csvContent, () => {});
-  
+
   return { url };
 };
 
@@ -442,16 +443,16 @@ const arrayToCSV = (playerScores: PlayerScore[]) => {
   });
 
   const sortedKeys = Array.from(allKeys);
-  let csv = "Player," + sortedKeys.join(',') + "\n";
+  let csv = 'Player,' + sortedKeys.join(',') + '\n';
 
   playerScores.forEach((player: PlayerScore) => {
     csv += player.name;
     sortedKeys.forEach((key: string) => {
-      csv += "," +
+      csv += ',' +
       (player[key] !== undefined && player[key] !== '' ? player[key] : '0');
     });
-    csv += "\n";
+    csv += '\n';
   });
 
   return csv;
-}
+};
