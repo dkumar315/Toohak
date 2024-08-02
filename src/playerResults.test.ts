@@ -5,6 +5,7 @@ import {
   quizSessionUpdate, playerJoin, requestPlayerResults,
   requestClear, ResError, ResQuizSessionResult,
 } from './functionRequest';
+import { playerQuestionAnswer } from './playerQuestion';
 
 const ERROR: ErrorObject = { error: expect.any(String) };
 
@@ -48,8 +49,10 @@ describe('Testing playerResults /v1/player/{playerid}/results', () => {
   };
 
   test('Valid request returns users ranked by score and question results', () => {
+    const playerId2 = playerJoin(sessionId, 'Player2').playerId;
     quizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
     quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
+    playerQuestionAnswer(playerId2, 1, [1]);
     quizSessionUpdate(token, quizId, sessionId, 'GO_TO_ANSWER');
     quizSessionUpdate(token, quizId, sessionId, 'GO_TO_FINAL_RESULTS');
     result = requestPlayerResults(playerId);

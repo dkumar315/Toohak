@@ -21,6 +21,7 @@ beforeEach(() => {
     points: 10,
     answers: [
       { answer: 'Correct Answer', correct: true },
+      { answer: 'Another Correct Answer', correct: true },
       { answer: 'Wrong Answer', correct: false }
     ],
     thumbnailUrl: 'http://example.com/image.jpg'
@@ -35,6 +36,13 @@ afterAll(requestClear);
 describe('Testing playerQuestionAnswer /v1/player/:playerid/question/:questionposition/answer', () => {
   test('Valid answer submission', () => {
     quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
+    const result = requestPlayerQuestionAnswer(playerId, 1, [1, 2]);
+    expect(result).toMatchObject({});
+    expect(result.status).toStrictEqual(OK);
+  });
+
+  test('Valid answer submission but incomplete', () => {
+    quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
     const result = requestPlayerQuestionAnswer(playerId, 1, [1]);
     expect(result).toMatchObject({});
     expect(result.status).toStrictEqual(OK);
@@ -47,6 +55,7 @@ describe('Testing playerQuestionAnswer /v1/player/:playerid/question/:questionpo
   });
 
   test('Invalid question position', () => {
+    quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
     const result = requestPlayerQuestionAnswer(playerId, 999, [1]);
     expect(result).toMatchObject(ERROR);
     expect(result.status).toStrictEqual(BAD_REQUEST);

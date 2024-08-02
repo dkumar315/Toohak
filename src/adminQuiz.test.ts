@@ -6,8 +6,11 @@ import {
   requestQuizSessionCreate, requestQuizSessionUpdate,
   ResError, ResEmpty, ResToken, ResQuizList, ResQuizId, ResQuizInfo, ResSessionId,
   requestQuizCreateV1, requestQuizListV1, requestQuizNameUpdateV1,
-  requestQuizDescriptionUpdateV1, requestQuizInfoV1
+  requestQuizDescriptionUpdateV1, requestQuizInfoV1,
+  questionCreate,
+  quizSessionCreate
 } from './functionRequest';
+import { QuestionBody } from './quizQuestion';
 
 beforeEach(requestClear);
 afterAll(requestClear);
@@ -163,6 +166,24 @@ describe('adminQuizRemove tests', () => {
   test('Error shown when removing a quiz with an empty user ID', () => {
     const result = requestQuizRemove(null, quizId1.quizId) as ResError;
     expect(result).toStrictEqual({ status: UNAUTHORIZED, error: expect.any(String) });
+  });
+
+  test.skip('Error shown when removing a quiz which is not in the END state', () => {
+    const questionBody: QuestionBody = {
+      question: `Sample question for quiz ${quizId1.quizId}`,
+      duration: 10,
+      points: 5,
+      answers: [
+        { answer: 'Correct Answer', correct: true },
+        { answer: 'Wrong Answer', correct: false }
+      ],
+      thumbnailUrl: 'http://google.com/img_path.jpg'
+    };
+    questionCreate(userId1.token, quizId1.quizId, questionBody);
+    quizSessionCreate(userId1.token, quizId1.quizId, 10);
+
+    const result = requestQuizRemove(userId1.token, quizId1.quizId) as ResError;
+    expect(result).toStrictEqual({ status: BAD_REQUEST, error: expect.any(String) });
   });
 });
 
