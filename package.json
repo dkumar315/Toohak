@@ -1,4 +1,5 @@
 {
+    "homepage": "https://1531-24t2-t13b-eggs.vercel.app"
     "scripts": {
         "test": "jest",
         "tsc": "tsc --project tsconfig.json",
