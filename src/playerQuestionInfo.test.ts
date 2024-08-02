@@ -55,7 +55,7 @@ afterAll(requestClear);
 describe('Testing /v1/player/:playerid/question/:questionposition', () => {
   describe('Valid Returns', () => {
     test('Valid player ID and question position', () => {
-      let sessionStatusResponse = requestAdminQuizSessionStatus(token, quizId, sessionId);
+      const sessionStatusResponse = requestAdminQuizSessionStatus(token, quizId, sessionId);
 
       if ('state' in sessionStatusResponse) {
         expect(sessionStatusResponse.status).toStrictEqual(OK);

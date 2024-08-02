@@ -79,31 +79,34 @@ export const playerQuestionAnswer = (
 
   const questionSession = session.questionSessions[questionPosition - 1];
   const answers = session.metadata.questions[questionPosition - 1].answers;
-  
+
   const validIds = answers.filter(ans => answerIds.includes(ans.answerId));
   if (validIds.length !== answerIds.length) {
     throw new Error(`Answer ${answerIds} is not valid for this question`);
   }
 
-  const correctAnswer = (answerIds: number[], answers: Answer[]) => 
-  answerIds.every((id: number) => 
-    answers.find(ans => ans.answerId === id).correct
-  );
+  const correctAnswer = (answerIds: number[], answers: Answer[]) =>
+    answerIds.every((id: number) =>
+      answers.find(ans => ans.answerId === id).correct
+    );
   const answerNum = answers.filter(ans => ans.correct === true).length;
 
   const answerIndex = questionSession.playerAnswers
-  .findIndex(p => p.playerId === playerId);
+    .findIndex(p => p.playerId === playerId);
   if (answerIndex !== INVALID) {
     questionSession.playerAnswers.splice(answerIndex, 1);
+    session.players[isvalidPlayer.playerIndex].timeTaken -=
+    questionSession.playerAnswers[answerIndex].timeTaken;
   }
 
+  const timeTaken: number = timeStamp() - questionSession.timeStart;
   questionSession.playerAnswers.push({
     playerId,
     answerIds,
     correct: correctAnswer && answerNum === answerIds.length,
-    timeSent: timeStamp()
+    timeTaken,
   });
-
+  session.players[isvalidPlayer.playerIndex].timeTaken += timeTaken;
   setData(data);
 
   return {};

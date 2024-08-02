@@ -143,6 +143,7 @@ export interface QuizSession {
   players: Player[];
   questionSessions: QuestionSession[];
   messages: Message[];
+  playerScores?: PlayerScore[]
 }
 
 export interface Metadata
@@ -154,9 +155,8 @@ export interface QuestionSession {
   playersCorrectList: string[];
   averageAnswerTime: number;
   percentCorrect: number;
-  // if answer added / edited, will be the end of the list
   playerAnswers: PlayerAnswer[];
-  thumbnailUrl: string;
+  timeStart: number;
 }
 
 export interface Message {
@@ -169,16 +169,20 @@ export interface Message {
 export interface Player {
   playerId: number;
   name: string;
-  points: number;
   timeTaken: number;
   score: number;
 }
 
-interface PlayerAnswer {
+export interface PlayerAnswer {
   playerId: number;
   answerIds: number[];
   correct: boolean;
-  timeSent: number;
+  timeTaken: number;
+}
+
+export interface PlayerScore {
+  name: string;
+  [key: string]: string | number;
 }
 
 export interface QuestionResult {

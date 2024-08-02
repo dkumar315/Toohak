@@ -33,7 +33,7 @@ afterAll(requestClear);
 
 describe('Testing /v1/player/:playerid/question/:questionposition/answer', () => {
   test('Valid answer submission', () => {
-    quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN')
+    quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
     const response = requestPlayerQuestionAnswer(playerId, 1, [1]);
     expect(response.status).toStrictEqual(OK);
   });

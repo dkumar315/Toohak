@@ -4,6 +4,7 @@ import {
 } from './dataStore';
 
 import { isValidIds, IsValid } from './helperFunctions';
+import { resultsAnalysis } from './resultsAnalysis';
 
 export enum SessionLimits {
   AUTO_START_AND_QUESTIONS_NUM_MIN = 0,
@@ -69,7 +70,7 @@ const setNewSession = (quiz: Quiz, autoStartNum: number): number => {
       averageAnswerTime: 0,
       percentCorrect: 0,
       playerAnswers: [],
-      thumbnailUrl: question.thumbnailUrl
+      timeStart: 0
     })),
     messages: []
   };
@@ -112,7 +113,7 @@ export const questionCountDown = (sessionIndex: number) => {
   session.state = States.QUESTION_COUNTDOWN;
   session.atQuestion += 1;
   setData(data);
-  
+
   const questionDuration: number = session.metadata
     .questions[session.atQuestion - 1].duration;
   clearTimer(session.sessionId);
@@ -253,7 +254,7 @@ export const adminQuizSessionUpdate = (
       setData(data);
 
       const questionDuration: number = session.metadata
-      .questions[session.atQuestion - 1].duration
+        .questions[session.atQuestion - 1].duration;
       clearTimer(session.sessionId);
       setTimer(session.sessionId, questionDuration, () => {
         session.state = States.QUESTION_CLOSE;
@@ -285,6 +286,7 @@ export const adminQuizSessionUpdate = (
       session.state = States.FINAL_RESULTS;
       session.atQuestion = 0;
       setData(data);
+      resultsAnalysis(sessionIndex);
 
       clearTimer(session.sessionId);
       break;
@@ -408,6 +410,7 @@ export const adminQuizSessionResultsCSV = (
   quizId: number,
   sessionId: number
 ): CSVResult => {
+  console.log(getData().quizSessions);
   // const isValidObj = isValidIds(token, quizId);
   // if (!isValidObj.isValid) {
   //   throw new Error(isValidObj.errorMsg);
@@ -434,12 +437,4 @@ export const adminQuizSessionResultsCSV = (
   // const path = '/adminQuiz/session/result/CSV';
   // const params = { sessionId, quizId, format: 'csv' };
   return { url: 'http' };
-};
-
-const resultsAnalysis = (
-  sessionId: number
-): void => {
-  const data: Data = getData();
-  const session: QuizSession = data.quizSessions.find((session: QuizSession) =>
-    session.sessionId === sessionId);
 };

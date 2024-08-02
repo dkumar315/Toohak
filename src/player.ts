@@ -97,9 +97,8 @@ export const playerJoin = (sessionId: number, name: string): PlayerId => {
   const newPlayer: Player = {
     playerId,
     name,
-    points: 0,
-    timeTaken: 0,
-    score: 0
+    score: 0,
+    timeTaken: 0
   };
   session.players.push(newPlayer);
   setData(data);
@@ -146,8 +145,8 @@ export function playerResults(playerId: number) {
     throw new Error('Session is not in FINAL_RESULTS state');
   }
   const usersRankedByScore = session.players
-    .sort((a, b) => b.points - a.points)
-    .map((player) => ({ name: player.name, score: player.points }));
+    .sort((a, b) => b.score - a.score)
+    .map((player) => ({ name: player.name, score: player.score }));
 
   const questionResults = session.questionSessions.map((question) => ({
     questionId: question.questionId,

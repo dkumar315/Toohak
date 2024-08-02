@@ -1,19 +1,19 @@
 import {
-  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, ErrorObject, Actions
+  OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, ErrorObject, Actions, getData
 } from './dataStore';
 import { QuestionBody } from './quizQuestion';
 import {
   authRegister, quizCreate, questionCreate, quizSessionCreate,
   playerJoin, requestClear, quizSessionUpdate,
   requestQuizSessionResultsCSV as requestCSVResult, ResError, ResCSVResult,
-  requestQuizRemove, // requestPlayerQuestionAnswer
+  requestQuizRemove, requestPlayerQuestionAnswer
 } from './functionRequest';
 
 beforeAll(requestClear);
 afterAll(requestClear);
 
 let token: string, quizId: number;
-// let playerId1: number, playerId2: number, playerId3: number;
+let playerId1: number, playerId2: number, playerId3: number;
 let sessionId: number;
 let result: ResCSVResult | ResError;
 const ERROR: ErrorObject = { error: expect.any(String) };
@@ -43,54 +43,54 @@ beforeEach(() => {
   };
   questionCreate(token, quizId, questionBody);
   questionCreate(token, quizId, questionBody);
-  playerJoin(sessionId, 'remove after answer implement');
-  // playerId1 = playerJoin(sessionId, 'player1').playerId;
-  // playerId2 = playerJoin(sessionId, 'player2').playerId;
-  // playerId3 = playerJoin(sessionId, 'player3').playerId;
   sessionId = quizSessionCreate(token, quizId, 3).sessionId;
+  playerId1 = playerJoin(sessionId, 'player1').playerId;
+  playerId2 = playerJoin(sessionId, 'player2').playerId;
+  playerId3 = playerJoin(sessionId, 'player3').playerId;
+  quizSessionUpdate(token, quizId, sessionId, Actions.SKIP_COUNTDOWN);
 });
 
 describe('testing adminQuizSessionResultsCSV /v1/player/{playerid}/chat', () => {
-  test.skip('test 1.0 valid returns', () => {
-    // // patially correct ans => score 0
-    // requestPlayerQuestionAnswer(playerId3, 1, [1]);
-    // // correct ans, player2 quicker
-    // requestPlayerQuestionAnswer(playerId2, 1, [1, 2]);
-    // requestPlayerQuestionAnswer(playerId1, 1, [2, 1]);
-    quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_ANSWER);
-    quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_FINAL_RESULTS);
-
+  test('test 1.0 valid returns', () => {
+    // expect
     // name,question1score,question1rank,question2score,question2rank
     // player1,4,2,0,0
     // player2,8,1,0,0
     // player3,0,0,0,0
 
-    result = requestCSVResult(token, quizId, sessionId);
+    // patially correct ans => score 0
+    requestPlayerQuestionAnswer(playerId3, 1, [1]);
+    // correct ans, player2 quicker
+    requestPlayerQuestionAnswer(playerId2, 1, [1, 2]);
+    requestPlayerQuestionAnswer(playerId1, 1, [2, 1]);
 
+    quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_ANSWER);
+    quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_FINAL_RESULTS);
+    console.log(getData().quizSessions[0]);
+    result = requestCSVResult(token, quizId, sessionId);
     expect(result).toMatchObject({ url: expect.any(String) });
     expect(result.status).toStrictEqual(OK);
   });
 
-  test.skip('test 1.1 valid returns rank', () => {
+  test.only('test 1.1 valid returns rank', () => {
     // expect
     // name,question1score,question1rank,question2score,question2rank
     // player1,0,0,8
     // player2,0,0,4
     // player3,8,1,3
 
-    // requestPlayerQuestionAnswer(playerId3, 1, [1,2]);
-    // requestPlayerQuestionAnswer(playerId2, 1, [2]);
-    // requestPlayerQuestionAnswer(playerId1, 1, []);
+    requestPlayerQuestionAnswer(playerId3, 1, [1, 2]);
+    requestPlayerQuestionAnswer(playerId2, 1, [2]);
+    requestPlayerQuestionAnswer(playerId1, 1, []);
 
-    // requestPlayerQuestionAnswer(playerId1, 2, [1, 2]);
-    // requestPlayerQuestionAnswer(playerId2, 2, [2, 1]);
-    // requestPlayerQuestionAnswer(playerId3, 2, [1, 2]);
+    requestPlayerQuestionAnswer(playerId1, 2, [1, 2]);
+    requestPlayerQuestionAnswer(playerId2, 2, [2, 1]);
+    requestPlayerQuestionAnswer(playerId3, 2, [1, 2]);
 
     quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_ANSWER);
     quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_FINAL_RESULTS);
-
+console.log(getData().quizSessions[0]);
     result = requestCSVResult(token, quizId, sessionId);
-
     expect(result).toMatchObject({ url: expect.any(String) });
     expect(result.status).toStrictEqual(OK);
   });
