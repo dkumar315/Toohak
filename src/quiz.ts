@@ -1,6 +1,6 @@
 import {
   getData, setData, Data, Quiz, Question,
-  EmptyObject, ErrorObject, INVALID
+  EmptyObject, ErrorObject, INVALID, States
 } from './dataStore';
 import {
   findUserId, isValidIds, IsValid, timeStamp, isValidImgUrl
@@ -155,6 +155,17 @@ export const adminQuizRemove = (
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
+
+  const quiz = data.quizzes[isValidObj.quizIndex];
+  const hasActiveSessions = quiz.sessionIds.some(sessionId => {
+    const session = data.quizSessions.find(s => s.sessionId === sessionId);
+    return session && session.state !== States.END;
+  });
+
+  if (hasActiveSessions) {
+    throw new Error(`Cannot remove quiz ${quizId} with active sessions.`);
+  }
+
   const [deletedQuiz] = data.quizzes.splice(isValidObj.quizIndex, 1);
   data.trashedQuizzes.push(deletedQuiz);
 
