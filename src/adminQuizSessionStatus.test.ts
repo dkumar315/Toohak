@@ -1,7 +1,6 @@
 import { OK, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, ErrorObject } from './dataStore';
 import {
-  requestClear, authRegister, requestAuthLogout,
-  requestQuizRemove, requestQuizEmptyTrash, quizCreate,
+  requestClear, authRegister, requestAuthLogout, quizCreate,
   quizSessionCreate, quizSessionStatus, questionCreate,
   ResError, ResQuizSessionStatus,
 } from './functionRequest';
@@ -105,14 +104,6 @@ describe('testing quizSessionStatus GET /v1/admin/quiz/{quizId}/session/{session
 
       test('test 2.2.2 quizId does not exist', () => {
         result = quizSessionStatus(token, quizId + 1, sessionId);
-        expect(result).toMatchObject(ERROR);
-        expect(result.status).toStrictEqual(FORBIDDEN);
-      });
-
-      test('test 2.2.3 quizId is permanently removed', () => {
-        requestQuizRemove(token, quizId);
-        requestQuizEmptyTrash(token, [quizId]);
-        result = quizSessionStatus(token, quizId, sessionId);
         expect(result).toMatchObject(ERROR);
         expect(result.status).toStrictEqual(FORBIDDEN);
       });

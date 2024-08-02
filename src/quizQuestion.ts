@@ -259,7 +259,7 @@ const isValidIdsAdv = (
   }
 ): IsValid => {
   const { token, quizId, questionId, questionBody } = params;
-  const isValidObj: IsValid = isValidIds(token, quizId);
+  const isValidObj: IsValid = isValidIds(token, quizId, false);
   if (!isValidObj.isValid) return isValidObj;
 
   // check questionId

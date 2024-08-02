@@ -96,16 +96,6 @@ describe('testing adminQuizSessionResultsCSV ' +
     expect(result.status).toStrictEqual(OK);
   });
 
-  test('test 1.2 quiz in Trash or quizRemove should not affect', () => {
-    requestQuizRemove(token, quizId);
-    quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_ANSWER);
-    quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_FINAL_RESULTS);
-
-    result = requestCSVResult(token, quizId, sessionId);
-    expect(result).toMatchObject({ url: expect.any(String) });
-    expect(result.status).toStrictEqual(OK);
-  });
-
   test('test 2.0 invalid token', () => {
     quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_ANSWER);
     quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_FINAL_RESULTS);

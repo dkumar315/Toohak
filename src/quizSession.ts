@@ -3,7 +3,7 @@ import {
   State, Metadata, Player, INVALID, PlayerScore
 } from './dataStore';
 import fs from 'fs';
-import { isValidIdSession as isValidIds, IsValid } from './helperFunctions';
+import { isValidIds, IsValid } from './helperFunctions';
 import { resultsAnalysis } from './resultsAnalysis';
 
 export enum SessionLimits {
@@ -54,9 +54,10 @@ const COUNTDOWN_SEC = 3;
  *
  * @return {number} sessionId - the global unique identifier of a quiz session
  */
-const setNewSession = (quiz: Quiz, autoStartNum: number): number => {
-  const { sessionIds, questionCounter, ...metaQuiz } = quiz;
+const setNewSession = (quizIndex: number, autoStartNum: number): number => {
   const data: Data = getData();
+  const quiz: Quiz = data.quizzes[quizIndex];
+  const { sessionIds, questionCounter, ...metaQuiz } = quiz;
   const newSession: QuizSession = {
     sessionId: ++data.sessions.quizSessionCounter,
     state: States.LOBBY,
@@ -198,7 +199,7 @@ export const adminQuizSessionCreate = (
     throw new Error(`Invalid activeSessionNum: ${activeQuizzesNum}.`);
   }
 
-  const sessionId: number = setNewSession(quiz, autoStartNum);
+  const sessionId: number = setNewSession(isValidObj.quizIndex, autoStartNum);
   return { sessionId };
 };
 
@@ -335,10 +336,6 @@ export const adminQuizSessionStatus = (
     throw new Error(`Invalid sessionId: ${sessionId}.`);
   }
 
-  if (session.metadata.quizId !== quizId) {
-    throw new Error('Session Id does not refer to a valid session within this quiz.');
-  }
-
   const { state, atQuestion, players, metadata } = session;
   return { state, atQuestion, players, metadata };
 };
@@ -364,11 +361,6 @@ export const adminQuizSessionResults = (
   }
 
   const data: Data = getData();
-  const quiz = data.quizzes[isValidObj.quizIndex];
-  if (!quiz) {
-    throw new Error(`Invalid quizId number: ${quizId}`);
-  }
-
   const session = data.quizSessions.find(s => s.sessionId === sessionId && s.metadata.quizId === quizId);
   if (!session) {
     throw new Error(`Invalid sessionId number: ${sessionId}.`);

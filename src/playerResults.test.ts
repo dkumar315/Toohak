@@ -3,7 +3,7 @@ import { QuestionBody } from './quizQuestion';
 import {
   authRegister, quizCreate, questionCreate, quizSessionCreate,
   quizSessionUpdate, playerJoin, requestPlayerResults,
-  requestClear, ResError, ResQuizSessionResult,
+  requestClear, ResError, ResPlayerResults
 } from './functionRequest';
 import { playerQuestionAnswer } from './playerQuestion';
 
@@ -13,7 +13,7 @@ beforeAll(requestClear);
 
 let token: string, quizId: number,
   sessionId: number, playerId: number,
-  result: ResQuizSessionResult | ResError;
+  result: ResPlayerResults | ResError;
 
 beforeEach(() => {
   requestClear();

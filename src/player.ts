@@ -1,5 +1,5 @@
 import {
-  setData, getData, States, Data, INVALID, // Actions,
+  setData, getData, States, Data, INVALID,
   QuizSession, Player, ErrorObject
 } from './dataStore';
 import { findSessionPlayer, PlayerIndices } from './helperFunctions';
@@ -20,6 +20,16 @@ export interface PlayerStatus {
   state: States[keyof States],
   numQuestions: number;
   atQuestion: number;
+}
+
+export interface PlayerResults {
+  usersRankedByScore: { name: string, score: number }[];
+  questionResults: {
+    questionId: number;
+    playersCorrectList: string[];
+    averageAnswerTime: number;
+    percentCorrect: number;
+  }[];
 }
 
 /**
@@ -134,7 +144,7 @@ export const playerStatus = (playerId: number): PlayerStatus => {
   };
 };
 
-export function playerResults(playerId: number) {
+export const playerResults = (playerId: number): PlayerResults => {
   const isvalidPlayer: PlayerIndices | ErrorObject = findSessionPlayer(playerId);
   if ('error' in isvalidPlayer) throw new Error(isvalidPlayer.error);
 
@@ -159,4 +169,4 @@ export function playerResults(playerId: number) {
     usersRankedByScore,
     questionResults,
   };
-}
+};
