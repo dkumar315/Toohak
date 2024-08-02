@@ -1,9 +1,9 @@
 import {
   getData, setData, Data, States, Quiz, QuizSession, EmptyObject,
-  State, Metadata, Player, INVALID
+  State, Metadata, Player, INVALID, PlayerScore
 } from './dataStore';
-
-import { isValidIds, IsValid } from './helperFunctions';
+import fs from 'fs';
+import { isValidIdSession as isValidIds, IsValid } from './helperFunctions';
 import { resultsAnalysis } from './resultsAnalysis';
 
 export enum SessionLimits {
@@ -357,7 +357,7 @@ export const adminQuizSessionResults = (
   quizId: number,
   sessionId: number
 ): QuizSessionResults => {
-  const isValidObj = isValidIds(token, quizId);
+  const isValidObj = isValidIds(token, quizId, false);
   if (!isValidObj.isValid) {
     throw new Error(isValidObj.errorMsg);
   }
@@ -410,31 +410,48 @@ export const adminQuizSessionResultsCSV = (
   quizId: number,
   sessionId: number
 ): CSVResult => {
-  console.log(getData().quizSessions);
-  // const isValidObj = isValidIds(token, quizId);
-  // if (!isValidObj.isValid) {
-  //   throw new Error(isValidObj.errorMsg);
-  // }
+  const isValidObj = isValidIds(token, quizId, false);
+  if (!isValidObj.isValid) {
+    throw new Error(isValidObj.errorMsg);
+  }
 
-  // const data: Data = getData();
-  // const session: QuizSession = data.quizSessions.find((session: QuizSession) =>
-  //   session.sessionId === sessionId);
-  // if (!session) {
-  //   throw new Error(`Invalid sessionId number: ${sessionId}.`);
-  // }
-  // if (session.state !== States.FINAL_RESULTS) {
-  //   throw new Error(`Invalid session state: ${session.state}, `+
-  //     'must be FINAL_RESULTS.');
-  // }
+  const data: Data = getData();
+  const sessionIndex: number = data.quizSessions
+  .findIndex((session: QuizSession) => session.sessionId === sessionId);
+  if (sessionIndex === INVALID) {
+    throw new Error(`Invalid sessionId: ${sessionId}.`);
+  }
+  const session: QuizSession = data.quizSessions[sessionIndex];
+  if (session.state !== States.FINAL_RESULTS) {
+    throw new Error(`Invalid session state: ${session.state}.`);
+  }
 
-  // const results =
-
-  // const [...].sort((playerA, playerB) => (
-  //   playerA.name.localeCompare(playerB.name)
-  //   ));
-
-  // const baseURL = 'http://kahoot.com';
-  // const path = '/adminQuiz/session/result/CSV';
-  // const params = { sessionId, quizId, format: 'csv' };
-  return { url: 'http' };
+  const csvContent = arrayToCSV(session.playerScores);
+  const url: string = `https://quiz/${quizId}/session/${sessionId}/results.csv`;
+  fs.writeFile(url, csvContent, () => {});
+  
+  return { url };
 };
+
+const arrayToCSV = (playerScores: PlayerScore[]) => {
+  const allKeys = new Set();
+  playerScores.forEach(player => {
+    Object.keys(player).forEach(key => {
+      if (key !== 'name') allKeys.add(key);
+    });
+  });
+
+  const sortedKeys = Array.from(allKeys);
+  let csv = "Player," + sortedKeys.join(',') + "\n";
+
+  playerScores.forEach((player: PlayerScore) => {
+    csv += player.name;
+    sortedKeys.forEach((key: string) => {
+      csv += "," +
+      (player[key] !== undefined && player[key] !== '' ? player[key] : '0');
+    });
+    csv += "\n";
+  });
+
+  return csv;
+}

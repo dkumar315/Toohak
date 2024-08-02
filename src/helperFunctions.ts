@@ -97,6 +97,32 @@ export const isValidIds = (
   return isvalidErrorObj(`Invalid quizId number: ${quizId}`);
 };
 
+export const isValidIdSession = (
+  token: string,
+  quizId: number,
+  notAllowTrashQuiz: boolean
+): IsValid => {
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return isvalidErrorObj(`Invalid token string: ${token}`);
+  }
+
+  const data: Data = getData();
+  let isValidQuiz: IsValid = findQuizIndex(data.quizzes, quizId, authUserId);
+  if (isValidQuiz.isValid) return isValidQuiz;
+
+  isValidQuiz = findQuizIndex(data.trashedQuizzes, quizId, authUserId);
+  if (notAllowTrashQuiz) {
+    if (isValidQuiz.isValid) {
+      return isvalidErrorObj(`Invalid quiz in trash: ${quizId}`);
+    }
+  } else if (isValidQuiz.isValid) {
+    return isValidQuiz;
+  }
+
+  return isValidQuiz;
+};
+
 /**
  * check if a imgUrl is valid
  *

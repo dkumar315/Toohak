@@ -50,7 +50,8 @@ beforeEach(() => {
   quizSessionUpdate(token, quizId, sessionId, Actions.SKIP_COUNTDOWN);
 });
 
-describe('testing adminQuizSessionResultsCSV /v1/player/{playerid}/chat', () => {
+describe('testing adminQuizSessionResultsCSV ' +
+  '/v1/admin/quiz/{quizid}/session/{sessionid}/results/csv\n', () => {
   test('test 1.0 valid returns', () => {
     // expect
     // name,question1score,question1rank,question2score,question2rank
@@ -66,18 +67,17 @@ describe('testing adminQuizSessionResultsCSV /v1/player/{playerid}/chat', () => 
 
     quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_ANSWER);
     quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_FINAL_RESULTS);
-    console.log(getData().quizSessions[0]);
     result = requestCSVResult(token, quizId, sessionId);
     expect(result).toMatchObject({ url: expect.any(String) });
     expect(result.status).toStrictEqual(OK);
   });
 
-  test.only('test 1.1 valid returns rank', () => {
+  test('test 1.1 valid returns rank', () => {
     // expect
     // name,question1score,question1rank,question2score,question2rank
-    // player1,0,0,8
-    // player2,0,0,4
-    // player3,8,1,3
+    // player1,0,0,8,1
+    // player2,0,0,4,2
+    // player3,8,1,3,3
 
     requestPlayerQuestionAnswer(playerId3, 1, [1, 2]);
     requestPlayerQuestionAnswer(playerId2, 1, [2]);
@@ -89,7 +89,7 @@ describe('testing adminQuizSessionResultsCSV /v1/player/{playerid}/chat', () => 
 
     quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_ANSWER);
     quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_FINAL_RESULTS);
-console.log(getData().quizSessions[0]);
+
     result = requestCSVResult(token, quizId, sessionId);
     expect(result).toMatchObject({ url: expect.any(String) });
     expect(result.status).toStrictEqual(OK);
@@ -155,7 +155,7 @@ console.log(getData().quizSessions[0]);
     quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_ANSWER);
     quizSessionUpdate(token, quizId, sessionId, Actions.GO_TO_FINAL_RESULTS);
 
-    result = requestCSVResult(token, quizId, sessionId);
+    result = requestCSVResult(token, quizId + 1, sessionId);
     expect(result).toMatchObject(ERROR);
     expect(result.status).toStrictEqual(FORBIDDEN);
   });

@@ -44,7 +44,7 @@ const questionResults = (session: QuizSession) => {
 };
 
 const playerQuestinResults = (session: QuizSession): PlayerScore[] => {
-  const playerScores: Map<string, PlayerDetailedScore> = new Map();
+  const playerScores: Map<string, PlayerScore> = new Map();
   session.players.forEach((player: Player) => {
     playerScores.set(String(player.playerId), { name: player.name });
   });
@@ -55,8 +55,8 @@ const playerQuestinResults = (session: QuizSession): PlayerScore[] => {
     const questionNumber = questionIndex + 1;
 
     playerScores.forEach(playerScore => {
-      playerScore[`question${questionNumber}Score`] = 0;
-      playerScore[`question${questionNumber}Rank`] = 0;
+      playerScore[`question${questionNumber}score`] = 0;
+      playerScore[`question${questionNumber}rank`] = 0;
     });
 
     questionSession.playerAnswers
@@ -65,8 +65,9 @@ const playerQuestinResults = (session: QuizSession): PlayerScore[] => {
       const playerScore = playerScores.get(String(answer.playerId));
       if (playerScore) {
         const rank = index + 1;
-        playerScore[`question${questionNumber}Rank`] = rank;
-        playerScore[`question${questionNumber}Score`] = questionPoints / rank;
+        playerScore[`question${questionNumber}score`] = 
+        Math.round(questionPoints / rank);
+        playerScore[`question${questionNumber}rank`] = rank;
       }
     });
   });
