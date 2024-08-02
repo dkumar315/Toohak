@@ -23,7 +23,7 @@ beforeEach(() => {
   quizId = quizCreate(token, 'time to start a kahoot', 'test your skill').quizId;
   const questionBody: QuestionBody = {
     question: `question of quiz ${quizId}`,
-    duration: 5,
+    duration: 4,
     points: 8,
     answers: [
       {
@@ -99,7 +99,7 @@ describe('testing adminQuizSessionUpdate PUT /v1/admin/quiz/{quizId}/session/{se
       test('test 1.6.2 timer for QUESTION_OPEN to QUESTION_CLOSE', () => {
         quizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
         sleepSync(3000);
-        sleepSync(5000);
+        sleepSync(4000);
         const sessionState = quizSessionStatus(token, quizId, sessionId).state;
         expect(sessionState).toStrictEqual('QUESTION_CLOSE');
       });
@@ -107,7 +107,7 @@ describe('testing adminQuizSessionUpdate PUT /v1/admin/quiz/{quizId}/session/{se
       test('test 1.6.3 timer for QUESTION_OPEN to QUESTION_CLOSE when question countdown skipped', () => {
         quizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
         quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
-        sleepSync(5000);
+        sleepSync(4000);
         const sessionState = quizSessionStatus(token, quizId, sessionId).state;
         expect(sessionState).toStrictEqual('QUESTION_CLOSE');
       });

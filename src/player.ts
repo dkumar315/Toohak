@@ -3,7 +3,8 @@ import {
   QuizSession, Player, ErrorObject
 } from './dataStore';
 import { findSessionPlayer, PlayerIndices } from './helperFunctions';
-// import { questionCountDown } from './quizSession';
+import { questionCountDown } from './quizSession';
+const NOT_AUTOSTART = 0;
 
 enum NameGen {
   LETTERS = 'abcdefghijklmnopqrstuvwxyz',
@@ -81,7 +82,6 @@ export const playerJoin = (sessionId: number, name: string): PlayerId => {
 
   const data: Data = getData();
   const session: QuizSession = data.quizSessions[sessionIndex];
-
   if (session.state !== States.LOBBY) {
     throw new Error(`Invalid state ${session.state}, sessionId: ${sessionId}.`);
   }
@@ -97,19 +97,17 @@ export const playerJoin = (sessionId: number, name: string): PlayerId => {
   const newPlayer: Player = {
     playerId,
     name,
-    points: 0,
-    timeTaken: 0,
-    score: 0
+    score: 0,
+    timeTaken: 0
   };
   session.players.push(newPlayer);
   setData(data);
 
   // autoStart
-  // if (session.autoStartNum !== NOT_AUTOSTART &&
-  // session.players.length >= session.autoStartNum) {
-  //   questionCountDown(session);
-  //   setData(data);
-  // }
+  if (session.autoStartNum !== NOT_AUTOSTART &&
+  session.players.length >= session.autoStartNum) {
+    questionCountDown(sessionIndex);
+  }
 
   return { playerId };
 };
@@ -147,15 +145,14 @@ export function playerResults(playerId: number) {
     throw new Error('Session is not in FINAL_RESULTS state');
   }
   const usersRankedByScore = session.players
-    .sort((a, b) => b.points - a.points)
-    .map((player) => ({ name: player.name, score: player.points }));
+    .sort((a, b) => b.score - a.score)
+    .map((player) => ({ name: player.name, score: player.score }));
 
   const questionResults = session.questionSessions.map((question) => ({
     questionId: question.questionId,
     playersCorrectList: question.playersCorrectList,
     averageAnswerTime: question.averageAnswerTime,
     percentCorrect: question.percentCorrect,
-    thumbnailUrl: question.thumbnailUrl
   }));
 
   return {

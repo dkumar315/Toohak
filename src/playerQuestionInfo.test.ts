@@ -3,7 +3,8 @@ import { QuestionBody } from './quizQuestion';
 import {
   authRegister, quizCreate, questionCreate,
   quizSessionCreate, requestPlayerJoin, requestPlayerQuestionPosition,
-  requestClear, ResError, ResPlayerId, ResQuestionResults, requestQuizSessionUpdate, requestAdminQuizSessionStatus
+  requestClear, ResError, ResPlayerId, ResQuestionResults, requestQuizSessionUpdate,
+  requestAdminQuizSessionStatus
 } from './functionRequest';
 
 beforeAll(requestClear);
@@ -43,10 +44,10 @@ beforeEach(() => {
     thumbnailUrl: 'http://google.com/img_path.jpg'
   };
   questionCreate(token, quizId, questionBody);
-  sessionId = quizSessionCreate(token, quizId, 1).sessionId;
+  sessionId = quizSessionCreate(token, quizId, 10).sessionId;
   playerId = (requestPlayerJoin(sessionId, 'player1') as ResPlayerId).playerId;
-
   requestQuizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
+  requestQuizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
 });
 
 afterAll(requestClear);
@@ -54,11 +55,7 @@ afterAll(requestClear);
 describe('Testing /v1/player/:playerid/question/:questionposition', () => {
   describe('Valid Returns', () => {
     test('Valid player ID and question position', () => {
-      let sessionStatusResponse = requestAdminQuizSessionStatus(token, quizId, sessionId);
-
-      while ('state' in sessionStatusResponse && sessionStatusResponse.state !== 'QUESTION_OPEN') {
-        sessionStatusResponse = requestAdminQuizSessionStatus(token, quizId, sessionId);
-      }
+      const sessionStatusResponse = requestAdminQuizSessionStatus(token, quizId, sessionId);
 
       if ('state' in sessionStatusResponse) {
         expect(sessionStatusResponse.status).toStrictEqual(OK);

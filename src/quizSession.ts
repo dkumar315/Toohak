@@ -1,9 +1,10 @@
 import {
   getData, setData, Data, States, Quiz, QuizSession, EmptyObject,
-  State, Metadata, Player
+  State, Metadata, Player, INVALID, PlayerScore
 } from './dataStore';
-
-import { isValidIds, IsValid } from './helperFunctions';
+import fs from 'fs';
+import { isValidIdSession as isValidIds, IsValid } from './helperFunctions';
+import { resultsAnalysis } from './resultsAnalysis';
 
 export enum SessionLimits {
   AUTO_START_AND_QUESTIONS_NUM_MIN = 0,
@@ -44,7 +45,7 @@ export type QuizSessionResults = {
 }
 export type CSVResult = { url: string };
 
-const SKIP_TIME = 3;
+const COUNTDOWN_SEC = 3;
 
 /** add a new session copy of current quiz in data.quizSessions
  *
@@ -69,7 +70,7 @@ const setNewSession = (quiz: Quiz, autoStartNum: number): number => {
       averageAnswerTime: 0,
       percentCorrect: 0,
       playerAnswers: [],
-      thumbnailUrl: question.thumbnailUrl
+      timeStart: 0
     })),
     messages: []
   };
@@ -87,23 +88,44 @@ export interface SessionListReturn {
 
 const sessionTimers: Record<number, ReturnType<typeof setTimeout>> = {};
 
-export function clearAllTimers() {
+export const clearAllTimers = () => {
   for (const timer of Object.values(sessionTimers)) {
     clearTimeout(timer);
   }
-}
+};
 
-function clearTimer(sessionId: number) {
+const clearTimer = (sessionId: number) => {
   if (sessionTimers[sessionId]) {
     clearTimeout(sessionTimers[sessionId]);
     delete sessionTimers[sessionId];
   }
-}
+};
 
-function setTimer(sessionId: number, duration: number, callback: () => void) {
+const setTimer = (sessionId: number, duration: number, callback: () => void) => {
   clearTimer(sessionId);
   sessionTimers[sessionId] = setTimeout(callback, duration * 1000);
-}
+};
+
+export const questionCountDown = (sessionIndex: number) => {
+  const data: Data = getData();
+  const session: QuizSession = data.quizSessions[sessionIndex];
+
+  session.state = States.QUESTION_COUNTDOWN;
+  session.atQuestion += 1;
+  setData(data);
+
+  const questionDuration: number = session.metadata
+    .questions[session.atQuestion - 1].duration;
+  clearTimer(session.sessionId);
+  setTimer(session.sessionId, COUNTDOWN_SEC, () => {
+    session.state = States.QUESTION_OPEN;
+    setData(data);
+    setTimer(session.sessionId, questionDuration, () => {
+      session.state = States.QUESTION_CLOSE;
+      setData(data);
+    });
+  });
+};
 
 /**
  * Retrieves active and inactive session ids for a quiz.
@@ -201,20 +223,16 @@ export const adminQuizSessionUpdate = (
   if (!isValidObj.isValid) throw new Error(isValidObj.errorMsg);
 
   const data: Data = getData();
-
-  const session: QuizSession | undefined = data.quizSessions.find(
-    session => session.sessionId === sessionId
+  const sessionIndex: number = data.quizSessions.findIndex(session =>
+    session.sessionId === sessionId
   );
-  if (!session) {
+
+  if (sessionIndex === INVALID) {
     throw new Error(`Invalid sessionId: ${sessionId}.`);
   }
-
-  if (session.state === States.LOBBY) {
-    session.atQuestion = 0;
-    setData(data);
-  }
-
+  const session: QuizSession = data.quizSessions[sessionIndex];
   let questionDuration: number;
+
   switch (action) {
     case Action.NEXT_QUESTION:
       if (session.state !== States.LOBBY &&
@@ -224,21 +242,7 @@ export const adminQuizSessionUpdate = (
           `Cannot perform NEXT_QUESTION action in the current state: ${session.state}.`
         );
       }
-
-      session.state = States.QUESTION_COUNTDOWN;
-      questionDuration = session.metadata.questions[session.atQuestion].duration;
-      session.atQuestion += 1;
-      setData(data);
-
-      clearTimer(session.sessionId);
-      setTimer(session.sessionId, SKIP_TIME, () => {
-        session.state = States.QUESTION_OPEN;
-        setData(data);
-        setTimer(session.sessionId, questionDuration, () => {
-          session.state = States.QUESTION_CLOSE;
-          setData(data);
-        });
-      });
+      questionCountDown(sessionIndex);
       break;
 
     case Action.SKIP_COUNTDOWN:
@@ -247,10 +251,11 @@ export const adminQuizSessionUpdate = (
           `Cannot perform SKIP_COUNTDOWN action in the current state: ${session.state}.`
         );
       }
-
       session.state = States.QUESTION_OPEN;
       setData(data);
 
+      questionDuration = session.metadata
+        .questions[session.atQuestion - 1].duration;
       clearTimer(session.sessionId);
       setTimer(session.sessionId, questionDuration, () => {
         session.state = States.QUESTION_CLOSE;
@@ -265,7 +270,6 @@ export const adminQuizSessionUpdate = (
           `Cannot perform GO_TO_ANSWER action in the current state: ${session.state}.`
         );
       }
-
       session.state = States.ANSWER_SHOW;
       setData(data);
 
@@ -283,6 +287,7 @@ export const adminQuizSessionUpdate = (
       session.state = States.FINAL_RESULTS;
       session.atQuestion = 0;
       setData(data);
+      resultsAnalysis(sessionIndex);
 
       clearTimer(session.sessionId);
       break;
@@ -298,8 +303,6 @@ export const adminQuizSessionUpdate = (
     default:
       throw new Error(`Invalid action: ${action}.`);
   }
-
-  setData(data);
   return {};
 };
 
@@ -355,7 +358,7 @@ export const adminQuizSessionResults = (
   quizId: number,
   sessionId: number
 ): QuizSessionResults => {
-  const isValidObj = isValidIds(token, quizId);
+  const isValidObj = isValidIds(token, quizId, false);
   if (!isValidObj.isValid) {
     throw new Error(isValidObj.errorMsg);
   }
@@ -408,38 +411,48 @@ export const adminQuizSessionResultsCSV = (
   quizId: number,
   sessionId: number
 ): CSVResult => {
-  // const isValidObj = isValidIds(token, quizId);
-  // if (!isValidObj.isValid) {
-  //   throw new Error(isValidObj.errorMsg);
-  // }
+  const isValidObj = isValidIds(token, quizId, false);
+  if (!isValidObj.isValid) {
+    throw new Error(isValidObj.errorMsg);
+  }
 
-  // const data: Data = getData();
-  // const session: QuizSession = data.quizSessions.find((session: QuizSession) =>
-  //   session.sessionId === sessionId);
-  // if (!session) {
-  //   throw new Error(`Invalid sessionId number: ${sessionId}.`);
-  // }
-  // if (session.state !== States.FINAL_RESULTS) {
-  //   throw new Error(`Invalid session state: ${session.state}, `+
-  //     'must be FINAL_RESULTS.');
-  // }
+  const data: Data = getData();
+  const sessionIndex: number = data.quizSessions
+    .findIndex((session: QuizSession) => session.sessionId === sessionId);
+  if (sessionIndex === INVALID) {
+    throw new Error(`Invalid sessionId: ${sessionId}.`);
+  }
+  const session: QuizSession = data.quizSessions[sessionIndex];
+  if (session.state !== States.FINAL_RESULTS) {
+    throw new Error(`Invalid session state: ${session.state}.`);
+  }
 
-  // const results =
+  const csvContent = arrayToCSV(session.playerScores);
+  const url: string = `https://quiz/${quizId}/session/${sessionId}/results.csv`;
+  fs.writeFile(url, csvContent, () => {});
 
-  // const [...].sort((playerA, playerB) => (
-  //   playerA.name.localeCompare(playerB.name)
-  //   ));
-
-  // const baseURL = 'http://kahoot.com';
-  // const path = '/adminQuiz/session/result/CSV';
-  // const params = { sessionId, quizId, format: 'csv' };
-  return { url: 'http' };
+  return { url };
 };
 
-// const resultsAnalysis = (
-//   sessionId: number
-// ): void => {
-//   const data: Data = getData();
-//   const session: QuizSession = data.quizSessions.find((session: QuizSession) =>
-//     session.sessionId === sessionId);
-// };
+const arrayToCSV = (playerScores: PlayerScore[]) => {
+  const allKeys = new Set();
+  playerScores.forEach(player => {
+    Object.keys(player).forEach(key => {
+      if (key !== 'name') allKeys.add(key);
+    });
+  });
+
+  const sortedKeys = Array.from(allKeys);
+  let csv = 'Player,' + sortedKeys.join(',') + '\n';
+
+  playerScores.forEach((player: PlayerScore) => {
+    csv += player.name;
+    sortedKeys.forEach((key: string) => {
+      csv += ',' +
+      (player[key] !== undefined && player[key] !== '' ? player[key] : '0');
+    });
+    csv += '\n';
+  });
+
+  return csv;
+};

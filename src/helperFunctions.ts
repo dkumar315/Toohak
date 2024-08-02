@@ -75,8 +75,24 @@ export const timeStamp = (): number => Math.floor(Date.now() / 1000);
  */
 export const isValidIds = (
   token: string,
+  quizId: number
+): IsValid => {
+  const authUserId: number = findUserId(token);
+  if (authUserId === INVALID) {
+    return isvalidErrorObj(`Invalid token string: ${token}`);
+  }
+
+  const data: Data = getData();
+  const isValidQuiz: IsValid = findQuizIndex(data.quizzes, quizId, authUserId);
+  if (isValidQuiz.isValid) return isValidQuiz;
+
+  return isvalidErrorObj(`Invalid quizId number: ${quizId}`);
+};
+
+export const isValidIdSession = (
+  token: string,
   quizId: number,
-  checkTrashQuiz: boolean = false
+  notAllowTrashQuiz: boolean
 ): IsValid => {
   const authUserId: number = findUserId(token);
   if (authUserId === INVALID) {
@@ -87,14 +103,16 @@ export const isValidIds = (
   let isValidQuiz: IsValid = findQuizIndex(data.quizzes, quizId, authUserId);
   if (isValidQuiz.isValid) return isValidQuiz;
 
-  if (checkTrashQuiz) {
-    isValidQuiz = findQuizIndex(data.trashedQuizzes, quizId, authUserId);
+  isValidQuiz = findQuizIndex(data.trashedQuizzes, quizId, authUserId);
+  if (notAllowTrashQuiz) {
     if (isValidQuiz.isValid) {
       return isvalidErrorObj(`Invalid quiz in trash: ${quizId}`);
     }
+  } else if (isValidQuiz.isValid) {
+    return isValidQuiz;
   }
 
-  return isvalidErrorObj(`Invalid quizId number: ${quizId}`);
+  return isValidQuiz;
 };
 
 /**
