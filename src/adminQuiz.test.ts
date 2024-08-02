@@ -3,7 +3,8 @@ import {
   authRegister, requestAuthLogin,
   requestQuizList, requestQuizCreate, requestQuizInfo, requestQuizRemove,
   requestQuizNameUpdate, requestQuizDescriptionUpdate, requestClear,
-  ResError, ResEmpty, ResToken, ResQuizList, ResQuizId, ResQuizInfo,
+  requestQuizSessionCreate, requestQuizSessionUpdate,
+  ResError, ResEmpty, ResToken, ResQuizList, ResQuizId, ResQuizInfo, ResSessionId,
   requestQuizCreateV1, requestQuizListV1, requestQuizNameUpdateV1,
   requestQuizDescriptionUpdateV1, requestQuizInfoV1
 } from './functionRequest';
@@ -103,17 +104,29 @@ describe('adminQuizCreate', () => {
 
 describe('adminQuizRemove tests', () => {
   let userId1: ResToken, userId2: ResToken, quizId1: ResQuizId;
+  let sessionId1: ResSessionId;
 
   beforeEach(() => {
     requestClear();
 
     userId1 = authRegister('krishpatel@gmail.com', 'KrishP01', 'Krish', 'Patel');
     quizId1 = requestQuizCreate(userId1.token, 'My Quiz', 'Quiz on Testing') as ResQuizId;
+    sessionId1 = requestQuizSessionCreate(userId1.token, quizId1.quizId, 0) as ResSessionId;
     userId2 = authRegister('joshhoward@gmail.com', 'JoshH002', 'Josh', 'Howard');
     requestQuizCreate(userId2.token, 'Second Quiz', 'Another quiz for testing') as ResQuizId;
   });
 
+  test('Quiz successfully gets removed when all sessions are in END state', () => {
+    requestQuizSessionUpdate(userId1.token, quizId1.quizId, sessionId1.sessionId, 'END');
+    const result = requestQuizRemove(userId1.token, quizId1.quizId) as ResEmpty;
+    expect(result).toStrictEqual({ status: OK });
+
+    const quizzes = requestQuizList(userId1.token) as ResQuizList;
+    expect(quizzes).toStrictEqual({ status: OK, quizzes: [] });
+  });
+
   test('Quiz successfully gets removed', () => {
+    requestQuizSessionUpdate(userId1.token, quizId1.quizId, sessionId1.sessionId, 'END');
     const result = requestQuizRemove(userId1.token, quizId1.quizId) as ResEmpty;
     expect(result).toStrictEqual({ status: OK });
 
@@ -137,7 +150,7 @@ describe('adminQuizRemove tests', () => {
   });
 
   test('Error shown when removing a quiz after it has already been removed', () => {
-    requestQuizRemove(userId1.token, quizId1.quizId) as ResError;
+    requestQuizRemove(userId1.token, quizId1.quizId) as ResEmpty;
     const result = requestQuizRemove(userId1.token, quizId1.quizId) as ResError;
     expect(result).toStrictEqual({ status: FORBIDDEN, error: expect.any(String) });
   });
