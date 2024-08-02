@@ -1,10 +1,11 @@
-import { OK, BAD_REQUEST } from './dataStore';
+import { OK, BAD_REQUEST, ErrorObject } from './dataStore';
 import {
   requestClear, authRegister, quizCreate, questionCreate,
   quizSessionCreate, playerJoin, requestPlayerQuestionAnswer,
-  requestQuizSessionUpdate,
-  quizSessionUpdate
+  requestQuizSessionUpdate, quizSessionUpdate
 } from './functionRequest';
+
+const ERROR: ErrorObject = { error: expect.any(String) };
 
 beforeAll(requestClear);
 
@@ -20,6 +21,7 @@ beforeEach(() => {
     points: 10,
     answers: [
       { answer: 'Correct Answer', correct: true },
+      { answer: 'Another Correct Answer', correct: true },
       { answer: 'Wrong Answer', correct: false }
     ],
     thumbnailUrl: 'http://example.com/image.jpg'
@@ -31,51 +33,66 @@ beforeEach(() => {
 
 afterAll(requestClear);
 
-describe('Testing /v1/player/:playerid/question/:questionposition/answer', () => {
+describe('Testing playerQuestionAnswer /v1/player/:playerid/question/:questionposition/answer', () => {
   test('Valid answer submission', () => {
     quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
-    const response = requestPlayerQuestionAnswer(playerId, 1, [1]);
-    expect(response.status).toStrictEqual(OK);
+    const result = requestPlayerQuestionAnswer(playerId, 1, [1, 2]);
+    expect(result).toMatchObject({});
+    expect(result.status).toStrictEqual(OK);
+  });
+
+  test('Valid answer submission but incomplete', () => {
+    quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
+    const result = requestPlayerQuestionAnswer(playerId, 1, [1]);
+    expect(result).toMatchObject({});
+    expect(result.status).toStrictEqual(OK);
   });
 
   test('Invalid player ID', () => {
-    const response = requestPlayerQuestionAnswer(-1, 1, [1]);
-    expect(response.status).toStrictEqual(BAD_REQUEST);
+    const result = requestPlayerQuestionAnswer(-1, 1, [1]);
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 
   test('Invalid question position', () => {
-    const response = requestPlayerQuestionAnswer(playerId, 999, [1]);
-    expect(response.status).toStrictEqual(BAD_REQUEST);
+    quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
+    const result = requestPlayerQuestionAnswer(playerId, 999, [1]);
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 
   test('Invalid answer ID', () => {
     requestQuizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
     quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
 
-    const response = requestPlayerQuestionAnswer(playerId, 1, [999]);
-    expect(response.status).toStrictEqual(BAD_REQUEST);
+    const result = requestPlayerQuestionAnswer(playerId, 1, [999]);
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 
   test('Session not in QUESTION_OPEN state', () => {
     requestQuizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
 
-    const response = requestPlayerQuestionAnswer(playerId, 1, [1]);
-    expect(response.status).toStrictEqual(BAD_REQUEST);
+    const result = requestPlayerQuestionAnswer(playerId, 1, [1]);
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 
   test('Duplicate answer IDs', () => {
     requestQuizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
     quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
 
-    const response = requestPlayerQuestionAnswer(playerId, 1, [1, 1]);
-    expect(response.status).toStrictEqual(BAD_REQUEST);
+    const result = requestPlayerQuestionAnswer(playerId, 1, [1, 1]);
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 
   test('No answer IDs submitted', () => {
     requestQuizSessionUpdate(token, quizId, sessionId, 'NEXT_QUESTION');
     quizSessionUpdate(token, quizId, sessionId, 'SKIP_COUNTDOWN');
 
-    const response = requestPlayerQuestionAnswer(playerId, 1, []);
-    expect(response.status).toStrictEqual(BAD_REQUEST);
+    const result = requestPlayerQuestionAnswer(playerId, 1, []);
+    expect(result).toMatchObject(ERROR);
+    expect(result.status).toStrictEqual(BAD_REQUEST);
   });
 });

@@ -145,8 +145,8 @@ export function playerResults(playerId: number) {
     throw new Error('Session is not in FINAL_RESULTS state');
   }
   const usersRankedByScore = session.players
-    .sort((a, b) => b.score - a.score)
-    .map((player) => ({ name: player.name, score: player.score }));
+    .sort((a, b) => b.score - a.score).map(
+      (player) => ({ name: player.name, score: player.score }));
 
   const questionResults = session.questionSessions.map((question) => ({
     questionId: question.questionId,

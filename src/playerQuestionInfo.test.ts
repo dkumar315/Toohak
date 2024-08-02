@@ -137,5 +137,12 @@ describe('Testing /v1/player/:playerid/question/:questionposition', () => {
       expect(result).toMatchObject(ERROR);
       expect(result.status).toStrictEqual(BAD_REQUEST);
     });
+
+    test('Session not in QUESTION_OPEN state', () => {
+      requestQuizSessionUpdate(token, quizId, sessionId, 'GO_TO_ANSWER');
+      const result = requestPlayerQuestionPosition(playerId, 1);
+      expect(result).toMatchObject(ERROR);
+      expect(result.status).toStrictEqual(BAD_REQUEST);
+    });
   });
 });
